@@ -9,4 +9,4 @@ Commands for translation and compilation of misdcompiler.ypp:
 - compilation
 Commands for translation and compilation of misdcompiler.lex:
 - translation: flex misdcompiler.lex
-- compilation using tokens defs and other defs by bison: g++ -o misdlex flex-misdcompiler.cpp misdcompiler.tab.hpp -lfl
+- compilation using tokens defs and other defs by bison: gcc -o misdlex flex-misdcompiler.cpp misdcompiler.tab.hpp -lfl
