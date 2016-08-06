@@ -1,37 +1,42 @@
-%{
- #include <stdio.h>
- extern int yylex();
- void yyerror(const char *s) { printf("ERROR: %s\n", s); }
-%}	
-
 %code requires {
-  #ifndef _BISON_MISDCOMPILER_DEFINES_0_
-  #define _BISON_MISDCOMPILER_DEFINES_0_
-
-  #define YYLEX_NEWLINE                  -1
-  #define YYLEX_SINGLE_LINE_COMMENT      -2
-  #define YYLEX_BLOCK_COMMENT            -3
-
-  typedef void* yyscan_t;
-
-  //int processNewline(yyscan_t scanner);
-  //void stringBufferInit();
-
-  #endif
-}
-
-%code requires{
-  union  YYSTYPE {
-    const char*       pch;
-  };
-
-  struct YYLTYPE {
+    
+ struct YYLTYPE {
     int         first_line;
     int         first_column;
     int         last_line;
     int         last_column;
     const char* comment;
   };
+
+  #define YYLTYPE_IS_DECLARED 1
+  #define YYLTYPE_IS_TRIVIAL  1
+}
+
+%{
+ #define YYPARSE_PARAM scanner
+ #define YYLEX_PARAM   scanner
+%}	
+
+%code {
+ #include <stdio.h>
+ extern int yylex( YYSTYPE* yylval_param, YYLTYPE* yylloc_param);
+ 
+ static
+ void yyerror(char *s)
+ {
+        printf("yyerror: %s\n", s);
+ }
+}
+
+// The names for the output files
+%defines "../include/bison-misdcompiler.h"
+%output  "bison-misdcompiler.cpp"
+
+%locations
+%pure-parser
+
+%union {	
+ const char* pch;
 }
 
 %start program

@@ -1,19 +1,19 @@
 %option outfile="flex-misdcompiler.cpp"
+%option header-file="../include/flex-misdcompiler.h"
 
 %option noyywrap
 %option nounput
 
-%option reentrant
 %option bison-bridge
 %option bison-locations
 
 %{
 #include <iostream>
-#include "misdcompiler.tab.hpp"
+#include "../include/bison-misdcompiler.h"
 
-static int  processIdentifier(yyscan_t scanner);
-static int  processStructIdentifier(yyscan_t scanner);
-static int  processStringLiteral(yyscan_t scanner, const char* q, int type);
+static int  processIdentifier();
+static int  processStructIdentifier();
+static int  processStringLiteral(const char* q, int type);
 %}
 
 digit            [0-9]
@@ -79,22 +79,22 @@ NOT			return TNOT;
 "}"			return TRCBR;
 "("			return TLP;
 ")"			return TRP;
-STRUCT1			return processStructIdentifier(yyscanner);
-STRUCT2			return processStructIdentifier(yyscanner);
-STRUCT3			return processStructIdentifier(yyscanner);
-STRUCT4			return processStructIdentifier(yyscanner);
-STRUCT5			return processStructIdentifier(yyscanner);
-STRUCT6			return processStructIdentifier(yyscanner);
-STRUCT7			return processStructIdentifier(yyscanner);
-{ident}			return processIdentifier(yyscanner);
+STRUCT1			return processStructIdentifier();
+STRUCT2			return processStructIdentifier();
+STRUCT3			return processStructIdentifier();
+STRUCT4			return processStructIdentifier();
+STRUCT5			return processStructIdentifier();
+STRUCT6			return processStructIdentifier();
+STRUCT7			return processStructIdentifier();
+{ident}			return processIdentifier();
 "\""             	return STRINGLITERAL; //Placeholder
 "\'"             	return STRINGLITERAL; //Placeholder
 
 %%
 
 //Identifiers processing
-static int  processIdentifier(yyscan_t scanner) {
-  YYSTYPE* yyLval = yyget_lval(scanner);
+static int  processIdentifier() {
+  //YYSTYPE* yyLval = yyget_lval(scanner);
   int      retval = TIDENT;
 
   //yyLval->pch = astr(yyget_text(scanner));
@@ -103,18 +103,11 @@ static int  processIdentifier(yyscan_t scanner) {
 }
 
 //Structure identifiers processing
-static int  processStructIdentifier(yyscan_t scanner) {
-  YYSTYPE* yyLval = yyget_lval(scanner);
+static int  processStructIdentifier() {
+  //YYSTYPE* yyLval = yyget_lval(scanner);
   int      retval = TSTRUCTIDENT;
 
   //yyLval->pch = astr(yyget_text(scanner));
 
   return retval;
-}
-
-//Temporary for tests
-main()
-{
-  //yylex();
-  printf("fin");
 }

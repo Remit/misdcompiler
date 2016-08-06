@@ -30,8 +30,8 @@
    This special exception was added by the Free Software Foundation in
    version 2.2 of Bison.  */
 
-#ifndef YY_YY_MISDCOMPILER_TAB_HPP_INCLUDED
-# define YY_YY_MISDCOMPILER_TAB_HPP_INCLUDED
+#ifndef YY_YY_INCLUDE_BISON_MISDCOMPILER_H_INCLUDED
+# define YY_YY_INCLUDE_BISON_MISDCOMPILER_H_INCLUDED
 /* Debug traces.  */
 #ifndef YYDEBUG
 # define YYDEBUG 0
@@ -40,28 +40,10 @@
 extern int yydebug;
 #endif
 /* "%code requires" blocks.  */
-#line 7 "misdcompiler.ypp" /* yacc.c:1909  */
+#line 1 "misdcompiler.ypp" /* yacc.c:1909  */
 
-  #ifndef _BISON_MISDCOMPILER_DEFINES_0_
-  #define _BISON_MISDCOMPILER_DEFINES_0_
-
-  #define YYLEX_NEWLINE                  -1
-  #define YYLEX_SINGLE_LINE_COMMENT      -2
-  #define YYLEX_BLOCK_COMMENT            -3
-
-  typedef void* yyscan_t;
-
-  //int processNewline(yyscan_t scanner);
-  //void stringBufferInit();
-
-  #endif
-#line 23 "misdcompiler.ypp" /* yacc.c:1909  */
-
-  union  YYSTYPE {
-    const char*       pch;
-  };
-
-  struct YYLTYPE {
+    
+ struct YYLTYPE {
     int         first_line;
     int         first_column;
     int         last_line;
@@ -69,7 +51,10 @@ extern int yydebug;
     const char* comment;
   };
 
-#line 73 "misdcompiler.tab.hpp" /* yacc.c:1909  */
+  #define YYLTYPE_IS_DECLARED 1
+  #define YYLTYPE_IS_TRIVIAL  1
+
+#line 58 "../include/bison-misdcompiler.h" /* yacc.c:1909  */
 
 /* Token type.  */
 #ifndef YYTOKENTYPE
@@ -138,10 +123,36 @@ extern int yydebug;
 #endif
 
 /* Value type.  */
+#if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
+typedef union YYSTYPE YYSTYPE;
+union YYSTYPE
+{
+#line 38 "misdcompiler.ypp" /* yacc.c:1909  */
+	
+ const char* pch;
+
+#line 135 "../include/bison-misdcompiler.h" /* yacc.c:1909  */
+};
+# define YYSTYPE_IS_TRIVIAL 1
+# define YYSTYPE_IS_DECLARED 1
+#endif
+
+/* Location type.  */
+#if ! defined YYLTYPE && ! defined YYLTYPE_IS_DECLARED
+typedef struct YYLTYPE YYLTYPE;
+struct YYLTYPE
+{
+  int first_line;
+  int first_column;
+  int last_line;
+  int last_column;
+};
+# define YYLTYPE_IS_DECLARED 1
+# define YYLTYPE_IS_TRIVIAL 1
+#endif
 
 
-extern YYSTYPE yylval;
 
 int yyparse (void);
 
-#endif /* !YY_YY_MISDCOMPILER_TAB_HPP_INCLUDED  */
+#endif /* !YY_YY_INCLUDE_BISON_MISDCOMPILER_H_INCLUDED  */
