@@ -19,6 +19,7 @@
 
 %code {
  #include <stdio.h>
+ #include "build.h"
  extern int yylex( YYSTYPE* yylval_param, YYLTYPE* yylloc_param);
  
  static
@@ -87,16 +88,16 @@ program:
 ;
 
 stmts_ls:
-   stmt				{ printf("Statement\n"); }
-|  stmts_ls stmt		{ printf("Statements list\n"); }
+						{ $$ = new IR_Graph(); $$->addOperationNode( buildTerminalNode( ) ); }
+|  stmts_ls stmt		{ $$ = $1->appendGraph($2); }
 ;
 
 stmt:
-   stmts_block			{ printf("Statements block\n"); }
+   stmts_block			
 |  expr_stmt TSEMI		{ printf("Expression statement\n"); }
-|  assign_stmt TSEMI		{ printf("Assignment statement\n"); }
-|  if_stmt			{ printf("If statement\n"); }
-|  loop_stmt			{ printf("Loop statement\n"); }
+|  assign_stmt TSEMI	
+|  if_stmt				
+|  loop_stmt			
 ;
 
 stmts_block:
@@ -114,24 +115,24 @@ expr_stmt:
 ;
 
 def_expr:
-   id_type id_ls		{ printf("Type definition\n"); }
+   id_type id_ls		{ std::vector<int>::size_type sz = $2.size(); for(unsigned i = 0; i < sz; i++) { updateDataNode_DataType($2[i],$1); } //$$= ???  }
 ;
 
 id_type:
-   TINT 			{ printf("Integer type\n"); }
-|  TCHAR 			{ printf("Char type\n"); }
-|  TLONG			{ printf("Long type\n"); }
-|  TFLOAT			{ printf("Float type\n"); }
+   TINT 			
+|  TCHAR 			
+|  TLONG			
+|  TFLOAT			
 ;
 
 id_ls:
-   mem_type TIDENT		{ printf("Memory typization\n"); }
-|  id_ls TCOMMA mem_type TIDENT { printf("Identifiers list\n"); }
+   mem_type TIDENT		{ std::vector< std::string > idents; idents.reserve(1024); std::string ident_name(llval, 0, 1024); buildDataNode(ident_name,$1); idents.push_back(ident_name); $$ = idents; }
+|  id_ls TCOMMA mem_type TIDENT { std::string ident_name(llval, 0, 1024); buildDataNode(ident_name,$3); $1.push_back(ident_name); $$ = $1; }
 ;
 
 mem_type:
-   TMEMTYPESPU			{ printf("SPU memory type\n"); }
-|  TMEMTYPECPU			{ printf("CPU memory type\n"); }
+   TMEMTYPESPU			{ $$ = IR_SPU; }
+|  TMEMTYPECPU			{ $$ = IR_CPU; }
 ;
 
 str_delete:
@@ -159,7 +160,7 @@ str_transmission_expr:
 ;
 
 assign_stmt:
-   TIDENT TASSIGN expr		{ printf("Assignment\n"); }
+   TIDENT TASSIGN expr		{ data_type ident_type = getIdentType($1); buildAssignNode(ident_type); }
 ;
 
 expr:

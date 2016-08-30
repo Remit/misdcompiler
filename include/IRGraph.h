@@ -22,15 +22,29 @@ public:
 	void addOperationNode( IR_OperationNode* );
 	void addDataNode( IR_DataNode* );
 	void addConnection( int id_src, int id_dst );
+	void appendGraph( IR_Graph* );
+	void setClean( bool full_clean );
 
 	void removeNode( int id );
 	void removeConnection( int id_src, int id_dst );
 
 	IR_Node* getNode(int id);
 	IR_Node* getFirstNode();
+	int getLastOperationID();
+	int getLastDataID();
+
 	std::vector< IR_Node* > getAdjacentNodes(int id);
 	std::vector< IR_Node* > getAdjacentDataNodes(int id);
 	std::vector< IR_Node* > getAdjacentOperationNodes(int id);
+
+	// Methods needed to append graphs
+	int getNumOfOperations();
+	int getNumOfData();
+	int getNumOfConnections();
+	IR_OperationNode* getOperation(int index);
+	IR_DataNode* getData(int index);
+	int getConnectionSrc(int index);
+	int getConnectionDst(int index);
 
 private:
 	std::vector< IR_OperationNode* > operations;
@@ -41,6 +55,7 @@ private:
 	int last_id;
 	int num_of_reserve_data;
 	int num_of_reserve_operations;
+	bool full_clean;// Controlling the destructor's behavior; true - destroy nodes too (normal state); false - destroy everything except for nodes
 };
 
 #endif /* IRGRAPH_H_ */

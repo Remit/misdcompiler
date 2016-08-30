@@ -3,7 +3,8 @@
 
 typedef enum {
 	IR_SPU,\
-	IR_CPU
+	IR_CPU,\
+	IR_BOTH
 } proc_type; // Type of node by processor.
 
 typedef enum {

@@ -13,16 +13,19 @@ IR_Graph::IR_Graph() {
 	last_id = 0;
 	num_of_reserve_data = 1;
 	num_of_reserve_operations = 1;
+	full_clean = true;
 }
 
 IR_Graph::~IR_Graph() {
-	int num_of_ops = operations.size();
-	for(int i = 0; i < num_of_ops; i++)
-		delete operations[i];
+	if(full_clean) {
+		int num_of_ops = operations.size();
+		for(int i = 0; i < num_of_ops; i++)
+			delete operations[i];
 
-	int num_of_datas = data.size();
-	for(int i = 0; i < num_of_datas; i++)
-		delete data[i];
+		int num_of_datas = data.size();
+		for(int i = 0; i < num_of_datas; i++)
+			delete data[i];
+	}
 }
 
 void IR_Graph::addOperationNode(IR_OperationNode* a_OperationNode) {
@@ -41,7 +44,7 @@ void IR_Graph::addOperationNode(IR_OperationNode* a_OperationNode) {
 	}
 }
 
-void IR_Graph::addDataNode(IR_DataNode* a_DataNode) {
+void IR_Graph::addDataNode(IR_DataNode* a_DataNode) { //Needs update to preserve a logic of one data node per one data declaration
 	if( a_DataNode != NULL ) {
 		// Increasing memory for nodes if needed
 		int current_num_of_datas = data.size();
@@ -256,4 +259,119 @@ std::vector< IR_Node* > IR_Graph::getAdjacentOperationNodes(int id) {
 	}
 
 	return adjacentNodes_ls;
+}
+
+int IR_Graph::getLastOperationID() {
+	int id = -1;
+	if(operations_index.size() > 0)
+		id = operations_index.rbegin()->first;
+	return id;
+}
+
+int IR_Graph::getLastDataID() {
+	int id = -1;
+	if(data_index.size() > 0)
+		id = data_index.rbegin()->first;
+	return id;
+}
+
+void IR_Graph::appendGraph(IR_Graph* appendedGraph) {
+	if( appendedGraph != NULL ) {
+		appendedGraph->setClean(false);
+
+		// Appending operations and data nodes pointers
+		int num_of_ops_appended_graph = appendedGraph->getNumOfOperations();
+		int num_of_data_appended_graph = appendedGraph->getNumOfData();
+
+		if(num_of_ops_appended_graph > 0) {
+			int src = getLastOperationID();
+			IR_OperationNode* op_node = appendedGraph->getOperation(0);
+			addOperationNode(op_node);
+			// Adding connection between operation nodes of two graphs
+			if( src > 0 ) {
+				int dst = getLastOperationID();
+				addConnection(src,dst);
+			}
+		}
+		for(int i = 1; i < num_of_ops_appended_graph; i++) {
+			IR_OperationNode* op_node = appendedGraph->getOperation(i);
+			addOperationNode(op_node);
+		}
+		for(int i = 0; i < num_of_data_appended_graph; i++) {
+			IR_DataNode* data_node = appendedGraph->getData(i);
+			addDataNode(data_node);
+		}
+
+		// Appending connections
+		int connections_num = appendedGraph->getNumOfConnections();
+		for(int i = 0; i < connections_num; i++) {
+			int src = appendedGraph->getConnectionSrc(i);
+			int dst = appendedGraph->getConnectionDst(i);
+			if(( src > 0 ) && ( dst > 0 ))
+				addConnection(src,dst);
+		}
+
+		delete appendedGraph;
+	}
+
+}
+
+int IR_Graph::getNumOfOperations() {
+	return operations.size();
+}
+
+int IR_Graph::getNumOfData() {
+	return data.size();
+}
+
+void IR_Graph::setClean(bool a_full_clean) {
+	full_clean = a_full_clean;
+}
+
+IR_OperationNode* IR_Graph::getOperation(int index) {
+	IR_OperationNode* return_node;
+	if(index > operations.size() - 1)
+		return_node = NULL;
+	else
+		return_node = operations[index];
+
+	return return_node;
+}
+
+IR_DataNode* IR_Graph::getData(int index) {
+	IR_DataNode* return_node;
+	if(index > data.size() - 1)
+		return_node = NULL;
+	else
+		return_node = data[index];
+
+	return return_node;
+}
+
+int IR_Graph::getNumOfConnections() {
+	return connections.size();
+}
+
+int IR_Graph::getConnectionSrc(int index) {
+	std::multimap< int, int >::iterator connection = connections.begin();
+	int src;
+	if(index > connections.size() - 1)
+		src = -1;
+	else {
+		std::advance(connection,index);
+		src = connection->first;
+	}
+	return src;
+}
+
+int IR_Graph::getConnectionDst(int index) {
+	std::multimap< int, int >::iterator connection = connections.begin();
+	int dst;
+	if(index > connections.size() - 1)
+		dst = -1;
+	else {
+		std::advance(connection,index);
+		dst = connection->second;
+	}
+	return dst;
 }
