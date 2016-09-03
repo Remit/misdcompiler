@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <vector>
 
+const int num_of_structures_for_usage = 7;
+
 typedef enum {
 	IR_SPU,\
 	IR_CPU,\

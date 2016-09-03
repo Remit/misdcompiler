@@ -8,7 +8,7 @@
 #include "build.h"
 
 //Building assignment node
-void buildAssignNode( data_type dt ) {
+IR_OperationNode* buildAssignNode( data_type dt ) {
 	int id_src = programGraph.getLastOperationID();
 	IR_OperationNode* op_node = NULL;
 	op_node = new IR_OperationNode();
@@ -18,9 +18,7 @@ void buildAssignNode( data_type dt ) {
 	else if(dt == IR_DATA_STRUCTURE)
 		op_node->setProcType(IR_SPU);
 
-	programGraph.addOperationNode(op_node);
-	int id_dst = programGraph.getLastOperationID();
-	programGraph.addConnection(id_src,id_dst);
+	return op_node;
 }
 
 //Building terminal node
@@ -43,4 +41,22 @@ void buildDataNode(std::string identifier_name, proc_type p_type) {
 void updateDataNode_DataType(std::string identifier_name, data_type dt) {
 	bool* ok;
 	var_table.setDataType(identifier_name,dt,ok);
+}
+
+// Building data node for structures table
+void addStructDataNodeToGraph(std::string identifier_name) {
+	bool* ok;
+	struct_table.setAddedToGraph(identifier_name, ok);
+}
+
+IR_DataNode* getStructureNodeByName( std::string structure_name ) {
+	bool* ok;
+	IR_DataNode* data_node = struct_table.getDataNodeByVariableName( structure_name, ok );
+	return data_node;
+}
+
+IR_DataNode* getVariableNodeByName( std::string variable_name ) {
+	bool* ok;
+	IR_DataNode* data_node = var_table.getDataNodeByVariableName( variable_name, ok );
+	return data_node;
 }

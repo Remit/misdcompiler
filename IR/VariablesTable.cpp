@@ -84,3 +84,25 @@ void VariablesTable::setDataType( std::string variable_name, data_type dt, bool*
 		*ok = true;
 	}
 }
+
+void VariablesTable::setAddedToGraph( std::string variable_name, bool* ok ) {
+	std::map< std::string, bool >::iterator it;
+	it = added_to_graph.find(variable_name);
+	if( it == data_nodes.end())
+		*ok = false;
+	else {
+		added_to_graph[variable_name] = true;
+		*ok = true;
+	}
+}
+
+void VariablesTable::unsetAddedToGraph( std::string variable_name, bool* ok ) {
+	std::map< std::string, bool >::iterator it;
+	it = added_to_graph.find(variable_name);
+	if( it == data_nodes.end())
+		*ok = false;
+	else {
+		added_to_graph[variable_name] = false;
+		*ok = true;
+	}
+}

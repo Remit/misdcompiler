@@ -20,6 +20,11 @@
 %code {
  #include <stdio.h>
  #include "build.h"
+ 
+ std::vector< std::string > exp_vars_list;
+ exp_vars_list.reserve(512);
+ std::vector< std::string > exp_nums_list;
+ exp_nums_list.reserve(1024);
  extern int yylex( YYSTYPE* yylval_param, YYLTYPE* yylloc_param);
  
  static
@@ -84,38 +89,39 @@
 
 %%
 program:
-   stmts_ls			{ printf("Syntactical analysis completed successfully\n"); }
+   stmts_ls			
 ;
 
 stmts_ls:
-						{ $$ = new IR_Graph(); $$->addOperationNode( buildTerminalNode( ) ); }
-|  stmts_ls stmt		{ $$ = $1->appendGraph($2); }
+								{ $$ = new IR_Graph(); $$->addOperationNode( buildTerminalNode( ) ); }
+|  stmts_ls stmt				{ $$ = $1->appendGraph($2); }
 ;
 
 stmt:
    stmts_block			
-|  expr_stmt TSEMI		{ printf("Expression statement\n"); }
-|  assign_stmt TSEMI	
+|  expr_stmt TSEMI				{ $$ = $1; }
+|  assign_stmt TSEMI			{ $$ = $1; }
 |  if_stmt				
 |  loop_stmt			
 ;
 
 stmts_block:
-   TLCBR stmts_ls TRCBR		{ printf("Non-empty statements block\n"); }
-|  TLCBR          TRCBR		{ printf("Empty statements block\n"); }
+   TLCBR stmts_ls TRCBR			{ $$ = $2; }
+|  TLCBR          TRCBR			{ $$ = NULL; }
 ;
 
 expr_stmt:
-   				{ printf("NOP\n"); }
-|  def_expr TSEMI		{ printf("Definition expression\n"); }
-|  str_delete TSEMI		{ printf("Delete structure\n"); }
-|  str_bin_expr TSEMI		{ printf("Binary expression\n"); }
-|  str_compare_expr TSEMI	{ printf("Compare expression\n"); }
-|  str_transmission_expr TSEMI	{ printf("Transmission expression\n"); }
+   								{ $$ = NULL; }
+|  def_expr TSEMI				{ $$ = $1; }
+|  str_delete TSEMI				{ $$ = $1; }
+|  str_bin_expr TSEMI			{ $$ = $1; }
+|  str_compare_expr TSEMI		{ $$ = $1; }
+|  str_insert_to_str TSEMI		{ $$ = $1; }
+|  str_delete_from_str TSEMI	{ $$ = $1; }
 ;
 
 def_expr:
-   id_type id_ls		{ std::vector<int>::size_type sz = $2.size(); for(unsigned i = 0; i < sz; i++) { updateDataNode_DataType($2[i],$1); } //$$= ???  }
+   id_type id_ls				{ std::vector<int>::size_type sz = $2.size(); for(unsigned i = 0; i < sz; i++) { updateDataNode_DataType($2[i],$1); } $$ = NULL;  }
 ;
 
 id_type:
@@ -126,61 +132,80 @@ id_type:
 ;
 
 id_ls:
-   mem_type TIDENT		{ std::vector< std::string > idents; idents.reserve(1024); std::string ident_name(llval, 0, 1024); buildDataNode(ident_name,$1); idents.push_back(ident_name); $$ = idents; }
+   mem_type TIDENT				{ std::vector< std::string > idents; idents.reserve(1024); std::string ident_name(llval, 0, 1024); buildDataNode(ident_name,$1); idents.push_back(ident_name); $$ = idents; }
 |  id_ls TCOMMA mem_type TIDENT { std::string ident_name(llval, 0, 1024); buildDataNode(ident_name,$3); $1.push_back(ident_name); $$ = $1; }
 ;
 
 mem_type:
-   TMEMTYPESPU			{ $$ = IR_SPU; }
-|  TMEMTYPECPU			{ $$ = IR_CPU; }
+   TMEMTYPESPU					{ $$ = IR_SPU; }
+|  TMEMTYPECPU					{ $$ = IR_CPU; }
 ;
 
 str_delete:
-   TMISDOPDELETESTR TSTRUCTIDENT { printf("Deletion of structure\n"); }
+   TMISDOPDELETESTR struct 		{ addStructDataNodeToGraph($2); IR_OperationNode* op_node = buildAssignNode(IR_DATA_STRUCTURE); $$ = new IR_Graph(); $$->addOperationNode(op_node); IR_DataNode* data_node = getStructureNodeByName($2); $$->addDataNode(data_node); int op_node_gid = $$->getLastOperationID(); int data_node_id = $$->getLastDataID(); if((data_node_id > 0) && (op_node_id > 0)) { $$->addConnection(op_node_id,data_node_id); } }
 ;
 
 str_bin_expr:
-   TMISDOPUNIONSTR TSTRUCTIDENT TCOMMA TSTRUCTIDENT TCOMMA TSTRUCTIDENT		{ printf("Structure union\n"); }
-|  TMISDOPINTERSECTSTR TSTRUCTIDENT TCOMMA TSTRUCTIDENT TCOMMA TSTRUCTIDENT	{ printf("Structure intersection\n"); }
-|  TMISDOPNOTSTR TSTRUCTIDENT TCOMMA TSTRUCTIDENT TCOMMA TSTRUCTIDENT		{ printf("Structure substraction\n"); }
+   str_bin_op struct TCOMMA struct TCOMMA struct		{ addStructDataNodeToGraph($2); addStructDataNodeToGraph($4); addStructDataNodeToGraph($6); IR_OperationNode* op_node = buildAssignNode(IR_DATA_STRUCTURE); $$ = new IR_Graph(); $$->addOperationNode(op_node); IR_DataNode* data_node_result = getStructureNodeByName($2); IR_DataNode* data_node_1 = getStructureNodeByName($4); IR_DataNode* data_node_2 = getStructureNodeByName($6); $$->addDataNode(data_node_result); int data_node_result_id = $$->getLastDataID(); $$->addDataNode(data_node_1); int data_node_1_id = $$->getLastDataID(); $$->addDataNode(data_node_2); int data_node_2_id = $$->getLastDataID(); int op_node_id = $$->getLastOperationID(); if((data_node_result_id > 0) && (op_node_id > 0) && (data_node_1_id > 0) && (data_node_2_id > 0)) { $$->addConnection(op_node_id,data_node_result_id); $$->addConnection(data_node_1_id,op_node_id); $$->addConnection(data_node_2_id,op_node_id); } }
+;
+
+str_bin_op:
+   TMISDOPUNIONSTR
+|  TMISDOPINTERSECTSTR
+|  TMISDOPNOTSTR
 ;
 
 str_compare_expr:
-   TMISDOPGTSTR TSTRUCTIDENT TCOMMA TSTRUCTIDENT TCOMMA TIDENT			{ printf("Dissect structure by >\n"); }
-|  TMISDOPLTSTR TSTRUCTIDENT TCOMMA TSTRUCTIDENT TCOMMA TIDENT			{ printf("Dissect structure by <\n"); }
-|  TMISDOPLTESTR TSTRUCTIDENT TCOMMA TSTRUCTIDENT TCOMMA TIDENT			{ printf("Dissect structure by <=\n"); }
-|  TMISDOPGTESTR TSTRUCTIDENT TCOMMA TSTRUCTIDENT TCOMMA TIDENT			{ printf("Dissect structure by >=\n"); }
+   str_comp_op struct TCOMMA struct TCOMMA ident		{ addStructDataNodeToGraph($2); addStructDataNodeToGraph($4); IR_OperationNode* op_node = buildAssignNode(IR_DATA_STRUCTURE); $$ = new IR_Graph(); $$->addOperationNode(op_node); IR_DataNode* data_node_result = getStructureNodeByName($2); IR_DataNode* data_node_1 = getStructureNodeByName($4); IR_DataNode* data_node_2 = getVariableNodeByName($6); $$->addDataNode(data_node_result); int data_node_result_id = $$->getLastDataID(); $$->addDataNode(data_node_1); int data_node_1_id = $$->getLastDataID(); $$->addDataNode(data_node_2); int data_node_2_id = $$->getLastDataID(); int op_node_id = $$->getLastOperationID(); if((data_node_result_id > 0) && (op_node_id > 0) && (data_node_1_id > 0) && (data_node_2_id > 0)) { $$->addConnection(op_node_id,data_node_result_id); $$->addConnection(data_node_1_id,op_node_id); $$->addConnection(data_node_2_id,op_node_id); } }
 ;
 
-str_transmission_expr:
-   TMISDOPSENDTOSPU TIDENT	{ printf("Send identifier to SPU\n"); }
-|  TMISDOPSENDTOCPU TIDENT	{ printf("Send identifier to CPU\n"); }
-|  TMISDOPRECEIVEFROMSPU TIDENT	{ printf("Receive identifier from SPU\n"); }
-|  TMISDOPRECEIVEFROMCPU TIDENT	{ printf("Receive identifier from CPU\n"); }
+str_comp_op:
+   TMISDOPGTSTR
+|  TMISDOPLTSTR
+|  TMISDOPLTESTR
+|  TMISDOPGTESTR
+;
+
+str_insert_to_str:
+   TMISDOPINSERTSTR struct TCOMMA ident TCOMMA ident	{ addStructDataNodeToGraph($2); IR_OperationNode* op_node = buildAssignNode(IR_DATA_STRUCTURE); $$ = new IR_Graph(); $$->addOperationNode(op_node); IR_DataNode* data_node_result = getStructureNodeByName($2); IR_DataNode* data_node_1 = getVariableNodeByName($4); IR_DataNode* data_node_2 = getVariableNodeByName($6); $$->addDataNode(data_node_result); int data_node_result_id = $$->getLastDataID(); $$->addDataNode(data_node_1); int data_node_1_id = $$->getLastDataID(); $$->addDataNode(data_node_2); int data_node_2_id = $$->getLastDataID(); int op_node_id = $$->getLastOperationID(); if((data_node_result_id > 0) && (op_node_id > 0) && (data_node_1_id > 0) && (data_node_2_id > 0)) { $$->addConnection(op_node_id,data_node_result_id); $$->addConnection(data_node_1_id,op_node_id); $$->addConnection(data_node_2_id,op_node_id); } }
+;
+
+str_delete_from_str:
+   TMISDOPDELETEFROMSTR struct TCOMMA ident				{ addStructDataNodeToGraph($2); IR_OperationNode* op_node = buildAssignNode(IR_DATA_STRUCTURE); $$ = new IR_Graph(); $$->addOperationNode(op_node); IR_DataNode* data_node_result = getStructureNodeByName($2); IR_DataNode* data_node_1 = getVariableNodeByName($4); $$->addDataNode(data_node_result); int data_node_result_id = $$->getLastDataID(); $$->addDataNode(data_node_1); int data_node_1_id = $$->getLastDataID(); int op_node_id = $$->getLastOperationID(); if((data_node_result_id > 0) && (op_node_id > 0) && (data_node_1_id > 0)) { $$->addConnection(op_node_id,data_node_result_id); $$->addConnection(data_node_1_id,op_node_id); } }
 ;
 
 assign_stmt:
-   TIDENT TASSIGN expr		{ data_type ident_type = getIdentType($1); buildAssignNode(ident_type); }
+   ident TASSIGN expr		{ data_type ident_type = getIdentType($1); IR_OperationNode* op_node = buildAssignNode(ident_type); $$ = new IR_Graph(); $$->addOperationNode(op_node); int op_node_id = $$->getLastOperationID(); IR_DataNode* data_node_result = getVariableNodeByName($1); $$->addDataNode(data_node_result); int data_node_result_id = $$->getLastDataID(); if((data_node_result_id > 0) && (op_node_id > 0)) { $$->addConnection(op_node_id,data_node_result_id); } int num_of_vars = exp_vars_list.size(); for(int i = 0; i < num_of_vars; i++ ) { std::string variable_name = exp_vars_list[i]; IR_DataNode* data_node_i = getVariableNodeByName(variable_name); $$->addDataNode(data_node_i); int data_node_i_id = $$->getLastDataID(); if((data_node_i_id > 0) && (op_node_id > 0)) { $$->addConnection(data_node_i_id,op_node_id); } } exp_vars_list.clear(); }
+|  ident TASSIGN struct_op_acq_elem struct TCOMMA ident		{ data_type ident_type = getIdentType($1); IR_OperationNode* op_node = buildAssignNode(ident_type); $$ = new IR_Graph(); $$->addOperationNode(op_node); int op_node_id = $$->getLastOperationID(); IR_DataNode* data_node_result = getVariableNodeByName($1); $$->addDataNode(data_node_result); int data_node_result_id = $$->getLastDataID(); IR_DataNode* data_node_1 = getStructureNodeByName($4); IR_DataNode* data_node_2 = getVariableNodeByName($6); $$->addDataNode(data_node_1); int data_node_1_id = $$->getLastDataID(); $$->addDataNode(data_node_2); int data_node_2_id = $$->getLastDataID(); if((data_node_result_id > 0) && (op_node_id > 0) && (data_node_1_id > 0) && (data_node_2_id > 0)) { $$->addConnection(op_node_id,data_node_result_id); $$->addConnection(data_node_1_id,op_node_id); $$->addConnection(data_node_2_id,op_node_id); } }
+;
+
+struct_op_acq_elem:
+   TMISDOPSEARCHSTR
+|  TMISDOPSEARCHSMLSTR
+|  TMISDOPSEARCHGRTSTR
+|  TMISDOPNEXTSTR
+;
+
+struct:
+   TSTRUCTIDENT				{ std::string ident_name(llval, 0, 1024); $$ = ident_name; }
+;
+
+ident:
+   TIDENT					{ std::string ident_name(llval, 0, 1024); $$ = ident_name; }
 ;
 
 expr:
-   TLP expr TRP			{ printf("Parenthesized expression\n"); }
-|  expr TPLUS expr		{ printf("Sum\n"); }
-|  expr TMINUS expr		{ printf("Substraction\n"); }
-|  expr TMUL expr		{ printf("Multiplication\n"); }
-|  expr TDIV expr		{ printf("Division\n"); }
-|  expr TMOD expr		{ printf("Division (remaining num)\n"); }
-|  expr TAND expr		{ printf("Logical AND\n"); }
-|  expr TOR expr		{ printf("Logical OR\n"); }
-|  TNOT expr			{ printf("Logical NOT\n"); }
-|  TMISDOPSEARCHSTR TSTRUCTIDENT TCOMMA TIDENT			{ printf("Structure search\n"); }
-|  TMISDOPSEARCHSMLSTR TSTRUCTIDENT TCOMMA TIDENT		{ printf("Structure search smaller than...\n"); }
-|  TMISDOPSEARCHGRTSTR TSTRUCTIDENT TCOMMA TIDENT		{ printf("Structure search greater than...\n"); }
-|  TMISDOPINSERTSTR TSTRUCTIDENT TCOMMA TIDENT TCOMMA TIDENT	{ printf("Insert into structure\n"); }
-|  TMISDOPDELETEFROMSTR TSTRUCTIDENT TCOMMA TIDENT		{ printf("Delete from structure\n"); }
-|  TMISDOPNEXTSTR TSTRUCTIDENT TCOMMA TIDENT			{ printf("Get the next element in structure\n"); }
-|  TIDENT			{ printf("Identifier\n"); }
-|  NUMLITERAL			{ printf("Number or literal\n"); }
+   TLP expr TRP			{ /* Only AST */ }
+|  expr TPLUS expr		{ /* Only AST */ }
+|  expr TMINUS expr		{ /* Only AST */ }
+|  expr TMUL expr		{ /* Only AST */ }
+|  expr TDIV expr		{ /* Only AST */ }
+|  expr TMOD expr		{ /* Only AST */ }
+|  expr TAND expr		{ /* Only AST */ }
+|  expr TOR expr		{ /* Only AST */ }
+|  TNOT expr			{ /* Only AST */ }
+|  TIDENT				{ std::string ident_name(llval, 0, 1024); exp_vars_list.push_back(ident_name); }
+|  NUMLITERAL			{ /* Addition to special list and table for numbers? ???exp_vars_list??? */ }
 ;
 
 if_stmt:
@@ -189,20 +214,20 @@ if_stmt:
 ;
 
 bool_expr:
-   expr log_op expr		{ printf("Boolean expression\n"); }
+   expr log_op expr		{ /* Only AST */ }
 ;
 
 log_op:
-   TLT				{ printf("Less than\n"); }
-|  TGT				{ printf("Greater than\n"); }
-|  TLTE				{ printf("Less than or equal to\n"); }
-|  TGTE				{ printf("Greater than or equal to\n"); }
-|  TEQ				{ printf("Equal\n"); }
+   TLT				
+|  TGT				
+|  TLTE				
+|  TGTE				
+|  TEQ				
 ;
 
 loop_stmt:
-   count_loop			{ printf("Count loop\n"); }
-|  while_loop			{ printf("While loop\n"); }
+   count_loop			
+|  while_loop			
 ;
 
 count_loop:

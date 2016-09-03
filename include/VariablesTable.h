@@ -21,10 +21,13 @@ public:
 
 	float getVariableValue( std::string variable_name, bool* ok );
 	IR_DataNode* getDataNodeByVariableName( std::string variable_name, bool* ok );
+	void setAddedToGraph( std::string variable_name, bool* ok );
+	void unsetAddedToGraph( std::string variable_name, bool* ok );
 
 private:
 	std::map< std::string, float > values;
 	std::map< std::string, bool > initialized;
+	std::map< std::string, bool > added_to_graph;
 	std::map< std::string, IR_DataNode* > data_nodes;
 };
 
