@@ -231,11 +231,11 @@ loop_stmt:
 ;
 
 count_loop:
-   TFOR TLP assign_stmt TSEMI bool_expr TSEMI assign_stmt TSEMI TRP stmt	{ printf("For-loop with counter\n"); }
+   TFOR TLP assign_stmt TSEMI bool_expr TSEMI assign_stmt TSEMI TRP stmt	{ $$ = new IR_Graph(); $$->appendGraph($3); $$->addOperationNode( buildConditionalBeginBranchNode( ) ); int op_node_id = $$->getLastOperationID(); int num_of_vars = exp_vars_list.size(); for(int i = 0; i < num_of_vars; i++ ) { std::string variable_name = exp_vars_list[i]; IR_DataNode* data_node_i = getVariableNodeByName(variable_name); $$->addDataNode(data_node_i); int data_node_i_id = $$->getLastDataID(); if((data_node_i_id > 0) && (op_node_id > 0)) { $$->addConnection(data_node_i_id,op_node_id); } } exp_vars_list.clear(); int op_cnt_assign_id = $3->getLastOperationID(); $$->addConnection(op_cnt_assign_id,op_node_id); $$->appendGraph($7); $$->appendGraph($10); int op_last_appended = $10->getLastOperationID(); $$->addOperationNode( buildEndBranchNode( ) ); int op_end_node_id = $$->getLastOperationID(); $$->addConnection(op_last_appended,op_node_id); $$->addConnection(op_node_id,op_end_node_id); }
 ;
 
 while_loop:
-   TWHILE TLP bool_expr TRP TDO stmt		{ printf("While-do loop\n"); }
+   TWHILE TLP bool_expr TRP TDO stmt		{ $$ = new IR_Graph(); $$->addOperationNode( buildConditionalBeginBranchNode( ) ); int op_node_id = $$->getLastOperationID(); int num_of_vars = exp_vars_list.size(); for(int i = 0; i < num_of_vars; i++ ) { std::string variable_name = exp_vars_list[i]; IR_DataNode* data_node_i = getVariableNodeByName(variable_name); $$->addDataNode(data_node_i); int data_node_i_id = $$->getLastDataID(); if((data_node_i_id > 0) && (op_node_id > 0)) { $$->addConnection(data_node_i_id,op_node_id); } } exp_vars_list.clear(); $$->appendGraph($6); int op_last_appended = $6->getLastOperationID(); $$->addOperationNode( buildEndBranchNode( ) ); int op_end_node_id = $$->getLastOperationID(); $$->addConnection(op_last_appended,op_node_id); $$->addConnection(op_node_id,op_end_node_id); }
 ;
 
 %%
