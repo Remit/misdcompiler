@@ -22,7 +22,8 @@ public:
 	void addOperationNode( IR_OperationNode* );
 	void addDataNode( IR_DataNode* );
 	void addConnection( int id_src, int id_dst );
-	void appendGraph( IR_Graph* );
+	void appendGraph( IR_Graph* appendedGraph );
+	void appendGraph( IR_Graph* appendedGraph, int src_node );
 	void setClean( bool full_clean );
 
 	void removeNode( int id );
@@ -32,6 +33,7 @@ public:
 	IR_Node* getFirstNode();
 	int getLastOperationID();
 	int getLastDataID();
+	int getFirstOperationID();
 
 	std::vector< IR_Node* > getAdjacentNodes(int id);
 	std::vector< IR_Node* > getAdjacentDataNodes(int id);

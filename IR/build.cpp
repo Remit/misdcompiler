@@ -30,6 +30,33 @@ IR_OperationNode* buildTerminalNode() {
 	return op_node;
 }
 
+// Building branch node that begins the sequence of alternatives (without explicit conditioning)
+IR_OperationNode* buildBeginBranchNode() {
+	IR_OperationNode* op_node = NULL;
+	op_node = new IR_OperationNode();
+	op_node->setOperationType(IR_OP_BRANCH_BEGIN);
+	op_node->setProcType(IR_BOTH);
+	return op_node;
+}
+
+// Building branch node that ends the sequence of alternative control flows
+IR_OperationNode* buildEndBranchNode() {
+	IR_OperationNode* op_node = NULL;
+	op_node = new IR_OperationNode();
+	op_node->setOperationType(IR_OP_BRANCH_END);
+	op_node->setProcType(IR_BOTH);
+	return op_node;
+}
+
+// Building branch node that checks some form of condition and decides which control flow will be active
+IR_OperationNode* buildConditionalBeginBranchNode() {
+	IR_OperationNode* op_node = NULL;
+	op_node = new IR_OperationNode();
+	op_node->setOperationType(IR_OP_BRANCH_COND_BEGIN);
+	op_node->setProcType(IR_CPU);
+	return op_node;
+}
+
 // Building Data Node and storing it with the variable name in the variable table
 void buildDataNode(std::string identifier_name, proc_type p_type) {
 	IR_DataNode* data_node = new IR_DataNode();

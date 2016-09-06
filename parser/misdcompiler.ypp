@@ -209,8 +209,8 @@ expr:
 ;
 
 if_stmt:
-   TIF TLP bool_expr TRP TTHEN stmt %prec TNOELSE	{ printf("Pure if-statement\n"); }
-|  TIF TLP bool_expr TRP TTHEN stmt TELSE stmt		{ printf("If-then-else statement\n"); }
+   TIF TLP bool_expr TRP TTHEN stmt %prec TNOELSE	{ $$ = new IR_Graph(); $$->addOperationNode( buildConditionalBeginBranchNode( ) ); int op_node_id = $$->getLastOperationID(); int num_of_vars = exp_vars_list.size(); for(int i = 0; i < num_of_vars; i++ ) { std::string variable_name = exp_vars_list[i]; IR_DataNode* data_node_i = getVariableNodeByName(variable_name); $$->addDataNode(data_node_i); int data_node_i_id = $$->getLastDataID(); if((data_node_i_id > 0) && (op_node_id > 0)) { $$->addConnection(data_node_i_id,op_node_id); } } exp_vars_list.clear(); $$->appendGraph($6); int op_last_appended = $6->getLastOperationID(); $$->addOperationNode( buildEndBranchNode( ) ); int op_end_node_id = $$->getLastOperationID(); $$->addConnection(op_node_id,op_end_node_id); $$->addConnection(op_last_appended,op_end_node_id); }
+|  TIF TLP bool_expr TRP TTHEN stmt TELSE stmt		{ $$ = new IR_Graph(); $$->addOperationNode( buildConditionalBeginBranchNode( ) ); int op_node_id = $$->getLastOperationID(); int num_of_vars = exp_vars_list.size(); for(int i = 0; i < num_of_vars; i++ ) { std::string variable_name = exp_vars_list[i]; IR_DataNode* data_node_i = getVariableNodeByName(variable_name); $$->addDataNode(data_node_i); int data_node_i_id = $$->getLastDataID(); if((data_node_i_id > 0) && (op_node_id > 0)) { $$->addConnection(data_node_i_id,op_node_id); } } exp_vars_list.clear(); $$->appendGraph($6); int op_last_appended_1 = $6->getLastOperationID(); $$->appendGraph($8,op_node_id); int op_last_appended_2 = $8->getLastOperationID(); $$->addOperationNode( buildEndBranchNode( ) ); int op_end_node_id = $$->getLastOperationID(); $$->addConnection(op_last_appended_1,op_end_node_id); $$->addConnection(op_last_appended_2,op_end_node_id); }
 ;
 
 bool_expr:
