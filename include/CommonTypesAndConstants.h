@@ -1,7 +1,12 @@
+#ifndef COMMON_TYPES_AND_CONSTANTS
+#define COMMON_TYPES_AND_CONSTANTS
+
 #include <stdlib.h>
 #include <vector>
+#include <string>
+#include <map>
 
-const int num_of_structures_for_usage = 7;
+extern const int num_of_structures_for_usage = 7;
 
 typedef enum {
 	IR_SPU,\
@@ -22,5 +27,8 @@ typedef enum {
 typedef enum {
 	IR_DATA_STRUCTURE,\
 	IR_DATA_SIMPLE,\
-	IR_DATA_TAG
+	IR_DATA_TAG,\
+	IR_UNDEFINED
 } data_type; // Type of data nodes.
+
+#endif

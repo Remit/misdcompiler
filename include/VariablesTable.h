@@ -18,8 +18,10 @@ public:
 	void addVariableToTable( std::string variable_name, IR_DataNode* data_node );
 	int assignValueToVariable( std::string variable_name, int value );
 	void setDataType( std::string variable_name, data_type dt, bool* ok );
+	void setSimpleDataType( std::string variable_name, int dt, bool* ok );
 
 	float getVariableValue( std::string variable_name, bool* ok );
+	data_type getVarDataType( std::string variable_name, bool* ok );
 	IR_DataNode* getDataNodeByVariableName( std::string variable_name, bool* ok );
 	void setAddedToGraph( std::string variable_name, bool* ok );
 	void unsetAddedToGraph( std::string variable_name, bool* ok );

@@ -5,11 +5,10 @@
  *      Author: remit
  */
 
-#include "build.h"
+#include "../include/build.h"
 
 //Building assignment node
 IR_OperationNode* buildAssignNode( data_type dt ) {
-	int id_src = programGraph.getLastOperationID();
 	IR_OperationNode* op_node = NULL;
 	op_node = new IR_OperationNode();
 	op_node->setOperationType(IR_OP_PROCESSING);
@@ -58,16 +57,17 @@ IR_OperationNode* buildConditionalBeginBranchNode() {
 }
 
 // Building Data Node and storing it with the variable name in the variable table
-void buildDataNode(std::string identifier_name, proc_type p_type) {
+void buildDataNode(std::string identifier_name, proc_type p_type, data_type dt) {
 	IR_DataNode* data_node = new IR_DataNode();
+	data_node->setDataType(dt);
 	data_node->setProcType(p_type);
 	var_table.addVariableToTable(identifier_name,data_node);
 }
 
 // Updating data type of data node in variables table
-void updateDataNode_DataType(std::string identifier_name, data_type dt) {
+void updateDataNode_SimpleDataType(std::string identifier_name, int dt) {
 	bool* ok;
-	var_table.setDataType(identifier_name,dt,ok);
+	var_table.setSimpleDataType(identifier_name,dt,ok);
 }
 
 // Building data node for structures table
@@ -86,4 +86,11 @@ IR_DataNode* getVariableNodeByName( std::string variable_name ) {
 	bool* ok;
 	IR_DataNode* data_node = var_table.getDataNodeByVariableName( variable_name, ok );
 	return data_node;
+}
+
+// Getting variable type by name
+data_type getIdentType( std::string variable_name ) {
+	bool* ok;
+	data_type type_of_variable = var_table.getVarDataType(variable_name, ok);
+	return type_of_variable;
 }

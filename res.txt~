@@ -1,0 +1,575 @@
+g++ -c -g main.cpp
+cd parser && make
+make[1]: Вход в каталог `/home/remit/src/misdcompiler/parser'
+bison -d misdcompiler.ypp
+misdcompiler.ypp:143.4-7: предупреждение: конфликт типов на действии по умолчанию: <type_int> != <> [-Wother]
+    TINT 			
+    ^^^^
+misdcompiler.ypp:144.4-8: предупреждение: конфликт типов на действии по умолчанию: <type_int> != <> [-Wother]
+ |  TCHAR 			
+    ^^^^^
+misdcompiler.ypp:145.4-8: предупреждение: конфликт типов на действии по умолчанию: <type_int> != <> [-Wother]
+ |  TLONG			
+    ^^^^^
+misdcompiler.ypp:146.4-9: предупреждение: конфликт типов на действии по умолчанию: <type_int> != <> [-Wother]
+ |  TFLOAT			
+    ^^^^^^
+misdcompiler.ypp: предупреждение: 1 конфликт сдвига/вывода [-Wconflicts-sr]
+g++ -c -g ../include/bison-misdcompiler.h bison-misdcompiler.cpp
+bison-misdcompiler.cpp: In function ‘int yyparse()’:
+bison-misdcompiler.cpp:1850:35: warning: deprecated conversion from string constant to ‘char*’ [-Wwrite-strings]
+       yyerror (YY_("syntax error"));
+                                   ^
+bison-misdcompiler.cpp:2000:35: warning: deprecated conversion from string constant to ‘char*’ [-Wwrite-strings]
+   yyerror (YY_("memory exhausted"));
+                                   ^
+flex misdcompiler.lex
+g++ -c -g ../include/bison-misdcompiler.h flex-misdcompiler.cpp
+make[1]: Выход из каталога `/home/remit/src/misdcompiler/parser'
+cd IR && make
+make[1]: Вход в каталог `/home/remit/src/misdcompiler/IR'
+g++ -c -o build.o build.cpp
+g++ -c -o IRDataNode.o IRDataNode.cpp
+g++ -c -o IRGraph.o IRGraph.cpp
+IRGraph.cpp: In member function ‘void IR_Graph::addConnection(int, int)’:
+IRGraph.cpp:81:15: error: no match for ‘operator[]’ (operand types are ‘std::multimap<int, int>’ and ‘int’)
+    connections[id_src] = id_dst;
+               ^
+IRGraph.cpp: In member function ‘IR_Node* IR_Graph::getNode(int)’:
+IRGraph.cpp:164:5: error: no match for ‘operator=’ (operand types are ‘std::map<char, int>::iterator {aka std::_Rb_tree_iterator<std::pair<const char, int> >}’ and ‘std::map<int, int>::iterator {aka std::_Rb_tree_iterator<std::pair<const int, int> >}’)
+  it = operations_index.find(a_id);
+     ^
+IRGraph.cpp:164:5: note: candidate is:
+In file included from /usr/include/c++/4.8/map:60:0,
+                 from ../include/IRGraph.h:13,
+                 from IRGraph.cpp:8:
+/usr/include/c++/4.8/bits/stl_tree.h:157:12: note: std::_Rb_tree_iterator<std::pair<const char, int> >& std::_Rb_tree_iterator<std::pair<const char, int> >::operator=(const std::_Rb_tree_iterator<std::pair<const char, int> >&)
+     struct _Rb_tree_iterator
+            ^
+/usr/include/c++/4.8/bits/stl_tree.h:157:12: note:   no known conversion for argument 1 from ‘std::map<int, int>::iterator {aka std::_Rb_tree_iterator<std::pair<const int, int> >}’ to ‘const std::_Rb_tree_iterator<std::pair<const char, int> >&’
+IRGraph.cpp:166:9: error: no match for ‘operator==’ (operand types are ‘std::map<char, int>::iterator {aka std::_Rb_tree_iterator<std::pair<const char, int> >}’ and ‘std::map<int, int>::iterator {aka std::_Rb_tree_iterator<std::pair<const int, int> >}’)
+  if( it == operations_index.end()) {
+         ^
+IRGraph.cpp:166:9: note: candidates are:
+In file included from /usr/include/c++/4.8/map:60:0,
+                 from ../include/IRGraph.h:13,
+                 from IRGraph.cpp:8:
+/usr/include/c++/4.8/bits/stl_tree.h:217:7: note: bool std::_Rb_tree_iterator<_Tp>::operator==(const _Self&) const [with _Tp = std::pair<const char, int>; std::_Rb_tree_iterator<_Tp>::_Self = std::_Rb_tree_iterator<std::pair<const char, int> >]
+       operator==(const _Self& __x) const
+       ^
+/usr/include/c++/4.8/bits/stl_tree.h:217:7: note:   no known conversion for argument 1 from ‘std::map<int, int>::iterator {aka std::_Rb_tree_iterator<std::pair<const int, int> >}’ to ‘const _Self& {aka const std::_Rb_tree_iterator<std::pair<const char, int> >&}’
+In file included from /usr/include/c++/4.8/map:62:0,
+                 from ../include/IRGraph.h:13,
+                 from IRGraph.cpp:8:
+/usr/include/c++/4.8/bits/stl_multimap.h:864:5: note: template<class _Key, class _Tp, class _Compare, class _Alloc> bool std::operator==(const std::multimap<_Key, _Tp, _Compare, _Alloc>&, const std::multimap<_Key, _Tp, _Compare, _Alloc>&)
+     operator==(const multimap<_Key, _Tp, _Compare, _Alloc>& __x,
+     ^
+/usr/include/c++/4.8/bits/stl_multimap.h:864:5: note:   template argument deduction/substitution failed:
+IRGraph.cpp:166:33: note:   ‘std::map<char, int>::iterator {aka std::_Rb_tree_iterator<std::pair<const char, int> >}’ is not derived from ‘const std::multimap<_Key, _Tp, _Compare, _Alloc>’
+  if( it == operations_index.end()) {
+                                 ^
+In file included from /usr/include/c++/4.8/map:61:0,
+                 from ../include/IRGraph.h:13,
+                 from IRGraph.cpp:8:
+/usr/include/c++/4.8/bits/stl_map.h:962:5: note: template<class _Key, class _Tp, class _Compare, class _Alloc> bool std::operator==(const std::map<_Key, _Tp, _Compare, _Alloc>&, const std::map<_Key, _Tp, _Compare, _Alloc>&)
+     operator==(const map<_Key, _Tp, _Compare, _Alloc>& __x,
+     ^
+/usr/include/c++/4.8/bits/stl_map.h:962:5: note:   template argument deduction/substitution failed:
+IRGraph.cpp:166:33: note:   ‘std::map<char, int>::iterator {aka std::_Rb_tree_iterator<std::pair<const char, int> >}’ is not derived from ‘const std::map<_Key, _Tp, _Compare, _Alloc>’
+  if( it == operations_index.end()) {
+                                 ^
+In file included from /usr/include/c++/4.8/map:60:0,
+                 from ../include/IRGraph.h:13,
+                 from IRGraph.cpp:8:
+/usr/include/c++/4.8/bits/stl_tree.h:907:5: note: template<class _Key, class _Val, class _KeyOfValue, class _Compare, class _Alloc> bool std::operator==(const std::_Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>&, const std::_Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>&)
+     operator==(const _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>& __x,
+     ^
+/usr/include/c++/4.8/bits/stl_tree.h:907:5: note:   template argument deduction/substitution failed:
+IRGraph.cpp:166:33: note:   ‘std::map<char, int>::iterator {aka std::_Rb_tree_iterator<std::pair<const char, int> >}’ is not derived from ‘const std::_Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>’
+  if( it == operations_index.end()) {
+                                 ^
+In file included from /usr/include/c++/4.8/map:60:0,
+                 from ../include/IRGraph.h:13,
+                 from IRGraph.cpp:8:
+/usr/include/c++/4.8/bits/stl_tree.h:310:5: note: template<class _Val> bool std::operator==(const std::_Rb_tree_iterator<_Tp>&, const std::_Rb_tree_const_iterator<_Val>&)
+     operator==(const _Rb_tree_iterator<_Val>& __x,
+     ^
+/usr/include/c++/4.8/bits/stl_tree.h:310:5: note:   template argument deduction/substitution failed:
+IRGraph.cpp:166:33: note:   ‘std::map<int, int>::iterator {aka std::_Rb_tree_iterator<std::pair<const int, int> >}’ is not derived from ‘const std::_Rb_tree_const_iterator<_Val>’
+  if( it == operations_index.end()) {
+                                 ^
+In file included from /usr/include/c++/4.8/string:52:0,
+                 from ../include/CommonTypesAndConstants.h:6,
+                 from ../include/IRNode.h:24,
+                 from ../include/IROperationNode.h:12,
+                 from ../include/IRGraph.h:11,
+                 from IRGraph.cpp:8:
+/usr/include/c++/4.8/bits/basic_string.h:2519:5: note: template<class _CharT, class _Traits, class _Alloc> bool std::operator==(const std::basic_string<_CharT, _Traits, _Alloc>&, const _CharT*)
+     operator==(const basic_string<_CharT, _Traits, _Alloc>& __lhs,
+     ^
+/usr/include/c++/4.8/bits/basic_string.h:2519:5: note:   template argument deduction/substitution failed:
+IRGraph.cpp:166:33: note:   ‘std::map<char, int>::iterator {aka std::_Rb_tree_iterator<std::pair<const char, int> >}’ is not derived from ‘const std::basic_string<_CharT, _Traits, _Alloc>’
+  if( it == operations_index.end()) {
+                                 ^
+In file included from /usr/include/c++/4.8/string:52:0,
+                 from ../include/CommonTypesAndConstants.h:6,
+                 from ../include/IRNode.h:24,
+                 from ../include/IROperationNode.h:12,
+                 from ../include/IRGraph.h:11,
+                 from IRGraph.cpp:8:
+/usr/include/c++/4.8/bits/basic_string.h:2507:5: note: template<class _CharT, class _Traits, class _Alloc> bool std::operator==(const _CharT*, const std::basic_string<_CharT, _Traits, _Alloc>&)
+     operator==(const _CharT* __lhs,
+     ^
+/usr/include/c++/4.8/bits/basic_string.h:2507:5: note:   template argument deduction/substitution failed:
+IRGraph.cpp:166:33: note:   mismatched types ‘const _CharT*’ and ‘std::_Rb_tree_iterator<std::pair<const char, int> >’
+  if( it == operations_index.end()) {
+                                 ^
+In file included from /usr/include/c++/4.8/string:52:0,
+                 from ../include/CommonTypesAndConstants.h:6,
+                 from ../include/IRNode.h:24,
+                 from ../include/IROperationNode.h:12,
+                 from ../include/IRGraph.h:11,
+                 from IRGraph.cpp:8:
+/usr/include/c++/4.8/bits/basic_string.h:2493:5: note: template<class _CharT> typename __gnu_cxx::__enable_if<std::__is_char<_Tp>::__value, bool>::__type std::operator==(const std::basic_string<_CharT>&, const std::basic_string<_CharT>&)
+     operator==(const basic_string<_CharT>& __lhs,
+     ^
+/usr/include/c++/4.8/bits/basic_string.h:2493:5: note:   template argument deduction/substitution failed:
+IRGraph.cpp:166:33: note:   ‘std::map<char, int>::iterator {aka std::_Rb_tree_iterator<std::pair<const char, int> >}’ is not derived from ‘const std::basic_string<_CharT>’
+  if( it == operations_index.end()) {
+                                 ^
+In file included from /usr/include/c++/4.8/string:52:0,
+                 from ../include/CommonTypesAndConstants.h:6,
+                 from ../include/IRNode.h:24,
+                 from ../include/IROperationNode.h:12,
+                 from ../include/IRGraph.h:11,
+                 from IRGraph.cpp:8:
+/usr/include/c++/4.8/bits/basic_string.h:2486:5: note: template<class _CharT, class _Traits, class _Alloc> bool std::operator==(const std::basic_string<_CharT, _Traits, _Alloc>&, const std::basic_string<_CharT, _Traits, _Alloc>&)
+     operator==(const basic_string<_CharT, _Traits, _Alloc>& __lhs,
+     ^
+/usr/include/c++/4.8/bits/basic_string.h:2486:5: note:   template argument deduction/substitution failed:
+IRGraph.cpp:166:33: note:   ‘std::map<char, int>::iterator {aka std::_Rb_tree_iterator<std::pair<const char, int> >}’ is not derived from ‘const std::basic_string<_CharT, _Traits, _Alloc>’
+  if( it == operations_index.end()) {
+                                 ^
+In file included from /usr/include/c++/4.8/bits/char_traits.h:40:0,
+                 from /usr/include/c++/4.8/string:40,
+                 from ../include/CommonTypesAndConstants.h:6,
+                 from ../include/IRNode.h:24,
+                 from ../include/IROperationNode.h:12,
+                 from ../include/IRGraph.h:11,
+                 from IRGraph.cpp:8:
+/usr/include/c++/4.8/bits/postypes.h:216:5: note: template<class _StateT> bool std::operator==(const std::fpos<_StateT>&, const std::fpos<_StateT>&)
+     operator==(const fpos<_StateT>& __lhs, const fpos<_StateT>& __rhs)
+     ^
+/usr/include/c++/4.8/bits/postypes.h:216:5: note:   template argument deduction/substitution failed:
+IRGraph.cpp:166:33: note:   ‘std::map<char, int>::iterator {aka std::_Rb_tree_iterator<std::pair<const char, int> >}’ is not derived from ‘const std::fpos<_StateT>’
+  if( it == operations_index.end()) {
+                                 ^
+In file included from /usr/include/c++/4.8/vector:64:0,
+                 from ../include/CommonTypesAndConstants.h:5,
+                 from ../include/IRNode.h:24,
+                 from ../include/IROperationNode.h:12,
+                 from ../include/IRGraph.h:11,
+                 from IRGraph.cpp:8:
+/usr/include/c++/4.8/bits/stl_vector.h:1404:5: note: template<class _Tp, class _Alloc> bool std::operator==(const std::vector<_Tp, _Alloc>&, const std::vector<_Tp, _Alloc>&)
+     operator==(const vector<_Tp, _Alloc>& __x, const vector<_Tp, _Alloc>& __y)
+     ^
+/usr/include/c++/4.8/bits/stl_vector.h:1404:5: note:   template argument deduction/substitution failed:
+IRGraph.cpp:166:33: note:   ‘std::map<char, int>::iterator {aka std::_Rb_tree_iterator<std::pair<const char, int> >}’ is not derived from ‘const std::vector<_Tp, _Alloc>’
+  if( it == operations_index.end()) {
+                                 ^
+In file included from /usr/include/c++/4.8/vector:61:0,
+                 from ../include/CommonTypesAndConstants.h:5,
+                 from ../include/IRNode.h:24,
+                 from ../include/IROperationNode.h:12,
+                 from ../include/IRGraph.h:11,
+                 from IRGraph.cpp:8:
+/usr/include/c++/4.8/bits/allocator.h:133:5: note: template<class _Tp> bool std::operator==(const std::allocator<_Tp1>&, const std::allocator<_Tp1>&)
+     operator==(const allocator<_Tp>&, const allocator<_Tp>&)
+     ^
+/usr/include/c++/4.8/bits/allocator.h:133:5: note:   template argument deduction/substitution failed:
+IRGraph.cpp:166:33: note:   ‘std::map<char, int>::iterator {aka std::_Rb_tree_iterator<std::pair<const char, int> >}’ is not derived from ‘const std::allocator<_Tp1>’
+  if( it == operations_index.end()) {
+                                 ^
+In file included from /usr/include/c++/4.8/vector:61:0,
+                 from ../include/CommonTypesAndConstants.h:5,
+                 from ../include/IRNode.h:24,
+                 from ../include/IROperationNode.h:12,
+                 from ../include/IRGraph.h:11,
+                 from IRGraph.cpp:8:
+/usr/include/c++/4.8/bits/allocator.h:128:5: note: template<class _T1, class _T2> bool std::operator==(const std::allocator<_Tp1>&, const std::allocator<_T2>&)
+     operator==(const allocator<_T1>&, const allocator<_T2>&)
+     ^
+/usr/include/c++/4.8/bits/allocator.h:128:5: note:   template argument deduction/substitution failed:
+IRGraph.cpp:166:33: note:   ‘std::map<char, int>::iterator {aka std::_Rb_tree_iterator<std::pair<const char, int> >}’ is not derived from ‘const std::allocator<_Tp1>’
+  if( it == operations_index.end()) {
+                                 ^
+In file included from /usr/include/c++/4.8/bits/stl_algobase.h:67:0,
+                 from /usr/include/c++/4.8/vector:60,
+                 from ../include/CommonTypesAndConstants.h:5,
+                 from ../include/IRNode.h:24,
+                 from ../include/IROperationNode.h:12,
+                 from ../include/IRGraph.h:11,
+                 from IRGraph.cpp:8:
+/usr/include/c++/4.8/bits/stl_iterator.h:341:5: note: template<class _IteratorL, class _IteratorR> bool std::operator==(const std::reverse_iterator<_Iterator>&, const std::reverse_iterator<_IteratorR>&)
+     operator==(const reverse_iterator<_IteratorL>& __x,
+     ^
+/usr/include/c++/4.8/bits/stl_iterator.h:341:5: note:   template argument deduction/substitution failed:
+IRGraph.cpp:166:33: note:   ‘std::map<char, int>::iterator {aka std::_Rb_tree_iterator<std::pair<const char, int> >}’ is not derived from ‘const std::reverse_iterator<_Iterator>’
+  if( it == operations_index.end()) {
+                                 ^
+In file included from /usr/include/c++/4.8/bits/stl_algobase.h:67:0,
+                 from /usr/include/c++/4.8/vector:60,
+                 from ../include/CommonTypesAndConstants.h:5,
+                 from ../include/IRNode.h:24,
+                 from ../include/IROperationNode.h:12,
+                 from ../include/IRGraph.h:11,
+                 from IRGraph.cpp:8:
+/usr/include/c++/4.8/bits/stl_iterator.h:291:5: note: template<class _Iterator> bool std::operator==(const std::reverse_iterator<_Iterator>&, const std::reverse_iterator<_Iterator>&)
+     operator==(const reverse_iterator<_Iterator>& __x,
+     ^
+/usr/include/c++/4.8/bits/stl_iterator.h:291:5: note:   template argument deduction/substitution failed:
+IRGraph.cpp:166:33: note:   ‘std::map<char, int>::iterator {aka std::_Rb_tree_iterator<std::pair<const char, int> >}’ is not derived from ‘const std::reverse_iterator<_Iterator>’
+  if( it == operations_index.end()) {
+                                 ^
+In file included from /usr/include/c++/4.8/bits/stl_algobase.h:64:0,
+                 from /usr/include/c++/4.8/vector:60,
+                 from ../include/CommonTypesAndConstants.h:5,
+                 from ../include/IRNode.h:24,
+                 from ../include/IROperationNode.h:12,
+                 from ../include/IRGraph.h:11,
+                 from IRGraph.cpp:8:
+/usr/include/c++/4.8/bits/stl_pair.h:214:5: note: template<class _T1, class _T2> bool std::operator==(const std::pair<_T1, _T2>&, const std::pair<_T1, _T2>&)
+     operator==(const pair<_T1, _T2>& __x, const pair<_T1, _T2>& __y)
+     ^
+/usr/include/c++/4.8/bits/stl_pair.h:214:5: note:   template argument deduction/substitution failed:
+IRGraph.cpp:166:33: note:   ‘std::map<char, int>::iterator {aka std::_Rb_tree_iterator<std::pair<const char, int> >}’ is not derived from ‘const std::pair<_T1, _T2>’
+  if( it == operations_index.end()) {
+                                 ^
+IRGraph.cpp:167:7: error: no match for ‘operator=’ (operand types are ‘std::map<char, int>::iterator {aka std::_Rb_tree_iterator<std::pair<const char, int> >}’ and ‘std::map<int, int>::iterator {aka std::_Rb_tree_iterator<std::pair<const int, int> >}’)
+    it = data_index.find(a_id);
+       ^
+IRGraph.cpp:167:7: note: candidate is:
+In file included from /usr/include/c++/4.8/map:60:0,
+                 from ../include/IRGraph.h:13,
+                 from IRGraph.cpp:8:
+/usr/include/c++/4.8/bits/stl_tree.h:157:12: note: std::_Rb_tree_iterator<std::pair<const char, int> >& std::_Rb_tree_iterator<std::pair<const char, int> >::operator=(const std::_Rb_tree_iterator<std::pair<const char, int> >&)
+     struct _Rb_tree_iterator
+            ^
+/usr/include/c++/4.8/bits/stl_tree.h:157:12: note:   no known conversion for argument 1 from ‘std::map<int, int>::iterator {aka std::_Rb_tree_iterator<std::pair<const int, int> >}’ to ‘const std::_Rb_tree_iterator<std::pair<const char, int> >&’
+IRGraph.cpp:168:10: error: no match for ‘operator!=’ (operand types are ‘std::map<char, int>::iterator {aka std::_Rb_tree_iterator<std::pair<const char, int> >}’ and ‘std::map<int, int>::iterator {aka std::_Rb_tree_iterator<std::pair<const int, int> >}’)
+    if(it != data_index.end()) {
+          ^
+IRGraph.cpp:168:10: note: candidates are:
+In file included from /usr/include/c++/4.8/map:60:0,
+                 from ../include/IRGraph.h:13,
+                 from IRGraph.cpp:8:
+/usr/include/c++/4.8/bits/stl_tree.h:221:7: note: bool std::_Rb_tree_iterator<_Tp>::operator!=(const _Self&) const [with _Tp = std::pair<const char, int>; std::_Rb_tree_iterator<_Tp>::_Self = std::_Rb_tree_iterator<std::pair<const char, int> >]
+       operator!=(const _Self& __x) const
+       ^
+/usr/include/c++/4.8/bits/stl_tree.h:221:7: note:   no known conversion for argument 1 from ‘std::map<int, int>::iterator {aka std::_Rb_tree_iterator<std::pair<const int, int> >}’ to ‘const _Self& {aka const std::_Rb_tree_iterator<std::pair<const char, int> >&}’
+In file included from /usr/include/c++/4.8/map:62:0,
+                 from ../include/IRGraph.h:13,
+                 from IRGraph.cpp:8:
+/usr/include/c++/4.8/bits/stl_multimap.h:888:5: note: template<class _Key, class _Tp, class _Compare, class _Alloc> bool std::operator!=(const std::multimap<_Key, _Tp, _Compare, _Alloc>&, const std::multimap<_Key, _Tp, _Compare, _Alloc>&)
+     operator!=(const multimap<_Key, _Tp, _Compare, _Alloc>& __x,
+     ^
+/usr/include/c++/4.8/bits/stl_multimap.h:888:5: note:   template argument deduction/substitution failed:
+IRGraph.cpp:168:28: note:   ‘std::map<char, int>::iterator {aka std::_Rb_tree_iterator<std::pair<const char, int> >}’ is not derived from ‘const std::multimap<_Key, _Tp, _Compare, _Alloc>’
+    if(it != data_index.end()) {
+                            ^
+In file included from /usr/include/c++/4.8/map:61:0,
+                 from ../include/IRGraph.h:13,
+                 from IRGraph.cpp:8:
+/usr/include/c++/4.8/bits/stl_map.h:986:5: note: template<class _Key, class _Tp, class _Compare, class _Alloc> bool std::operator!=(const std::map<_Key, _Tp, _Compare, _Alloc>&, const std::map<_Key, _Tp, _Compare, _Alloc>&)
+     operator!=(const map<_Key, _Tp, _Compare, _Alloc>& __x,
+     ^
+/usr/include/c++/4.8/bits/stl_map.h:986:5: note:   template argument deduction/substitution failed:
+IRGraph.cpp:168:28: note:   ‘std::map<char, int>::iterator {aka std::_Rb_tree_iterator<std::pair<const char, int> >}’ is not derived from ‘const std::map<_Key, _Tp, _Compare, _Alloc>’
+    if(it != data_index.end()) {
+                            ^
+In file included from /usr/include/c++/4.8/map:60:0,
+                 from ../include/IRGraph.h:13,
+                 from IRGraph.cpp:8:
+/usr/include/c++/4.8/bits/stl_tree.h:927:5: note: template<class _Key, class _Val, class _KeyOfValue, class _Compare, class _Alloc> bool std::operator!=(const std::_Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>&, const std::_Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>&)
+     operator!=(const _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>& __x,
+     ^
+/usr/include/c++/4.8/bits/stl_tree.h:927:5: note:   template argument deduction/substitution failed:
+IRGraph.cpp:168:28: note:   ‘std::map<char, int>::iterator {aka std::_Rb_tree_iterator<std::pair<const char, int> >}’ is not derived from ‘const std::_Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>’
+    if(it != data_index.end()) {
+                            ^
+In file included from /usr/include/c++/4.8/map:60:0,
+                 from ../include/IRGraph.h:13,
+                 from IRGraph.cpp:8:
+/usr/include/c++/4.8/bits/stl_tree.h:316:5: note: template<class _Val> bool std::operator!=(const std::_Rb_tree_iterator<_Tp>&, const std::_Rb_tree_const_iterator<_Val>&)
+     operator!=(const _Rb_tree_iterator<_Val>& __x,
+     ^
+/usr/include/c++/4.8/bits/stl_tree.h:316:5: note:   template argument deduction/substitution failed:
+IRGraph.cpp:168:28: note:   ‘std::map<int, int>::iterator {aka std::_Rb_tree_iterator<std::pair<const int, int> >}’ is not derived from ‘const std::_Rb_tree_const_iterator<_Val>’
+    if(it != data_index.end()) {
+                            ^
+In file included from /usr/include/c++/4.8/string:52:0,
+                 from ../include/CommonTypesAndConstants.h:6,
+                 from ../include/IRNode.h:24,
+                 from ../include/IROperationNode.h:12,
+                 from ../include/IRGraph.h:11,
+                 from IRGraph.cpp:8:
+/usr/include/c++/4.8/bits/basic_string.h:2556:5: note: template<class _CharT, class _Traits, class _Alloc> bool std::operator!=(const std::basic_string<_CharT, _Traits, _Alloc>&, const _CharT*)
+     operator!=(const basic_string<_CharT, _Traits, _Alloc>& __lhs,
+     ^
+/usr/include/c++/4.8/bits/basic_string.h:2556:5: note:   template argument deduction/substitution failed:
+IRGraph.cpp:168:28: note:   ‘std::map<char, int>::iterator {aka std::_Rb_tree_iterator<std::pair<const char, int> >}’ is not derived from ‘const std::basic_string<_CharT, _Traits, _Alloc>’
+    if(it != data_index.end()) {
+                            ^
+In file included from /usr/include/c++/4.8/string:52:0,
+                 from ../include/CommonTypesAndConstants.h:6,
+                 from ../include/IRNode.h:24,
+                 from ../include/IROperationNode.h:12,
+                 from ../include/IRGraph.h:11,
+                 from IRGraph.cpp:8:
+/usr/include/c++/4.8/bits/basic_string.h:2544:5: note: template<class _CharT, class _Traits, class _Alloc> bool std::operator!=(const _CharT*, const std::basic_string<_CharT, _Traits, _Alloc>&)
+     operator!=(const _CharT* __lhs,
+     ^
+/usr/include/c++/4.8/bits/basic_string.h:2544:5: note:   template argument deduction/substitution failed:
+IRGraph.cpp:168:28: note:   mismatched types ‘const _CharT*’ and ‘std::_Rb_tree_iterator<std::pair<const char, int> >’
+    if(it != data_index.end()) {
+                            ^
+In file included from /usr/include/c++/4.8/string:52:0,
+                 from ../include/CommonTypesAndConstants.h:6,
+                 from ../include/IRNode.h:24,
+                 from ../include/IROperationNode.h:12,
+                 from ../include/IRGraph.h:11,
+                 from IRGraph.cpp:8:
+/usr/include/c++/4.8/bits/basic_string.h:2532:5: note: template<class _CharT, class _Traits, class _Alloc> bool std::operator!=(const std::basic_string<_CharT, _Traits, _Alloc>&, const std::basic_string<_CharT, _Traits, _Alloc>&)
+     operator!=(const basic_string<_CharT, _Traits, _Alloc>& __lhs,
+     ^
+/usr/include/c++/4.8/bits/basic_string.h:2532:5: note:   template argument deduction/substitution failed:
+IRGraph.cpp:168:28: note:   ‘std::map<char, int>::iterator {aka std::_Rb_tree_iterator<std::pair<const char, int> >}’ is not derived from ‘const std::basic_string<_CharT, _Traits, _Alloc>’
+    if(it != data_index.end()) {
+                            ^
+In file included from /usr/include/c++/4.8/bits/char_traits.h:40:0,
+                 from /usr/include/c++/4.8/string:40,
+                 from ../include/CommonTypesAndConstants.h:6,
+                 from ../include/IRNode.h:24,
+                 from ../include/IROperationNode.h:12,
+                 from ../include/IRGraph.h:11,
+                 from IRGraph.cpp:8:
+/usr/include/c++/4.8/bits/postypes.h:221:5: note: template<class _StateT> bool std::operator!=(const std::fpos<_StateT>&, const std::fpos<_StateT>&)
+     operator!=(const fpos<_StateT>& __lhs, const fpos<_StateT>& __rhs)
+     ^
+/usr/include/c++/4.8/bits/postypes.h:221:5: note:   template argument deduction/substitution failed:
+IRGraph.cpp:168:28: note:   ‘std::map<char, int>::iterator {aka std::_Rb_tree_iterator<std::pair<const char, int> >}’ is not derived from ‘const std::fpos<_StateT>’
+    if(it != data_index.end()) {
+                            ^
+In file included from /usr/include/c++/4.8/vector:64:0,
+                 from ../include/CommonTypesAndConstants.h:5,
+                 from ../include/IRNode.h:24,
+                 from ../include/IROperationNode.h:12,
+                 from ../include/IRGraph.h:11,
+                 from IRGraph.cpp:8:
+/usr/include/c++/4.8/bits/stl_vector.h:1428:5: note: template<class _Tp, class _Alloc> bool std::operator!=(const std::vector<_Tp, _Alloc>&, const std::vector<_Tp, _Alloc>&)
+     operator!=(const vector<_Tp, _Alloc>& __x, const vector<_Tp, _Alloc>& __y)
+     ^
+/usr/include/c++/4.8/bits/stl_vector.h:1428:5: note:   template argument deduction/substitution failed:
+IRGraph.cpp:168:28: note:   ‘std::map<char, int>::iterator {aka std::_Rb_tree_iterator<std::pair<const char, int> >}’ is not derived from ‘const std::vector<_Tp, _Alloc>’
+    if(it != data_index.end()) {
+                            ^
+In file included from /usr/include/c++/4.8/vector:61:0,
+                 from ../include/CommonTypesAndConstants.h:5,
+                 from ../include/IRNode.h:24,
+                 from ../include/IROperationNode.h:12,
+                 from ../include/IRGraph.h:11,
+                 from IRGraph.cpp:8:
+/usr/include/c++/4.8/bits/allocator.h:143:5: note: template<class _Tp> bool std::operator!=(const std::allocator<_Tp1>&, const std::allocator<_Tp1>&)
+     operator!=(const allocator<_Tp>&, const allocator<_Tp>&)
+     ^
+/usr/include/c++/4.8/bits/allocator.h:143:5: note:   template argument deduction/substitution failed:
+IRGraph.cpp:168:28: note:   ‘std::map<char, int>::iterator {aka std::_Rb_tree_iterator<std::pair<const char, int> >}’ is not derived from ‘const std::allocator<_Tp1>’
+    if(it != data_index.end()) {
+                            ^
+In file included from /usr/include/c++/4.8/vector:61:0,
+                 from ../include/CommonTypesAndConstants.h:5,
+                 from ../include/IRNode.h:24,
+                 from ../include/IROperationNode.h:12,
+                 from ../include/IRGraph.h:11,
+                 from IRGraph.cpp:8:
+/usr/include/c++/4.8/bits/allocator.h:138:5: note: template<class _T1, class _T2> bool std::operator!=(const std::allocator<_Tp1>&, const std::allocator<_T2>&)
+     operator!=(const allocator<_T1>&, const allocator<_T2>&)
+     ^
+/usr/include/c++/4.8/bits/allocator.h:138:5: note:   template argument deduction/substitution failed:
+IRGraph.cpp:168:28: note:   ‘std::map<char, int>::iterator {aka std::_Rb_tree_iterator<std::pair<const char, int> >}’ is not derived from ‘const std::allocator<_Tp1>’
+    if(it != data_index.end()) {
+                            ^
+In file included from /usr/include/c++/4.8/bits/stl_algobase.h:67:0,
+                 from /usr/include/c++/4.8/vector:60,
+                 from ../include/CommonTypesAndConstants.h:5,
+                 from ../include/IRNode.h:24,
+                 from ../include/IROperationNode.h:12,
+                 from ../include/IRGraph.h:11,
+                 from IRGraph.cpp:8:
+/usr/include/c++/4.8/bits/stl_iterator.h:353:5: note: template<class _IteratorL, class _IteratorR> bool std::operator!=(const std::reverse_iterator<_Iterator>&, const std::reverse_iterator<_IteratorR>&)
+     operator!=(const reverse_iterator<_IteratorL>& __x,
+     ^
+/usr/include/c++/4.8/bits/stl_iterator.h:353:5: note:   template argument deduction/substitution failed:
+IRGraph.cpp:168:28: note:   ‘std::map<char, int>::iterator {aka std::_Rb_tree_iterator<std::pair<const char, int> >}’ is not derived from ‘const std::reverse_iterator<_Iterator>’
+    if(it != data_index.end()) {
+                            ^
+In file included from /usr/include/c++/4.8/bits/stl_algobase.h:67:0,
+                 from /usr/include/c++/4.8/vector:60,
+                 from ../include/CommonTypesAndConstants.h:5,
+                 from ../include/IRNode.h:24,
+                 from ../include/IROperationNode.h:12,
+                 from ../include/IRGraph.h:11,
+                 from IRGraph.cpp:8:
+/usr/include/c++/4.8/bits/stl_iterator.h:303:5: note: template<class _Iterator> bool std::operator!=(const std::reverse_iterator<_Iterator>&, const std::reverse_iterator<_Iterator>&)
+     operator!=(const reverse_iterator<_Iterator>& __x,
+     ^
+/usr/include/c++/4.8/bits/stl_iterator.h:303:5: note:   template argument deduction/substitution failed:
+IRGraph.cpp:168:28: note:   ‘std::map<char, int>::iterator {aka std::_Rb_tree_iterator<std::pair<const char, int> >}’ is not derived from ‘const std::reverse_iterator<_Iterator>’
+    if(it != data_index.end()) {
+                            ^
+In file included from /usr/include/c++/4.8/bits/stl_algobase.h:64:0,
+                 from /usr/include/c++/4.8/vector:60,
+                 from ../include/CommonTypesAndConstants.h:5,
+                 from ../include/IRNode.h:24,
+                 from ../include/IROperationNode.h:12,
+                 from ../include/IRGraph.h:11,
+                 from IRGraph.cpp:8:
+/usr/include/c++/4.8/bits/stl_pair.h:227:5: note: template<class _T1, class _T2> bool std::operator!=(const std::pair<_T1, _T2>&, const std::pair<_T1, _T2>&)
+     operator!=(const pair<_T1, _T2>& __x, const pair<_T1, _T2>& __y)
+     ^
+/usr/include/c++/4.8/bits/stl_pair.h:227:5: note:   template argument deduction/substitution failed:
+IRGraph.cpp:168:28: note:   ‘std::map<char, int>::iterator {aka std::_Rb_tree_iterator<std::pair<const char, int> >}’ is not derived from ‘const std::pair<_T1, _T2>’
+    if(it != data_index.end()) {
+                            ^
+IRGraph.cpp: In member function ‘std::vector<IR_Node*> IR_Graph::getAdjacentNodes(int)’:
+IRGraph.cpp:198:30: error: no match for ‘operator-’ (operand types are ‘std::multimap<int, int>::iterator {aka std::_Rb_tree_iterator<std::pair<const int, int> >}’ and ‘std::multimap<int, int>::iterator {aka std::_Rb_tree_iterator<std::pair<const int, int> >}’)
+   int num_of_adj_nodes = end - iter + 1;
+                              ^
+IRGraph.cpp:198:30: note: candidates are:
+In file included from /usr/include/c++/4.8/vector:65:0,
+                 from ../include/CommonTypesAndConstants.h:5,
+                 from ../include/IRNode.h:24,
+                 from ../include/IROperationNode.h:12,
+                 from ../include/IRGraph.h:11,
+                 from IRGraph.cpp:8:
+/usr/include/c++/4.8/bits/stl_bvector.h:208:3: note: std::ptrdiff_t std::operator-(const std::_Bit_iterator_base&, const std::_Bit_iterator_base&)
+   operator-(const _Bit_iterator_base& __x, const _Bit_iterator_base& __y)
+   ^
+/usr/include/c++/4.8/bits/stl_bvector.h:208:3: note:   no known conversion for argument 1 from ‘std::multimap<int, int>::iterator {aka std::_Rb_tree_iterator<std::pair<const int, int> >}’ to ‘const std::_Bit_iterator_base&’
+In file included from /usr/include/c++/4.8/bits/stl_algobase.h:67:0,
+                 from /usr/include/c++/4.8/vector:60,
+                 from ../include/CommonTypesAndConstants.h:5,
+                 from ../include/IRNode.h:24,
+                 from ../include/IROperationNode.h:12,
+                 from ../include/IRGraph.h:11,
+                 from IRGraph.cpp:8:
+/usr/include/c++/4.8/bits/stl_iterator.h:384:5: note: template<class _IteratorL, class _IteratorR> typename std::reverse_iterator<_Iterator>::difference_type std::operator-(const std::reverse_iterator<_Iterator>&, const std::reverse_iterator<_IteratorR>&)
+     operator-(const reverse_iterator<_IteratorL>& __x,
+     ^
+/usr/include/c++/4.8/bits/stl_iterator.h:384:5: note:   template argument deduction/substitution failed:
+IRGraph.cpp:198:32: note:   ‘std::multimap<int, int>::iterator {aka std::_Rb_tree_iterator<std::pair<const int, int> >}’ is not derived from ‘const std::reverse_iterator<_Iterator>’
+   int num_of_adj_nodes = end - iter + 1;
+                                ^
+In file included from /usr/include/c++/4.8/bits/stl_algobase.h:67:0,
+                 from /usr/include/c++/4.8/vector:60,
+                 from ../include/CommonTypesAndConstants.h:5,
+                 from ../include/IRNode.h:24,
+                 from ../include/IROperationNode.h:12,
+                 from ../include/IRGraph.h:11,
+                 from IRGraph.cpp:8:
+/usr/include/c++/4.8/bits/stl_iterator.h:327:5: note: template<class _Iterator> typename std::reverse_iterator<_Iterator>::difference_type std::operator-(const std::reverse_iterator<_Iterator>&, const std::reverse_iterator<_Iterator>&)
+     operator-(const reverse_iterator<_Iterator>& __x,
+     ^
+/usr/include/c++/4.8/bits/stl_iterator.h:327:5: note:   template argument deduction/substitution failed:
+IRGraph.cpp:198:32: note:   ‘std::multimap<int, int>::iterator {aka std::_Rb_tree_iterator<std::pair<const int, int> >}’ is not derived from ‘const std::reverse_iterator<_Iterator>’
+   int num_of_adj_nodes = end - iter + 1;
+                                ^
+IRGraph.cpp: In member function ‘std::vector<IR_Node*> IR_Graph::getAdjacentDataNodes(int)’:
+IRGraph.cpp:220:30: error: no match for ‘operator-’ (operand types are ‘std::multimap<int, int>::iterator {aka std::_Rb_tree_iterator<std::pair<const int, int> >}’ and ‘std::multimap<int, int>::iterator {aka std::_Rb_tree_iterator<std::pair<const int, int> >}’)
+   int num_of_adj_nodes = end - iter + 1;
+                              ^
+IRGraph.cpp:220:30: note: candidates are:
+In file included from /usr/include/c++/4.8/vector:65:0,
+                 from ../include/CommonTypesAndConstants.h:5,
+                 from ../include/IRNode.h:24,
+                 from ../include/IROperationNode.h:12,
+                 from ../include/IRGraph.h:11,
+                 from IRGraph.cpp:8:
+/usr/include/c++/4.8/bits/stl_bvector.h:208:3: note: std::ptrdiff_t std::operator-(const std::_Bit_iterator_base&, const std::_Bit_iterator_base&)
+   operator-(const _Bit_iterator_base& __x, const _Bit_iterator_base& __y)
+   ^
+/usr/include/c++/4.8/bits/stl_bvector.h:208:3: note:   no known conversion for argument 1 from ‘std::multimap<int, int>::iterator {aka std::_Rb_tree_iterator<std::pair<const int, int> >}’ to ‘const std::_Bit_iterator_base&’
+In file included from /usr/include/c++/4.8/bits/stl_algobase.h:67:0,
+                 from /usr/include/c++/4.8/vector:60,
+                 from ../include/CommonTypesAndConstants.h:5,
+                 from ../include/IRNode.h:24,
+                 from ../include/IROperationNode.h:12,
+                 from ../include/IRGraph.h:11,
+                 from IRGraph.cpp:8:
+/usr/include/c++/4.8/bits/stl_iterator.h:384:5: note: template<class _IteratorL, class _IteratorR> typename std::reverse_iterator<_Iterator>::difference_type std::operator-(const std::reverse_iterator<_Iterator>&, const std::reverse_iterator<_IteratorR>&)
+     operator-(const reverse_iterator<_IteratorL>& __x,
+     ^
+/usr/include/c++/4.8/bits/stl_iterator.h:384:5: note:   template argument deduction/substitution failed:
+IRGraph.cpp:220:32: note:   ‘std::multimap<int, int>::iterator {aka std::_Rb_tree_iterator<std::pair<const int, int> >}’ is not derived from ‘const std::reverse_iterator<_Iterator>’
+   int num_of_adj_nodes = end - iter + 1;
+                                ^
+In file included from /usr/include/c++/4.8/bits/stl_algobase.h:67:0,
+                 from /usr/include/c++/4.8/vector:60,
+                 from ../include/CommonTypesAndConstants.h:5,
+                 from ../include/IRNode.h:24,
+                 from ../include/IROperationNode.h:12,
+                 from ../include/IRGraph.h:11,
+                 from IRGraph.cpp:8:
+/usr/include/c++/4.8/bits/stl_iterator.h:327:5: note: template<class _Iterator> typename std::reverse_iterator<_Iterator>::difference_type std::operator-(const std::reverse_iterator<_Iterator>&, const std::reverse_iterator<_Iterator>&)
+     operator-(const reverse_iterator<_Iterator>& __x,
+     ^
+/usr/include/c++/4.8/bits/stl_iterator.h:327:5: note:   template argument deduction/substitution failed:
+IRGraph.cpp:220:32: note:   ‘std::multimap<int, int>::iterator {aka std::_Rb_tree_iterator<std::pair<const int, int> >}’ is not derived from ‘const std::reverse_iterator<_Iterator>’
+   int num_of_adj_nodes = end - iter + 1;
+                                ^
+IRGraph.cpp: In member function ‘std::vector<IR_Node*> IR_Graph::getAdjacentOperationNodes(int)’:
+IRGraph.cpp:246:30: error: no match for ‘operator-’ (operand types are ‘std::multimap<int, int>::iterator {aka std::_Rb_tree_iterator<std::pair<const int, int> >}’ and ‘std::multimap<int, int>::iterator {aka std::_Rb_tree_iterator<std::pair<const int, int> >}’)
+   int num_of_adj_nodes = end - iter + 1;
+                              ^
+IRGraph.cpp:246:30: note: candidates are:
+In file included from /usr/include/c++/4.8/vector:65:0,
+                 from ../include/CommonTypesAndConstants.h:5,
+                 from ../include/IRNode.h:24,
+                 from ../include/IROperationNode.h:12,
+                 from ../include/IRGraph.h:11,
+                 from IRGraph.cpp:8:
+/usr/include/c++/4.8/bits/stl_bvector.h:208:3: note: std::ptrdiff_t std::operator-(const std::_Bit_iterator_base&, const std::_Bit_iterator_base&)
+   operator-(const _Bit_iterator_base& __x, const _Bit_iterator_base& __y)
+   ^
+/usr/include/c++/4.8/bits/stl_bvector.h:208:3: note:   no known conversion for argument 1 from ‘std::multimap<int, int>::iterator {aka std::_Rb_tree_iterator<std::pair<const int, int> >}’ to ‘const std::_Bit_iterator_base&’
+In file included from /usr/include/c++/4.8/bits/stl_algobase.h:67:0,
+                 from /usr/include/c++/4.8/vector:60,
+                 from ../include/CommonTypesAndConstants.h:5,
+                 from ../include/IRNode.h:24,
+                 from ../include/IROperationNode.h:12,
+                 from ../include/IRGraph.h:11,
+                 from IRGraph.cpp:8:
+/usr/include/c++/4.8/bits/stl_iterator.h:384:5: note: template<class _IteratorL, class _IteratorR> typename std::reverse_iterator<_Iterator>::difference_type std::operator-(const std::reverse_iterator<_Iterator>&, const std::reverse_iterator<_IteratorR>&)
+     operator-(const reverse_iterator<_IteratorL>& __x,
+     ^
+/usr/include/c++/4.8/bits/stl_iterator.h:384:5: note:   template argument deduction/substitution failed:
+IRGraph.cpp:246:32: note:   ‘std::multimap<int, int>::iterator {aka std::_Rb_tree_iterator<std::pair<const int, int> >}’ is not derived from ‘const std::reverse_iterator<_Iterator>’
+   int num_of_adj_nodes = end - iter + 1;
+                                ^
+In file included from /usr/include/c++/4.8/bits/stl_algobase.h:67:0,
+                 from /usr/include/c++/4.8/vector:60,
+                 from ../include/CommonTypesAndConstants.h:5,
+                 from ../include/IRNode.h:24,
+                 from ../include/IROperationNode.h:12,
+                 from ../include/IRGraph.h:11,
+                 from IRGraph.cpp:8:
+/usr/include/c++/4.8/bits/stl_iterator.h:327:5: note: template<class _Iterator> typename std::reverse_iterator<_Iterator>::difference_type std::operator-(const std::reverse_iterator<_Iterator>&, const std::reverse_iterator<_Iterator>&)
+     operator-(const reverse_iterator<_Iterator>& __x,
+     ^
+/usr/include/c++/4.8/bits/stl_iterator.h:327:5: note:   template argument deduction/substitution failed:
+IRGraph.cpp:246:32: note:   ‘std::multimap<int, int>::iterator {aka std::_Rb_tree_iterator<std::pair<const int, int> >}’ is not derived from ‘const std::reverse_iterator<_Iterator>’
+   int num_of_adj_nodes = end - iter + 1;
+                                ^
+make[1]: *** [IRGraph.o] Ошибка 1
+make[1]: Выход из каталога `/home/remit/src/misdcompiler/IR'
+make: *** [misdcompiler.exe] Ошибка 2

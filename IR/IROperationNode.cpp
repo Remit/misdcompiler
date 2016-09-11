@@ -5,7 +5,7 @@
  *      Author: remit
  */
 
-#include "IROperationNode.h"
+#include "../include/IROperationNode.h"
 
 IR_OperationNode::IR_OperationNode() {
 	// TODO Auto-generated constructor stub

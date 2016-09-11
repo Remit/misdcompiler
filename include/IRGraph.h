@@ -10,7 +10,6 @@
 
 #include "IROperationNode.h"
 #include "IRDataNode.h"
-#include <map>
 
 size_t initial_size = 1000;
 

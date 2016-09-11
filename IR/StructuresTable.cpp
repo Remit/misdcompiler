@@ -5,7 +5,7 @@
  *      Author: remit
  */
 
-#include "StructuresTable.h"
+#include "../include/StructuresTable.h"
 #include <sstream>
 
 StructuresTable::StructuresTable() {
@@ -52,7 +52,7 @@ bool StructuresTable::isAddedToGraph( std::string structure_name, bool* ok ) {
 	bool ret = false;
 	std::map< std::string, bool >::iterator it;
 	it = added_to_graph.find(structure_name);
-	if( it == data_nodes.end())
+	if( it == added_to_graph.end())
 		*ok = false;
 	else {
 		ret = it->second;
@@ -65,7 +65,7 @@ bool StructuresTable::isAddedToGraph( std::string structure_name, bool* ok ) {
 void StructuresTable::setAddedToGraph( std::string structure_name, bool* ok ) {
 	std::map< std::string, bool >::iterator it;
 	it = added_to_graph.find(structure_name);
-	if( it == data_nodes.end())
+	if( it == added_to_graph.end())
 		*ok = false;
 	else {
 		added_to_graph[structure_name] = true;
@@ -76,7 +76,7 @@ void StructuresTable::setAddedToGraph( std::string structure_name, bool* ok ) {
 void StructuresTable::unsetAddedToGraph( std::string structure_name, bool* ok ) {
 	std::map< std::string, bool >::iterator it;
 	it = added_to_graph.find(structure_name);
-	if( it == data_nodes.end())
+	if( it == added_to_graph.end())
 		*ok = false;
 	else {
 		added_to_graph[structure_name] = false;

@@ -5,7 +5,7 @@
  *      Author: remit
  */
 
-#include "IRNode.h"
+#include "../include/IRNode.h"
 
 IR_Node::IR_Node() {
 	id = -1;

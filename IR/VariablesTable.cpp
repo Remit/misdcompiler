@@ -5,7 +5,7 @@
  *      Author: remit
  */
 
-#include "VariablesTable.h"
+#include "../include/VariablesTable.h"
 
 VariablesTable::VariablesTable() {
 	// TODO Auto-generated constructor stub
@@ -60,6 +60,25 @@ float VariablesTable::getVariableValue( std::string variable_name, bool* ok ) {
 	return ret;
 }
 
+data_type VariablesTable::getVarDataType( std::string variable_name, bool* ok ) {
+	IR_DataNode* node = NULL;
+	data_type ret;
+	std::map< std::string, IR_DataNode* >::iterator it;
+	it = data_nodes.find(variable_name);
+	if( it == data_nodes.end())
+	{
+		*ok = false;
+		ret = IR_UNDEFINED;
+	}
+	else {
+		node = it->second;
+		ret = node->getDataType();
+		*ok = true;
+	}
+
+	return ret;
+}
+
 IR_DataNode* VariablesTable::getDataNodeByVariableName( std::string variable_name, bool* ok ) {
 	IR_DataNode* ret = NULL;
 	std::map< std::string, IR_DataNode* >::iterator it;
@@ -85,10 +104,21 @@ void VariablesTable::setDataType( std::string variable_name, data_type dt, bool*
 	}
 }
 
+void VariablesTable::setSimpleDataType( std::string variable_name, int dt, bool* ok ) {
+	std::map< std::string, IR_DataNode* >::iterator it;
+	it = data_nodes.find(variable_name);
+	if( it == data_nodes.end())
+		*ok = false;
+	else {
+		it->second->setSimpleType(dt);
+		*ok = true;
+	}
+}
+
 void VariablesTable::setAddedToGraph( std::string variable_name, bool* ok ) {
 	std::map< std::string, bool >::iterator it;
 	it = added_to_graph.find(variable_name);
-	if( it == data_nodes.end())
+	if( it == added_to_graph.end())
 		*ok = false;
 	else {
 		added_to_graph[variable_name] = true;
@@ -99,7 +129,7 @@ void VariablesTable::setAddedToGraph( std::string variable_name, bool* ok ) {
 void VariablesTable::unsetAddedToGraph( std::string variable_name, bool* ok ) {
 	std::map< std::string, bool >::iterator it;
 	it = added_to_graph.find(variable_name);
-	if( it == data_nodes.end())
+	if( it == added_to_graph.end())
 		*ok = false;
 	else {
 		added_to_graph[variable_name] = false;

@@ -5,7 +5,7 @@
  *      Author: remit
  */
 
-#include "IRGraph.h"
+#include "../include/IRGraph.h"
 
 IR_Graph::IR_Graph() {
 	operations.reserve(initial_size);
@@ -78,7 +78,7 @@ void IR_Graph::addConnection(int id_src, int id_dst) {
 		}
 
 		if(!connection_found)
-			connections[id_src] = id_dst;
+			connections.insert({ id_src, id_dst });
 	}
 }
 
@@ -160,7 +160,7 @@ void IR_Graph::removeConnection(int id_src, int id_dst) {
 }
 
 IR_Node* IR_Graph::getNode(int a_id) {
-	std::map<char,int>::iterator it;
+	std::map<int,int>::iterator it;
 	it = operations_index.find(a_id);
 	IR_Node* ret_node;
 	if( it == operations_index.end()) {
@@ -195,7 +195,7 @@ std::vector< IR_Node* > IR_Graph::getAdjacentNodes(int id) {
 	if(range_found.first != range_found.second) {
 		std::multimap<int,int>::iterator iter = range_found.first;
 		std::multimap<int,int>::iterator end = range_found.second;
-		int num_of_adj_nodes = end - iter + 1;
+		int num_of_adj_nodes = std::distance(connections.begin(),end) - std::distance(connections.begin(),iter) + 1;
 		adjacentNodes_ls.reserve(num_of_adj_nodes);
 
 		while(iter != end) {
@@ -217,7 +217,7 @@ std::vector< IR_Node* > IR_Graph::getAdjacentDataNodes(int id) {
 	if(range_found.first != range_found.second) {
 		std::multimap<int,int>::iterator iter = range_found.first;
 		std::multimap<int,int>::iterator end = range_found.second;
-		int num_of_adj_nodes = end - iter + 1;
+		int num_of_adj_nodes = std::distance(connections.begin(),end) - std::distance(connections.begin(),iter) + 1;
 		adjacentNodes_ls.reserve(num_of_adj_nodes);
 
 		while(iter != end) {
@@ -243,7 +243,7 @@ std::vector< IR_Node* > IR_Graph::getAdjacentOperationNodes(int id) {
 	if(range_found.first != range_found.second) {
 		std::multimap<int,int>::iterator iter = range_found.first;
 		std::multimap<int,int>::iterator end = range_found.second;
-		int num_of_adj_nodes = end - iter + 1;
+		int num_of_adj_nodes = std::distance(connections.begin(),end) - std::distance(connections.begin(),iter) + 1;
 		adjacentNodes_ls.reserve(num_of_adj_nodes);
 
 		while(iter != end) {

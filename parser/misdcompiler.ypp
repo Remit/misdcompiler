@@ -17,21 +17,26 @@
  #define YYLEX_PARAM   scanner
 %}	
 
-%code {
+%code requires {
  #include <stdio.h>
- #include "build.h"
- 
- std::vector< std::string > exp_vars_list;
- exp_vars_list.reserve(512);
- std::vector< std::string > exp_nums_list;
- exp_nums_list.reserve(1024);
- extern int yylex( YYSTYPE* yylval_param, YYLTYPE* yylloc_param);
+ #include <string>
+ #include <vector>
+ #include "../include/build.h"
+ #include "../include/IRGraph.h"
  
  static
  void yyerror(char *s)
  {
         printf("yyerror: %s\n", s);
  }
+ 
+}
+
+%code {
+ std::vector< std::string > idents; 
+ std::vector< std::string > exp_vars_list;
+ std::vector< std::string > exp_nums_list;
+ extern int yylex( YYSTYPE* yylval_param, YYLTYPE* yylloc_param);
 }
 
 // The names for the output files
@@ -43,6 +48,11 @@
 
 %union {	
  const char* pch;
+ 
+ IR_Graph* graph;
+ proc_type ptype;
+ int type_int;
+ std::string* str;
 }
 
 %start program
@@ -87,6 +97,11 @@
 %right TNOT
 %left TLP TLCBR
 
+%type <graph> program stmts_ls stmt stmts_block assign_stmt loop_stmt count_loop while_loop if_stmt expr_stmt str_delete str_bin_expr str_compare_expr str_insert_to_str str_delete_from_str def_expr id_ls
+%type <ptype> mem_type
+%type <str> struct ident
+%type <type_int> id_type
+
 %%
 program:
    stmts_ls			
@@ -94,7 +109,7 @@ program:
 
 stmts_ls:
 								{ $$ = new IR_Graph(); $$->addOperationNode( buildTerminalNode( ) ); }
-|  stmts_ls stmt				{ $$ = $1->appendGraph($2); }
+|  stmts_ls stmt				{ $1->appendGraph($2); $$ = $1; }
 ;
 
 stmt:
@@ -121,7 +136,7 @@ expr_stmt:
 ;
 
 def_expr:
-   id_type id_ls				{ std::vector<int>::size_type sz = $2.size(); for(unsigned i = 0; i < sz; i++) { updateDataNode_DataType($2[i],$1); } $$ = NULL;  }
+   id_type id_ls				{ std::vector<int>::size_type sz = idents.size(); for(unsigned i = 0; i < sz; i++) { updateDataNode_SimpleDataType(idents[i],$1); } $$ = NULL; idents.clear(); }
 ;
 
 id_type:
@@ -132,8 +147,8 @@ id_type:
 ;
 
 id_ls:
-   mem_type TIDENT				{ std::vector< std::string > idents; idents.reserve(1024); std::string ident_name(llval, 0, 1024); buildDataNode(ident_name,$1); idents.push_back(ident_name); $$ = idents; }
-|  id_ls TCOMMA mem_type TIDENT { std::string ident_name(llval, 0, 1024); buildDataNode(ident_name,$3); $1.push_back(ident_name); $$ = $1; }
+   mem_type TIDENT				{ std::string ident_name(yylval.pch, 0, 1024); buildDataNode(ident_name,$1,IR_DATA_SIMPLE); idents.reserve(1024); idents.push_back(ident_name); $$ = NULL; }
+|  id_ls TCOMMA mem_type TIDENT { std::string ident_name(yylval.pch, 0, 1024); buildDataNode(ident_name,$3,IR_DATA_SIMPLE); idents.push_back(ident_name); $$ = NULL; }
 ;
 
 mem_type:
@@ -142,11 +157,11 @@ mem_type:
 ;
 
 str_delete:
-   TMISDOPDELETESTR struct 		{ addStructDataNodeToGraph($2); IR_OperationNode* op_node = buildAssignNode(IR_DATA_STRUCTURE); $$ = new IR_Graph(); $$->addOperationNode(op_node); IR_DataNode* data_node = getStructureNodeByName($2); $$->addDataNode(data_node); int op_node_gid = $$->getLastOperationID(); int data_node_id = $$->getLastDataID(); if((data_node_id > 0) && (op_node_id > 0)) { $$->addConnection(op_node_id,data_node_id); } }
+   TMISDOPDELETESTR struct 		{ addStructDataNodeToGraph(* $2); IR_OperationNode* op_node = buildAssignNode(IR_DATA_STRUCTURE); $$ = new IR_Graph(); $$->addOperationNode(op_node); IR_DataNode* data_node = getStructureNodeByName(* $2); $$->addDataNode(data_node); int op_node_id = $$->getLastOperationID(); int data_node_id = $$->getLastDataID(); if((data_node_id > 0) && (op_node_id > 0)) { $$->addConnection(op_node_id,data_node_id); } }
 ;
 
 str_bin_expr:
-   str_bin_op struct TCOMMA struct TCOMMA struct		{ addStructDataNodeToGraph($2); addStructDataNodeToGraph($4); addStructDataNodeToGraph($6); IR_OperationNode* op_node = buildAssignNode(IR_DATA_STRUCTURE); $$ = new IR_Graph(); $$->addOperationNode(op_node); IR_DataNode* data_node_result = getStructureNodeByName($2); IR_DataNode* data_node_1 = getStructureNodeByName($4); IR_DataNode* data_node_2 = getStructureNodeByName($6); $$->addDataNode(data_node_result); int data_node_result_id = $$->getLastDataID(); $$->addDataNode(data_node_1); int data_node_1_id = $$->getLastDataID(); $$->addDataNode(data_node_2); int data_node_2_id = $$->getLastDataID(); int op_node_id = $$->getLastOperationID(); if((data_node_result_id > 0) && (op_node_id > 0) && (data_node_1_id > 0) && (data_node_2_id > 0)) { $$->addConnection(op_node_id,data_node_result_id); $$->addConnection(data_node_1_id,op_node_id); $$->addConnection(data_node_2_id,op_node_id); } }
+   str_bin_op struct TCOMMA struct TCOMMA struct		{ addStructDataNodeToGraph(* $2); addStructDataNodeToGraph(* $4); addStructDataNodeToGraph(* $6); IR_OperationNode* op_node = buildAssignNode(IR_DATA_STRUCTURE); $$ = new IR_Graph(); $$->addOperationNode(op_node); IR_DataNode* data_node_result = getStructureNodeByName(* $2); IR_DataNode* data_node_1 = getStructureNodeByName(* $4); IR_DataNode* data_node_2 = getStructureNodeByName(* $6); $$->addDataNode(data_node_result); int data_node_result_id = $$->getLastDataID(); $$->addDataNode(data_node_1); int data_node_1_id = $$->getLastDataID(); $$->addDataNode(data_node_2); int data_node_2_id = $$->getLastDataID(); int op_node_id = $$->getLastOperationID(); if((data_node_result_id > 0) && (op_node_id > 0) && (data_node_1_id > 0) && (data_node_2_id > 0)) { $$->addConnection(op_node_id,data_node_result_id); $$->addConnection(data_node_1_id,op_node_id); $$->addConnection(data_node_2_id,op_node_id); } }
 ;
 
 str_bin_op:
@@ -156,7 +171,7 @@ str_bin_op:
 ;
 
 str_compare_expr:
-   str_comp_op struct TCOMMA struct TCOMMA ident		{ addStructDataNodeToGraph($2); addStructDataNodeToGraph($4); IR_OperationNode* op_node = buildAssignNode(IR_DATA_STRUCTURE); $$ = new IR_Graph(); $$->addOperationNode(op_node); IR_DataNode* data_node_result = getStructureNodeByName($2); IR_DataNode* data_node_1 = getStructureNodeByName($4); IR_DataNode* data_node_2 = getVariableNodeByName($6); $$->addDataNode(data_node_result); int data_node_result_id = $$->getLastDataID(); $$->addDataNode(data_node_1); int data_node_1_id = $$->getLastDataID(); $$->addDataNode(data_node_2); int data_node_2_id = $$->getLastDataID(); int op_node_id = $$->getLastOperationID(); if((data_node_result_id > 0) && (op_node_id > 0) && (data_node_1_id > 0) && (data_node_2_id > 0)) { $$->addConnection(op_node_id,data_node_result_id); $$->addConnection(data_node_1_id,op_node_id); $$->addConnection(data_node_2_id,op_node_id); } }
+   str_comp_op struct TCOMMA struct TCOMMA ident		{ addStructDataNodeToGraph(* $2); addStructDataNodeToGraph(* $4); IR_OperationNode* op_node = buildAssignNode(IR_DATA_STRUCTURE); $$ = new IR_Graph(); $$->addOperationNode(op_node); IR_DataNode* data_node_result = getStructureNodeByName(* $2); IR_DataNode* data_node_1 = getStructureNodeByName(* $4); IR_DataNode* data_node_2 = getVariableNodeByName(* $6); $$->addDataNode(data_node_result); int data_node_result_id = $$->getLastDataID(); $$->addDataNode(data_node_1); int data_node_1_id = $$->getLastDataID(); $$->addDataNode(data_node_2); int data_node_2_id = $$->getLastDataID(); int op_node_id = $$->getLastOperationID(); if((data_node_result_id > 0) && (op_node_id > 0) && (data_node_1_id > 0) && (data_node_2_id > 0)) { $$->addConnection(op_node_id,data_node_result_id); $$->addConnection(data_node_1_id,op_node_id); $$->addConnection(data_node_2_id,op_node_id); } }
 ;
 
 str_comp_op:
@@ -167,16 +182,16 @@ str_comp_op:
 ;
 
 str_insert_to_str:
-   TMISDOPINSERTSTR struct TCOMMA ident TCOMMA ident	{ addStructDataNodeToGraph($2); IR_OperationNode* op_node = buildAssignNode(IR_DATA_STRUCTURE); $$ = new IR_Graph(); $$->addOperationNode(op_node); IR_DataNode* data_node_result = getStructureNodeByName($2); IR_DataNode* data_node_1 = getVariableNodeByName($4); IR_DataNode* data_node_2 = getVariableNodeByName($6); $$->addDataNode(data_node_result); int data_node_result_id = $$->getLastDataID(); $$->addDataNode(data_node_1); int data_node_1_id = $$->getLastDataID(); $$->addDataNode(data_node_2); int data_node_2_id = $$->getLastDataID(); int op_node_id = $$->getLastOperationID(); if((data_node_result_id > 0) && (op_node_id > 0) && (data_node_1_id > 0) && (data_node_2_id > 0)) { $$->addConnection(op_node_id,data_node_result_id); $$->addConnection(data_node_1_id,op_node_id); $$->addConnection(data_node_2_id,op_node_id); } }
+   TMISDOPINSERTSTR struct TCOMMA ident TCOMMA ident	{ addStructDataNodeToGraph(* $2); IR_OperationNode* op_node = buildAssignNode(IR_DATA_STRUCTURE); $$ = new IR_Graph(); $$->addOperationNode(op_node); IR_DataNode* data_node_result = getStructureNodeByName(* $2); IR_DataNode* data_node_1 = getVariableNodeByName(* $4); IR_DataNode* data_node_2 = getVariableNodeByName(* $6); $$->addDataNode(data_node_result); int data_node_result_id = $$->getLastDataID(); $$->addDataNode(data_node_1); int data_node_1_id = $$->getLastDataID(); $$->addDataNode(data_node_2); int data_node_2_id = $$->getLastDataID(); int op_node_id = $$->getLastOperationID(); if((data_node_result_id > 0) && (op_node_id > 0) && (data_node_1_id > 0) && (data_node_2_id > 0)) { $$->addConnection(op_node_id,data_node_result_id); $$->addConnection(data_node_1_id,op_node_id); $$->addConnection(data_node_2_id,op_node_id); } }
 ;
 
 str_delete_from_str:
-   TMISDOPDELETEFROMSTR struct TCOMMA ident				{ addStructDataNodeToGraph($2); IR_OperationNode* op_node = buildAssignNode(IR_DATA_STRUCTURE); $$ = new IR_Graph(); $$->addOperationNode(op_node); IR_DataNode* data_node_result = getStructureNodeByName($2); IR_DataNode* data_node_1 = getVariableNodeByName($4); $$->addDataNode(data_node_result); int data_node_result_id = $$->getLastDataID(); $$->addDataNode(data_node_1); int data_node_1_id = $$->getLastDataID(); int op_node_id = $$->getLastOperationID(); if((data_node_result_id > 0) && (op_node_id > 0) && (data_node_1_id > 0)) { $$->addConnection(op_node_id,data_node_result_id); $$->addConnection(data_node_1_id,op_node_id); } }
+   TMISDOPDELETEFROMSTR struct TCOMMA ident				{ addStructDataNodeToGraph(* $2); IR_OperationNode* op_node = buildAssignNode(IR_DATA_STRUCTURE); $$ = new IR_Graph(); $$->addOperationNode(op_node); IR_DataNode* data_node_result = getStructureNodeByName(* $2); IR_DataNode* data_node_1 = getVariableNodeByName(* $4); $$->addDataNode(data_node_result); int data_node_result_id = $$->getLastDataID(); $$->addDataNode(data_node_1); int data_node_1_id = $$->getLastDataID(); int op_node_id = $$->getLastOperationID(); if((data_node_result_id > 0) && (op_node_id > 0) && (data_node_1_id > 0)) { $$->addConnection(op_node_id,data_node_result_id); $$->addConnection(data_node_1_id,op_node_id); } }
 ;
 
 assign_stmt:
-   ident TASSIGN expr		{ data_type ident_type = getIdentType($1); IR_OperationNode* op_node = buildAssignNode(ident_type); $$ = new IR_Graph(); $$->addOperationNode(op_node); int op_node_id = $$->getLastOperationID(); IR_DataNode* data_node_result = getVariableNodeByName($1); $$->addDataNode(data_node_result); int data_node_result_id = $$->getLastDataID(); if((data_node_result_id > 0) && (op_node_id > 0)) { $$->addConnection(op_node_id,data_node_result_id); } int num_of_vars = exp_vars_list.size(); for(int i = 0; i < num_of_vars; i++ ) { std::string variable_name = exp_vars_list[i]; IR_DataNode* data_node_i = getVariableNodeByName(variable_name); $$->addDataNode(data_node_i); int data_node_i_id = $$->getLastDataID(); if((data_node_i_id > 0) && (op_node_id > 0)) { $$->addConnection(data_node_i_id,op_node_id); } } exp_vars_list.clear(); }
-|  ident TASSIGN struct_op_acq_elem struct TCOMMA ident		{ data_type ident_type = getIdentType($1); IR_OperationNode* op_node = buildAssignNode(ident_type); $$ = new IR_Graph(); $$->addOperationNode(op_node); int op_node_id = $$->getLastOperationID(); IR_DataNode* data_node_result = getVariableNodeByName($1); $$->addDataNode(data_node_result); int data_node_result_id = $$->getLastDataID(); IR_DataNode* data_node_1 = getStructureNodeByName($4); IR_DataNode* data_node_2 = getVariableNodeByName($6); $$->addDataNode(data_node_1); int data_node_1_id = $$->getLastDataID(); $$->addDataNode(data_node_2); int data_node_2_id = $$->getLastDataID(); if((data_node_result_id > 0) && (op_node_id > 0) && (data_node_1_id > 0) && (data_node_2_id > 0)) { $$->addConnection(op_node_id,data_node_result_id); $$->addConnection(data_node_1_id,op_node_id); $$->addConnection(data_node_2_id,op_node_id); } }
+   ident TASSIGN expr		{ data_type ident_type = getIdentType(* $1); IR_OperationNode* op_node = buildAssignNode(ident_type); $$ = new IR_Graph(); $$->addOperationNode(op_node); int op_node_id = $$->getLastOperationID(); IR_DataNode* data_node_result = getVariableNodeByName(* $1); $$->addDataNode(data_node_result); int data_node_result_id = $$->getLastDataID(); if((data_node_result_id > 0) && (op_node_id > 0)) { $$->addConnection(op_node_id,data_node_result_id); } int num_of_vars = exp_vars_list.size(); for(int i = 0; i < num_of_vars; i++ ) { std::string variable_name = exp_vars_list[i]; IR_DataNode* data_node_i = getVariableNodeByName(variable_name); $$->addDataNode(data_node_i); int data_node_i_id = $$->getLastDataID(); if((data_node_i_id > 0) && (op_node_id > 0)) { $$->addConnection(data_node_i_id,op_node_id); } } exp_vars_list.clear(); }
+|  ident TASSIGN struct_op_acq_elem struct TCOMMA ident		{ data_type ident_type = getIdentType(* $1); IR_OperationNode* op_node = buildAssignNode(ident_type); $$ = new IR_Graph(); $$->addOperationNode(op_node); int op_node_id = $$->getLastOperationID(); IR_DataNode* data_node_result = getVariableNodeByName(* $1); $$->addDataNode(data_node_result); int data_node_result_id = $$->getLastDataID(); IR_DataNode* data_node_1 = getStructureNodeByName(* $4); IR_DataNode* data_node_2 = getVariableNodeByName(* $6); $$->addDataNode(data_node_1); int data_node_1_id = $$->getLastDataID(); $$->addDataNode(data_node_2); int data_node_2_id = $$->getLastDataID(); if((data_node_result_id > 0) && (op_node_id > 0) && (data_node_1_id > 0) && (data_node_2_id > 0)) { $$->addConnection(op_node_id,data_node_result_id); $$->addConnection(data_node_1_id,op_node_id); $$->addConnection(data_node_2_id,op_node_id); } }
 ;
 
 struct_op_acq_elem:
@@ -187,11 +202,11 @@ struct_op_acq_elem:
 ;
 
 struct:
-   TSTRUCTIDENT				{ std::string ident_name(llval, 0, 1024); $$ = ident_name; }
+   TSTRUCTIDENT				{ std::string ident_name(yylval.pch, 0, 1024); $$ = &ident_name; }
 ;
 
 ident:
-   TIDENT					{ std::string ident_name(llval, 0, 1024); $$ = ident_name; }
+   TIDENT					{ std::string ident_name(yylval.pch, 0, 1024); $$ = &ident_name; }
 ;
 
 expr:
@@ -204,7 +219,7 @@ expr:
 |  expr TAND expr		{ /* Only AST */ }
 |  expr TOR expr		{ /* Only AST */ }
 |  TNOT expr			{ /* Only AST */ }
-|  TIDENT				{ std::string ident_name(llval, 0, 1024); exp_vars_list.push_back(ident_name); }
+|  TIDENT				{ std::string ident_name(yylval.pch, 0, 1024); exp_vars_list.push_back(ident_name); }
 |  NUMLITERAL			{ /* Addition to special list and table for numbers? ???exp_vars_list??? */ }
 ;
 

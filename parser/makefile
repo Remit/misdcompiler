@@ -1,4 +1,4 @@
-all: misdcompiler_lexanalyser.o 
+all: bison-misdcompiler.o flex-misdcompiler.o
 
 bison-misdcompiler.o: bison-misdcompiler.cpp
 	g++ -c -g ../include/bison-misdcompiler.h bison-misdcompiler.cpp

@@ -53,8 +53,22 @@ extern int yydebug;
 
   #define YYLTYPE_IS_DECLARED 1
   #define YYLTYPE_IS_TRIVIAL  1
+#line 20 "misdcompiler.ypp" /* yacc.c:1909  */
 
-#line 58 "../include/bison-misdcompiler.h" /* yacc.c:1909  */
+ #include <stdio.h>
+ #include <string>
+ #include <vector>
+ #include "../include/build.h"
+ #include "../include/IRGraph.h"
+ 
+ static
+ void yyerror(char *s)
+ {
+        printf("yyerror: %s\n", s);
+ }
+ 
+
+#line 72 "../include/bison-misdcompiler.h" /* yacc.c:1909  */
 
 /* Token type.  */
 #ifndef YYTOKENTYPE
@@ -127,11 +141,16 @@ extern int yydebug;
 typedef union YYSTYPE YYSTYPE;
 union YYSTYPE
 {
-#line 38 "misdcompiler.ypp" /* yacc.c:1909  */
+#line 49 "misdcompiler.ypp" /* yacc.c:1909  */
 	
  const char* pch;
+ 
+ IR_Graph* graph;
+ proc_type ptype;
+ int type_int;
+ std::string* str;
 
-#line 135 "../include/bison-misdcompiler.h" /* yacc.c:1909  */
+#line 154 "../include/bison-misdcompiler.h" /* yacc.c:1909  */
 };
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1

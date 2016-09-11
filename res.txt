@@ -1,0 +1,47 @@
+cd parser && make
+make[1]: Вход в каталог `/home/remit/src/misdcompiler/parser'
+make[1]: Цель `all' не требует выполнения команд.
+make[1]: Выход из каталога `/home/remit/src/misdcompiler/parser'
+cd IR && make
+make[1]: Вход в каталог `/home/remit/src/misdcompiler/IR'
+make[1]: Цель `all' не требует выполнения команд.
+make[1]: Выход из каталога `/home/remit/src/misdcompiler/IR'
+g++ -g -o misdcompiler include/BaseAST.h include/build.h include/CommonTypesAndConstants.h include/IRDataNode.h include/IRGraph.h include/IRNode.h include/IROperationNode.h include/StructuresTable.h include/VariablesTable.h main.o parser/bison-misdcompiler.o parser/flex-misdcompiler.o IR/build.o IR/IRDataNode.o IR/IRGraph.o IR/IRNode.o IR/IROperationNode.o IR/StructuresTable.o IR/VariablesTable.o
+parser/flex-misdcompiler.o:(.rodata+0x0): multiple definition of `num_of_structures_for_usage'
+parser/bison-misdcompiler.o:(.rodata+0x0): first defined here
+parser/flex-misdcompiler.o:(.data+0x4): multiple definition of `initial_size'
+parser/bison-misdcompiler.o:(.data+0x0): first defined here
+parser/flex-misdcompiler.o: In function `yylex(YYSTYPE*, YYLTYPE*)':
+/home/remit/src/misdcompiler/parser/flex-misdcompiler.cpp:836: multiple definition of `var_table'
+parser/bison-misdcompiler.o:/home/remit/src/misdcompiler/parser/misdcompiler.ypp:29: first defined here
+parser/flex-misdcompiler.o: In function `yylex(YYSTYPE*, YYLTYPE*)':
+/home/remit/src/misdcompiler/parser/flex-misdcompiler.cpp:871: multiple definition of `struct_table'
+parser/bison-misdcompiler.o:/home/remit/src/misdcompiler/parser/bison-misdcompiler.cpp:1342: first defined here
+IR/build.o:(.rodata+0x0): multiple definition of `num_of_structures_for_usage'
+parser/bison-misdcompiler.o:(.rodata+0x0): first defined here
+IR/build.o:(.data+0x0): multiple definition of `initial_size'
+parser/bison-misdcompiler.o:(.data+0x0): first defined here
+IR/build.o:(.bss+0x0): multiple definition of `var_table'
+parser/bison-misdcompiler.o:/home/remit/src/misdcompiler/parser/misdcompiler.ypp:29: first defined here
+IR/build.o:(.bss+0x80): multiple definition of `struct_table'
+parser/bison-misdcompiler.o:/home/remit/src/misdcompiler/parser/bison-misdcompiler.cpp:1342: first defined here
+IR/IRDataNode.o:(.rodata+0x0): multiple definition of `num_of_structures_for_usage'
+parser/bison-misdcompiler.o:(.rodata+0x0): first defined here
+IR/IRGraph.o:(.rodata+0x0): multiple definition of `num_of_structures_for_usage'
+parser/bison-misdcompiler.o:(.rodata+0x0): first defined here
+IR/IRGraph.o:(.data+0x0): multiple definition of `initial_size'
+parser/bison-misdcompiler.o:(.data+0x0): first defined here
+IR/IRNode.o:(.rodata+0x0): multiple definition of `num_of_structures_for_usage'
+parser/bison-misdcompiler.o:(.rodata+0x0): first defined here
+IR/IROperationNode.o:(.rodata+0x0): multiple definition of `num_of_structures_for_usage'
+parser/bison-misdcompiler.o:(.rodata+0x0): first defined here
+IR/StructuresTable.o:(.rodata+0x0): multiple definition of `num_of_structures_for_usage'
+parser/bison-misdcompiler.o:(.rodata+0x0): first defined here
+IR/VariablesTable.o:(.rodata+0x0): multiple definition of `num_of_structures_for_usage'
+parser/bison-misdcompiler.o:(.rodata+0x0): first defined here
+parser/flex-misdcompiler.o: In function `processIdentifier()':
+flex-misdcompiler.cpp:(.text+0x17e0): undefined reference to `yyget_lval()'
+parser/flex-misdcompiler.o: In function `processStructIdentifier()':
+flex-misdcompiler.cpp:(.text+0x1804): undefined reference to `yyget_lval()'
+collect2: error: ld returned 1 exit status
+make: *** [misdcompiler.exe] Ошибка 1

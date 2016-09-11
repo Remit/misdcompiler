@@ -16,12 +16,15 @@ public:
 	virtual ~IR_DataNode();
 
 	void setDataType(data_type a_dataType);
+	void setSimpleType(int a_simple_type);
 
 	data_type getDataType();
+	int getSimpleType();
 
 private:
 	// Link to a corresponding identifier in data table.
 	data_type dataType;
+	int simple_type;
 };
 
 #endif /* IRDATANODE_H_ */

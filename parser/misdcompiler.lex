@@ -79,14 +79,14 @@ NOT					return TNOT;
 "}"					return TRCBR;
 "("					return TLP;
 ")"					return TRP;
-STRUCT1				return processStructIdentifier(yyscanner);
-STRUCT2				return processStructIdentifier(yyscanner);
-STRUCT3				return processStructIdentifier(yyscanner);
-STRUCT4				return processStructIdentifier(yyscanner);
-STRUCT5				return processStructIdentifier(yyscanner);
-STRUCT6				return processStructIdentifier(yyscanner);
-STRUCT7				return processStructIdentifier(yyscanner);
-{ident}				return processIdentifier(yyscanner);
+STRUCT1				return processStructIdentifier();
+STRUCT2				return processStructIdentifier();
+STRUCT3				return processStructIdentifier();
+STRUCT4				return processStructIdentifier();
+STRUCT5				return processStructIdentifier();
+STRUCT6				return processStructIdentifier();
+STRUCT7				return processStructIdentifier();
+{ident}				return processIdentifier();
 "\""             	return STRINGLITERAL; //Placeholder
 "\'"             	return STRINGLITERAL; //Placeholder
 
