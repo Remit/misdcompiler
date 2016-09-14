@@ -6,7 +6,7 @@
 #include <string>
 #include <map>
 
-extern const int num_of_structures_for_usage = 7;
+extern int num_of_structures_for_usage;
 
 typedef enum {
 	IR_SPU,\

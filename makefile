@@ -1,13 +1,14 @@
-OBJ_FILES_IR := $(wildcard IR/*.o)
-OBJ_FILES_PARSER := $(wildcard parser/*.o)
-HDR_FILES := $(wildcard include/*.h)
+CPP_FILES_IR := $(wildcard IR/*.cpp)
+OBJ_FILES_IR := $(patsubst %.cpp,%.o,$(CPP_FILES_IR))
+OBJ_FILES_PARSER := parser/bison-misdcompiler.o parser/flex-misdcompiler.o
+GCH_FILES := $(patsubst %.cpp,%.h.gch,$(CPP_FILES_IR))
 
 all: misdcompiler.exe
 
 misdcompiler.exe: main.o
-	cd parser && make
 	cd IR && make
-	g++ -g -o misdcompiler main.o $(OBJ_FILES_PARSER) $(OBJ_FILES)
+	cd parser && make
+	g++ -g -o misdcompiler main.o $(OBJ_FILES_IR) $(OBJ_FILES_PARSER) -lfl
 	
 main.o:
 	g++ -c -g main.cpp
@@ -15,4 +16,5 @@ main.o:
 clean:
 	cd parser && make clean
 	cd IR && make clean
-	rm main.o misdcompiler.exe
+	-rm main.o misdcompiler
+	-rm $(GCH_FILES)

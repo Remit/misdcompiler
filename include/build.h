@@ -8,12 +8,17 @@
 #ifndef BUILD_H_
 #define BUILD_H_
 
+#ifndef IRGRAPH_H_
 #include "IRGraph.h"
-#include "VariablesTable.h"
-#include "StructuresTable.h"
+#endif
 
-VariablesTable var_table;
-StructuresTable struct_table;
+#ifndef VARIABLESTABLE_H_
+#include "VariablesTable.h"
+#endif
+
+#ifndef STRUCTURESTABLE_H_
+#include "StructuresTable.h"
+#endif
 
 IR_OperationNode* buildAssignNode( data_type dt );
 IR_OperationNode* buildTerminalNode();

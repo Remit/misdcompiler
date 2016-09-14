@@ -7,4 +7,4 @@ all: $(OBJ_FILES)
 	g++ -c -o $@ $<
 	
 clean:
-	rm $(OBJ_FILES)
+	-rm $(OBJ_FILES)

@@ -21,7 +21,9 @@
 #define IRNODE_H_
 
 //Include section ---BEGIN---
+#ifndef COMMON_TYPES_AND_CONSTANTS
 #include "CommonTypesAndConstants.h"
+#endif
 
 //Include section ---END---
 

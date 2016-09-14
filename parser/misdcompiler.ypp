@@ -21,8 +21,14 @@
  #include <stdio.h>
  #include <string>
  #include <vector>
+ 
+ #ifndef BUILD_H_
  #include "../include/build.h"
+ #endif
+ 
+ #ifndef IRGRAPH_H_
  #include "../include/IRGraph.h"
+ #endif
  
  static
  void yyerror(char *s)

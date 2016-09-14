@@ -7,6 +7,9 @@
 
 #include "../include/build.h"
 
+VariablesTable var_table;
+StructuresTable struct_table;
+
 //Building assignment node
 IR_OperationNode* buildAssignNode( data_type dt ) {
 	IR_OperationNode* op_node = NULL;

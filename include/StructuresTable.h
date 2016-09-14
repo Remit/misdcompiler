@@ -8,8 +8,13 @@
 #ifndef STRUCTURESTABLE_H_
 #define STRUCTURESTABLE_H_
 
+#ifndef IRDATANODE_H_
 #include "IRDataNode.h"
+#endif
+
+#ifndef COMMON_TYPES_AND_CONSTANTS
 #include "CommonTypesAndConstants.h"
+#endif
 
 class StructuresTable {
 public:

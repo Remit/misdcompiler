@@ -1,12 +1,3 @@
-%option outfile="flex-misdcompiler.cpp"
-%option header-file="../include/flex-misdcompiler.h"
-
-%option noyywrap
-%option nounput
-
-%option bison-bridge
-%option bison-locations
-
 %{
 #include <iostream>
 #include "../include/bison-misdcompiler.h"
@@ -16,7 +7,17 @@ static int  processStructIdentifier();
 static int  processStringLiteral(const char* q, int type);
 %}
 
+%option outfile="flex-misdcompiler.cpp"
+%option header-file="../include/flex-misdcompiler.h"
+
+%option noyywrap
+%option nounput
+
+%option bison-bridge
+%option bison-locations
+
 digit            	[0-9]
+structdgt			[1-7]
 letter           	[_a-zA-Z]
 ident            	{letter}({letter}|{digit})*
 
@@ -79,35 +80,9 @@ NOT					return TNOT;
 "}"					return TRCBR;
 "("					return TLP;
 ")"					return TRP;
-STRUCT1				return processStructIdentifier();
-STRUCT2				return processStructIdentifier();
-STRUCT3				return processStructIdentifier();
-STRUCT4				return processStructIdentifier();
-STRUCT5				return processStructIdentifier();
-STRUCT6				return processStructIdentifier();
-STRUCT7				return processStructIdentifier();
-{ident}				return processIdentifier();
+STRUCT{structdgt}	{ yylval->pch = yytext; return TSTRUCTIDENT; }
+{ident}				{ yylval->pch = yytext; return TIDENT; }
 "\""             	return STRINGLITERAL; //Placeholder
 "\'"             	return STRINGLITERAL; //Placeholder
 
 %%
-
-//Identifiers processing
-static int  processIdentifier() {
-  YYSTYPE* yyLval = yyget_lval();//danger - possible errors?
-  int      retval = TIDENT;
-
-  yyLval->pch = yyget_text();//danger - possible errors? without astr()
-
-  return retval;
-}
-
-//Structure identifiers processing
-static int  processStructIdentifier() {
-  YYSTYPE* yyLval = yyget_lval();//danger - possible errors?
-  int      retval = TSTRUCTIDENT;
-
-  yyLval->pch = yyget_text();//danger - possible errors? without astr()
-
-  return retval;
-}

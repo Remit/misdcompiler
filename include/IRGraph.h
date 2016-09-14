@@ -8,10 +8,15 @@
 #ifndef IRGRAPH_H_
 #define IRGRAPH_H_
 
+#ifndef IROPERATIONNODE_H_
 #include "IROperationNode.h"
-#include "IRDataNode.h"
+#endif
 
-size_t initial_size = 1000;
+#ifndef IRDATANODE_H_
+#include "IRDataNode.h"
+#endif
+
+#define initial_size 1000
 
 class IR_Graph {
 public:

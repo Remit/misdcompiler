@@ -8,8 +8,13 @@
 #ifndef VARIABLESTABLE_H_
 #define VARIABLESTABLE_H_
 
+#ifndef IRDATANODE_H_
 #include "IRDataNode.h"
+#endif
+
+#ifndef COMMON_TYPES_AND_CONSTANTS
 #include "CommonTypesAndConstants.h"
+#endif
 
 class VariablesTable {
 public:

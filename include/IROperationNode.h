@@ -9,8 +9,13 @@
 #define IROPERATIONNODE_H_
 
 //Include section ---BEGIN---
+#ifndef IRNODE_H_
 #include "IRNode.h"
+#endif
+
+#ifndef BASEAST_H_
 #include "BaseAST.h"
+#endif
 
 //Include section ---END---
 
