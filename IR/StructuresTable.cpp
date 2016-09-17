@@ -68,7 +68,7 @@ void StructuresTable::setAddedToGraph( std::string structure_name, bool* ok ) {
 	if( it == added_to_graph.end())
 		*ok = false;
 	else {
-		added_to_graph[structure_name] = true;
+		it->second = true;
 		*ok = true;
 	}
 }
@@ -79,7 +79,7 @@ void StructuresTable::unsetAddedToGraph( std::string structure_name, bool* ok ) 
 	if( it == added_to_graph.end())
 		*ok = false;
 	else {
-		added_to_graph[structure_name] = false;
+		it->second = false;
 		*ok = true;
 	}
 }

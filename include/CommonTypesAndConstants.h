@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <iostream>
 
 extern int num_of_structures_for_usage;
 

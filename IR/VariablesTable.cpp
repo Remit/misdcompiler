@@ -136,3 +136,11 @@ void VariablesTable::unsetAddedToGraph( std::string variable_name, bool* ok ) {
 		*ok = true;
 	}
 }
+
+void VariablesTable::print() {
+	std::map< std::string, IR_DataNode* >::iterator it = data_nodes.begin();
+	while(it != data_nodes.end()) {
+		std::cout << it->first << std::endl;
+		it++;
+	}
+}

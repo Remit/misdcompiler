@@ -21,6 +21,7 @@
  #include <stdio.h>
  #include <string>
  #include <vector>
+ #include <iostream>
  
  #ifndef BUILD_H_
  #include "../include/build.h"
@@ -110,12 +111,12 @@
 
 %%
 program:
-   stmts_ls			
+   stmts_ls						{ $$ = $1; $$->addOperationNode( buildTerminalNode( ) ); }
 ;
 
 stmts_ls:
 								{ $$ = new IR_Graph(); $$->addOperationNode( buildTerminalNode( ) ); }
-|  stmts_ls stmt				{ $1->appendGraph($2); $$ = $1; }
+|  stmts_ls stmt				{ $$ = $1; $$->appendGraph($2);  }
 ;
 
 stmt:
@@ -128,21 +129,21 @@ stmt:
 
 stmts_block:
    TLCBR stmts_ls TRCBR			{ $$ = $2; }
-|  TLCBR          TRCBR			{ $$ = NULL; }
+|  TLCBR          TRCBR			{ $$ = new IR_Graph(); }
 ;
 
 expr_stmt:
-   								{ $$ = NULL; }
-|  def_expr TSEMI				{ $$ = $1; }
-|  str_delete TSEMI				{ $$ = $1; }
-|  str_bin_expr TSEMI			{ $$ = $1; }
-|  str_compare_expr TSEMI		{ $$ = $1; }
-|  str_insert_to_str TSEMI		{ $$ = $1; }
-|  str_delete_from_str TSEMI	{ $$ = $1; }
+   								{ $$ = new IR_Graph(); }
+|  def_expr						{ $$ = $1; }
+|  str_delete					{ $$ = $1; }
+|  str_bin_expr					{ $$ = $1; }
+|  str_compare_expr				{ $$ = $1; }
+|  str_insert_to_str			{ $$ = $1; }
+|  str_delete_from_str			{ $$ = $1; }
 ;
 
 def_expr:
-   id_type id_ls				{ std::vector<int>::size_type sz = idents.size(); for(unsigned i = 0; i < sz; i++) { updateDataNode_SimpleDataType(idents[i],$1); } $$ = NULL; idents.clear(); }
+   id_type id_ls				{ std::vector< std::string >::size_type sz = idents.size(); for(unsigned i = 0; i < sz; i++) { std::string elem = idents[i]; updateDataNode_SimpleDataType(elem,$1); } $$ = $2; idents.clear(); }
 ;
 
 id_type:
@@ -153,8 +154,8 @@ id_type:
 ;
 
 id_ls:
-   mem_type TIDENT				{ std::string ident_name(yylval.pch, 0, 1024); buildDataNode(ident_name,$1,IR_DATA_SIMPLE); idents.reserve(1024); idents.push_back(ident_name); $$ = NULL; }
-|  id_ls TCOMMA mem_type TIDENT { std::string ident_name(yylval.pch, 0, 1024); buildDataNode(ident_name,$3,IR_DATA_SIMPLE); idents.push_back(ident_name); $$ = NULL; }
+   mem_type TIDENT				{ std::string ident_name(yylval.pch, 0, 1024); buildDataNode(ident_name,$1,IR_DATA_SIMPLE); idents.reserve(1024); idents.push_back(ident_name); $$ = new IR_Graph(); }
+|  id_ls TCOMMA mem_type TIDENT { std::string ident_name(yylval.pch, 0, 1024); buildDataNode(ident_name,$3,IR_DATA_SIMPLE); idents.push_back(ident_name); $$ = $1; }
 ;
 
 mem_type:
@@ -163,7 +164,7 @@ mem_type:
 ;
 
 str_delete:
-   TMISDOPDELETESTR struct 		{ addStructDataNodeToGraph(* $2); IR_OperationNode* op_node = buildAssignNode(IR_DATA_STRUCTURE); $$ = new IR_Graph(); $$->addOperationNode(op_node); IR_DataNode* data_node = getStructureNodeByName(* $2); $$->addDataNode(data_node); int op_node_id = $$->getLastOperationID(); int data_node_id = $$->getLastDataID(); if((data_node_id > 0) && (op_node_id > 0)) { $$->addConnection(op_node_id,data_node_id); } }
+   TMISDOPDELETESTR struct 		{ $$ = new IR_Graph(); addStructDataNodeToGraph(* $2); IR_OperationNode* op_node = buildAssignNode(IR_DATA_STRUCTURE); $$->addOperationNode(op_node); IR_DataNode* data_node = getStructureNodeByName(* $2); $$->addDataNode(data_node); int op_node_id = $$->getLastOperationID(); int data_node_id = $$->getLastDataID(); if((data_node_id > 0) && (op_node_id > 0)) { $$->addConnection(op_node_id,data_node_id); } }
 ;
 
 str_bin_expr:
@@ -208,11 +209,11 @@ struct_op_acq_elem:
 ;
 
 struct:
-   TSTRUCTIDENT				{ std::string ident_name(yylval.pch, 0, 1024); $$ = &ident_name; }
+   TSTRUCTIDENT				{ std::string* ident_name = new std::string(yylval.pch, 0, 1024); $$ = ident_name; }
 ;
 
 ident:
-   TIDENT					{ std::string ident_name(yylval.pch, 0, 1024); $$ = &ident_name; }
+   TIDENT					{ std::string* ident_name = new std::string(yylval.pch, 0, 1024); $$ = ident_name; }
 ;
 
 expr:
@@ -225,7 +226,7 @@ expr:
 |  expr TAND expr		{ /* Only AST */ }
 |  expr TOR expr		{ /* Only AST */ }
 |  TNOT expr			{ /* Only AST */ }
-|  TIDENT				{ std::string ident_name(yylval.pch, 0, 1024); exp_vars_list.push_back(ident_name); }
+|  ident				{ exp_vars_list.push_back(* $1); }
 |  NUMLITERAL			{ /* Addition to special list and table for numbers? ???exp_vars_list??? */ }
 ;
 

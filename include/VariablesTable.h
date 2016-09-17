@@ -30,6 +30,7 @@ public:
 	IR_DataNode* getDataNodeByVariableName( std::string variable_name, bool* ok );
 	void setAddedToGraph( std::string variable_name, bool* ok );
 	void unsetAddedToGraph( std::string variable_name, bool* ok );
+	void print();
 
 private:
 	std::map< std::string, float > values;

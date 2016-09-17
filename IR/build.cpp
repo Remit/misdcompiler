@@ -69,31 +69,31 @@ void buildDataNode(std::string identifier_name, proc_type p_type, data_type dt) 
 
 // Updating data type of data node in variables table
 void updateDataNode_SimpleDataType(std::string identifier_name, int dt) {
-	bool* ok;
+	bool* ok = new bool();
 	var_table.setSimpleDataType(identifier_name,dt,ok);
 }
 
 // Building data node for structures table
 void addStructDataNodeToGraph(std::string identifier_name) {
-	bool* ok;
+	bool* ok  = new bool();
 	struct_table.setAddedToGraph(identifier_name, ok);
 }
 
 IR_DataNode* getStructureNodeByName( std::string structure_name ) {
-	bool* ok;
+	bool* ok  = new bool();
 	IR_DataNode* data_node = struct_table.getDataNodeByVariableName( structure_name, ok );
 	return data_node;
 }
 
 IR_DataNode* getVariableNodeByName( std::string variable_name ) {
-	bool* ok;
+	bool* ok = new bool();
 	IR_DataNode* data_node = var_table.getDataNodeByVariableName( variable_name, ok );
 	return data_node;
 }
 
 // Getting variable type by name
 data_type getIdentType( std::string variable_name ) {
-	bool* ok;
+	bool* ok = new bool();
 	data_type type_of_variable = var_table.getVarDataType(variable_name, ok);
 	return type_of_variable;
 }

@@ -1,0 +1,21 @@
+{
+int cpu_mem x, cpu_mem y;
+_misdop_DELETE_STR STRUCT1;
+_misdop_INTERSECT_STR STRUCT1, STRUCT2, STRUCT3;
+_misdop_GT_STR STRUCT3, STRUCT2, x;
+_misdop_INSERT_STR STRUCT1, x, y;
+_misdop_DELETE_FROM_STR STRUCT1, x;
+}
+if (x < y) then
+{
+x = y;
+}
+else
+{
+y = x;
+}
+while (a < y) do
+{
+x = x + y;
+a = a + b;
+}

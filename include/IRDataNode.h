@@ -8,7 +8,9 @@
 #ifndef IRDATANODE_H_
 #define IRDATANODE_H_
 
+#ifndef IRNODE_H_
 #include "IRNode.h"
+#endif
 
 class IR_DataNode: public IR_Node {
 public:
