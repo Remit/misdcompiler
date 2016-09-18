@@ -79,6 +79,11 @@ void addStructDataNodeToGraph(std::string identifier_name) {
 	struct_table.setAddedToGraph(identifier_name, ok);
 }
 
+void addVariableDataNodeToGraph(std::string identifier_name, int gid) {
+	bool* ok  = new bool();
+	var_table.setAddedToGraph(identifier_name, gid, ok);
+}
+
 IR_DataNode* getStructureNodeByName( std::string structure_name ) {
 	bool* ok  = new bool();
 	IR_DataNode* data_node = struct_table.getDataNodeByVariableName( structure_name, ok );
@@ -96,4 +101,36 @@ data_type getIdentType( std::string variable_name ) {
 	bool* ok = new bool();
 	data_type type_of_variable = var_table.getVarDataType(variable_name, ok);
 	return type_of_variable;
+}
+
+// Getting to know whether variable/structure is added to a graph or not.
+bool isAddedToGraph(std::string identifier_name, bool * ok) {
+	bool ret = false;
+
+	bool added_as_var;
+	bool * ok_var = new bool();
+	added_as_var = var_table.getStatusAddedToGraph(identifier_name, ok_var);
+
+	bool added_as_struct;
+	bool * ok_struct = new bool();
+	added_as_struct = struct_table.getStatusAddedToGraph(identifier_name, ok_struct);
+
+	if( ((* ok_var) == false) && ((* ok_struct) == false) )
+		(* ok) = false;
+	else {
+		(* ok) = true;
+		if( ((* ok_struct) == true) )
+			ret = added_as_struct;
+		else
+			ret = added_as_var;
+	}
+
+	return ret;
+}
+
+int identNameToGID(std::string identifier_name) {
+	int ret;
+	bool* ok = new bool();
+	ret = var_table.getGIDbyName(identifier_name, ok);
+	return ret; // must add for structs too
 }

@@ -32,3 +32,29 @@ Base_AST* IR_OperationNode::getNodeASTSubTree() {
 operation_type IR_OperationNode::getOperationType() {
 	return operationType;
 }
+
+void IR_OperationNode::print() {
+	switch(operationType) {
+		case IR_OP_TERMINATOR:
+			std::cout << "terminator type";
+			break;
+		case IR_OP_PROCESSING:
+			std::cout << "processing type";
+			break;
+		case IR_OP_BRANCH_BEGIN:
+			std::cout << "branch begin type";
+			break;
+		case IR_OP_BRANCH_END:
+			std::cout << "branch end type";
+			break;
+		case IR_OP_BRANCH_COND_BEGIN:
+			std::cout << "conditional branch begin type";
+			break;
+		case IR_OP_SEND:
+			std::cout << "send type";
+			break;
+		case IR_OP_RECEIVE:
+			std::cout << "receive type";
+			break;
+	}
+}

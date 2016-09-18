@@ -71,7 +71,7 @@ void IR_Graph::addConnection(int id_src, int id_dst) {
 		std::multimap<int,int>::iterator end = range_found.second;
 		bool connection_found = false;
 
-		while( (connection_found == false) || (iter != end) ) {
+		while( (connection_found == false) && (iter != end) ) {
 			if(iter->second == id_dst)
 				connection_found = true;
 			++iter;
@@ -79,6 +79,8 @@ void IR_Graph::addConnection(int id_src, int id_dst) {
 
 		if(!connection_found)
 			connections.insert({ id_src, id_dst });
+	} else {
+		connections.insert({ id_src, id_dst });
 	}
 }
 
@@ -420,4 +422,41 @@ int IR_Graph::getConnectionDst(int index) {
 		dst = connection->second;
 	}
 	return dst;
+}
+
+void IR_Graph::printConnections() {
+	std::cout << std::endl << "Connections: " << std::endl;
+	if(connections.begin() == connections.end())
+		std::cout << "EMPTY!";
+	std::multimap< int, int >::iterator connection;
+	for( connection = connections.begin(); connection != connections.end(); connection++ )
+		std::cout << "From " << connection->first << " to " << connection->second << std::endl;
+}
+
+void IR_Graph::printNodes() {
+	std::cout << "Operation nodes: " << std::endl;
+	std::map< int, int >::iterator op_node;
+	int op_gid, op_id;
+	IR_OperationNode* cur_op_node;
+	for( op_node = operations_index.begin(); op_node != operations_index.end(); op_node++ ) {
+		op_gid = op_node->first;
+		op_id = op_node->second;
+		cur_op_node = operations[op_id];
+		std::cout << "Node # " << op_gid << " --- node info: ";
+		cur_op_node->print();
+		std::cout << std::endl;
+	}
+
+	std::cout << std::endl << "Data nodes: " << std::endl;
+	std::map< int, int >::iterator data_node;
+	int data_gid, data_id;
+	IR_DataNode* cur_data_node;
+	for( data_node = data_index.begin(); data_node != data_index.end(); data_node++ ) {
+		data_gid = data_node->first;
+		data_id = data_node->second;
+		cur_data_node = data[data_id];
+		std::cout << "Node # " << data_gid << " --- node info: ";
+		cur_data_node->print();
+		std::cout << std::endl;
+	}
 }

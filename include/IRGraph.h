@@ -52,6 +52,10 @@ public:
 	int getConnectionSrc(int index);
 	int getConnectionDst(int index);
 
+	// Methods to output graphs for the purpose of check
+	void printConnections();
+	void printNodes();
+
 private:
 	std::vector< IR_OperationNode* > operations;
 	std::vector< IR_DataNode* > data;

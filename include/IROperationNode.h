@@ -30,6 +30,8 @@ public:
 	Base_AST* getNodeASTSubTree();
 	operation_type getOperationType();
 
+	void print();
+
 private:
 	Base_AST* nodeASTSubTree; // A part of AST tree growing from this operation node
 	operation_type operationType;

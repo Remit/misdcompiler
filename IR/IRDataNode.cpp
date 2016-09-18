@@ -31,3 +31,20 @@ void IR_DataNode::setSimpleType(int a_simple_type) {
 int IR_DataNode::getSimpleType() {
 	return simple_type;
 }
+
+void IR_DataNode::print() {
+	switch(dataType) {
+		case IR_DATA_STRUCTURE:
+			std::cout << "data structure type";
+			break;
+		case IR_DATA_SIMPLE:
+			std::cout << "simple data type";
+			break;
+		case IR_DATA_TAG:
+			std::cout << "tag type";
+			break;
+		case IR_UNDEFINED:
+			std::cout << "UNDEFINED type";
+			break;
+	}
+}

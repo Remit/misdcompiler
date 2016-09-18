@@ -25,6 +25,7 @@ public:
 	bool isAddedToGraph( std::string structure_name, bool* ok );
 	void setAddedToGraph( std::string structure_name, bool* ok );
 	void unsetAddedToGraph( std::string structure_name, bool* ok );
+	bool getStatusAddedToGraph( std::string structure_name, bool* ok );
 
 private:
 	//We should define here some kind of pointer to a structure in SPU mem.

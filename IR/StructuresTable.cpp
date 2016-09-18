@@ -83,3 +83,17 @@ void StructuresTable::unsetAddedToGraph( std::string structure_name, bool* ok ) 
 		*ok = true;
 	}
 }
+
+bool StructuresTable::getStatusAddedToGraph( std::string structure_name, bool* ok ) {
+	std::map< std::string, bool >::iterator it;
+	bool ret = false;
+	it = added_to_graph.find(structure_name);
+	if( it == added_to_graph.end())
+		*ok = false;
+	else {
+		ret = added_to_graph[structure_name];
+		*ok = true;
+	}
+
+	return ret;
+}

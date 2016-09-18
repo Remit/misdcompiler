@@ -23,6 +23,8 @@ public:
 	data_type getDataType();
 	int getSimpleType();
 
+	void print();
+
 private:
 	// Link to a corresponding identifier in data table.
 	data_type dataType;

@@ -22,6 +22,7 @@ void VariablesTable::addVariableToTable( std::string variable_name, IR_DataNode*
 	if( it == values.end()) {
 		values[variable_name] = 0;
 		initialized[variable_name] = false;
+		added_to_graph[variable_name] = -1;
 		data_nodes[variable_name] = data_node;
 	}
 }
@@ -115,24 +116,24 @@ void VariablesTable::setSimpleDataType( std::string variable_name, int dt, bool*
 	}
 }
 
-void VariablesTable::setAddedToGraph( std::string variable_name, bool* ok ) {
-	std::map< std::string, bool >::iterator it;
+void VariablesTable::setAddedToGraph( std::string variable_name, int gid, bool* ok ) {
+	std::map< std::string, int >::iterator it;
 	it = added_to_graph.find(variable_name);
 	if( it == added_to_graph.end())
 		*ok = false;
 	else {
-		added_to_graph[variable_name] = true;
+		added_to_graph[variable_name] = gid;
 		*ok = true;
 	}
 }
 
 void VariablesTable::unsetAddedToGraph( std::string variable_name, bool* ok ) {
-	std::map< std::string, bool >::iterator it;
+	std::map< std::string, int >::iterator it;
 	it = added_to_graph.find(variable_name);
 	if( it == added_to_graph.end())
 		*ok = false;
 	else {
-		added_to_graph[variable_name] = false;
+		added_to_graph[variable_name] = -1;
 		*ok = true;
 	}
 }
@@ -143,4 +144,35 @@ void VariablesTable::print() {
 		std::cout << it->first << std::endl;
 		it++;
 	}
+}
+
+bool VariablesTable::getStatusAddedToGraph( std::string variable_name, bool* ok ) {
+	std::map< std::string, int >::iterator it;
+	bool ret = false;
+	it = added_to_graph.find(variable_name);
+	if( it == added_to_graph.end())
+		*ok = false;
+	else {
+		if(added_to_graph[variable_name] > 0)
+			ret = true;
+		else
+			ret = false;
+		*ok = true;
+	}
+
+	return ret;
+}
+
+int VariablesTable::getGIDbyName( std::string variable_name, bool* ok ) {
+	std::map< std::string, int >::iterator it;
+	int ret = -1;
+	it = added_to_graph.find(variable_name);
+	if( it == added_to_graph.end())
+		*ok = false;
+	else {
+		ret = added_to_graph[variable_name];
+		*ok = true;
+	}
+
+	return ret;
 }
