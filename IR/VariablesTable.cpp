@@ -146,6 +146,13 @@ void VariablesTable::print() {
 	}
 }
 
+void VariablesTable::printAddedToGraph() {
+	std::map<std::string,int>::iterator it;
+	for(it = added_to_graph.begin(); it != added_to_graph.end(); it++) {
+		std::cout << it->first << " - " << it->second << std::endl;
+	}
+}
+
 bool VariablesTable::getStatusAddedToGraph( std::string variable_name, bool* ok ) {
 	std::map< std::string, int >::iterator it;
 	bool ret = false;
@@ -175,4 +182,26 @@ int VariablesTable::getGIDbyName( std::string variable_name, bool* ok ) {
 	}
 
 	return ret;
+}
+
+void VariablesTable::updateAddedToGraph(std::map<int,int> updateBlock) {
+	std::map<int,int>::iterator it;
+	std::map<std::string,int>::iterator it_added;
+	for (it = updateBlock.begin(); it != updateBlock.end(); ++it ) {
+		int old_id = it->first;
+		int new_id = it->second;
+		bool found = false;
+		it_added = added_to_graph.begin();
+		while( (it_added != added_to_graph.end()) && !found ) {
+			int added_old_id = it_added->second;
+
+			if(old_id == added_old_id) {
+				std::string key = it_added->first;
+				added_to_graph[key] = new_id;
+				found = true;
+			}
+
+			++it_added;
+		}
+	}
 }

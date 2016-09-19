@@ -60,8 +60,9 @@ IR_OperationNode* buildConditionalBeginBranchNode() {
 }
 
 // Building Data Node and storing it with the variable name in the variable table
-void buildDataNode(std::string identifier_name, proc_type p_type, data_type dt) {
+void buildDataNode(std::string identifier_name, proc_type p_type, data_type dt, int id) {
 	IR_DataNode* data_node = new IR_DataNode();
+	data_node->setID(id);
 	data_node->setDataType(dt);
 	data_node->setProcType(p_type);
 	var_table.addVariableToTable(identifier_name,data_node);
@@ -133,4 +134,13 @@ int identNameToGID(std::string identifier_name) {
 	bool* ok = new bool();
 	ret = var_table.getGIDbyName(identifier_name, ok);
 	return ret; // must add for structs too
+}
+
+// Updating added to graph table after renumeration of nodes
+void updateAddedToGraph(std::map<int,int> updateBlock) {
+	var_table.updateAddedToGraph(updateBlock);
+}
+
+void printAddedToGraph() {
+	var_table.printAddedToGraph();
 }

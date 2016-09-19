@@ -29,11 +29,13 @@ IR_DataNode* getStructureNodeByName( std::string structure_name );
 IR_DataNode* getVariableNodeByName( std::string variable_name );
 data_type getIdentType( std::string variable_name );
 
-void buildDataNode(std::string identifier_name, proc_type p_type, data_type dt);
+void buildDataNode(std::string identifier_name, proc_type p_type, data_type dt, int id);
 void updateDataNode_SimpleDataType(std::string identifier_name, int dt);
 void addStructDataNodeToGraph(std::string identifier_name);
 void addVariableDataNodeToGraph(std::string identifier_name, int gid);
 bool isAddedToGraph(std::string identifier_name, bool * ok);
 int identNameToGID(std::string identifier_name);
+void updateAddedToGraph(std::map<int,int> updateBlock);
+void printAddedToGraph();
 
 #endif /* BUILD_H_ */

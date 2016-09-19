@@ -15,6 +15,7 @@ StructuresTable::StructuresTable() {
 	std::ostringstream stream_for_string;
 	for(int i = 1; i <= num_of_structures_for_usage; i++ ) {
 		IR_DataNode* data_node = new IR_DataNode();
+		data_node->setID(i);
 		data_node->setDataType(IR_DATA_STRUCTURE);
 		data_node->setProcType(IR_SPU);
 		stream_for_string << i;

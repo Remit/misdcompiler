@@ -23,8 +23,8 @@ public:
 	IR_Graph();
 	virtual ~IR_Graph();
 
-	void addOperationNode( IR_OperationNode* );
-	void addDataNode( IR_DataNode* );
+	void addOperationNode( IR_OperationNode* node);
+	void addDataNode( IR_DataNode* node);
 	void addConnection( int id_src, int id_dst );
 	void appendGraph( IR_Graph* appendedGraph );
 	void appendGraph( IR_Graph* appendedGraph, int src_node );
@@ -62,9 +62,10 @@ private:
 	std::multimap< int, int > connections;
 	std::map< int, int > operations_index; // Index of operations nodes; key - global id, value - position in operations vector
 	std::map< int, int > data_index; // Index of data nodes; key - global id, value - position in data vector
-	int last_id;
 	int num_of_reserve_data;
 	int num_of_reserve_operations;
+	int last_operation_id;
+	int last_data_id;
 	bool full_clean;// Controlling the destructor's behavior; true - destroy nodes too (normal state); false - destroy everything except for nodes
 };
 

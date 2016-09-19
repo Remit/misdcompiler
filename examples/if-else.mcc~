@@ -3,4 +3,4 @@ if (x < y) then
 {
 x = y;
 }
-
+y = x;

@@ -33,6 +33,8 @@ public:
 	bool getStatusAddedToGraph( std::string variable_name, bool* ok );
 	int getGIDbyName( std::string variable_name, bool* ok );
 	void print();
+	void printAddedToGraph();
+	void updateAddedToGraph(std::map<int,int> updateBlock);
 
 private:
 	std::map< std::string, float > values;
