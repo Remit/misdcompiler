@@ -190,78 +190,132 @@ IR_Node* IR_Graph::getFirstNode() {
 	return first_node;
 }
 
-std::vector< IR_Node* > IR_Graph::getAdjacentNodes(int id) {
-	std::pair <std::multimap<int,int>::iterator, std::multimap<int,int>::iterator> range_found;
-	range_found = connections.equal_range(id);
-	std::vector< IR_Node* > adjacentNodes_ls;
+std::vector< int > IR_Graph::getOperationNodesIDs() {
+	std::vector< int > operationNodesIDs;
+	int num_of_ops = getNumOfOperations();
+	operationNodesIDs.reserve(num_of_ops);
+	std::map<int,int>::iterator it;
 
-	if(range_found.first != range_found.second) {
-		std::multimap<int,int>::iterator iter = range_found.first;
-		std::multimap<int,int>::iterator end = range_found.second;
-		int num_of_adj_nodes = std::distance(connections.begin(),end) - std::distance(connections.begin(),iter) + 1;
-		adjacentNodes_ls.reserve(num_of_adj_nodes);
-
-		while(iter != end) {
-			int adj_node_id = iter->second;
-			IR_Node* adj_node = getNode(adj_node_id);
-			adjacentNodes_ls.push_back(adj_node);
-			++iter;
-		}
+	for(int i = 0; i < num_of_ops; i++) {
+		it = operations_index.find(i);
+		if(it != operations_index.end())
+			operationNodesIDs.push_back(it->second);
 	}
 
-	return adjacentNodes_ls;
+	return operationNodesIDs;
 }
 
-std::vector< IR_Node* > IR_Graph::getAdjacentDataNodes(int id) {
-	std::pair <std::multimap<int,int>::iterator, std::multimap<int,int>::iterator> range_found;
-	range_found = connections.equal_range(id);
-	std::vector< IR_Node* > adjacentNodes_ls;
+std::vector< int > IR_Graph::getDataNodesIDs() {
+	std::vector< int > dataNodesIDs;
+	int num_of_datas = getNumOfData();
+	dataNodesIDs.reserve(num_of_datas);
+	std::map<int,int>::iterator it;
 
-	if(range_found.first != range_found.second) {
-		std::multimap<int,int>::iterator iter = range_found.first;
-		std::multimap<int,int>::iterator end = range_found.second;
-		int num_of_adj_nodes = std::distance(connections.begin(),end) - std::distance(connections.begin(),iter) + 1;
-		adjacentNodes_ls.reserve(num_of_adj_nodes);
-
-		while(iter != end) {
-			int adj_node_id = iter->second;
-			std::map<int,int>::iterator it;
-			it = data_index.find(adj_node_id);
-			if(it != data_index.end()) {
-				IR_Node* adj_node = getNode(adj_node_id);
-				adjacentNodes_ls.push_back(adj_node);
-			}
-			++iter;
-		}
+	for(int i = 0; i < num_of_datas; i++) {
+		it = data_index.find(i);
+		if(it != data_index.end())
+			dataNodesIDs.push_back(it->second);
 	}
 
-	return adjacentNodes_ls;
+	return dataNodesIDs;
 }
 
-std::vector< IR_Node* > IR_Graph::getAdjacentOperationNodes(int id) {
+std::vector< int > IR_Graph::getDependentOperationNodes(int id) {
 	std::pair <std::multimap<int,int>::iterator, std::multimap<int,int>::iterator> range_found;
 	range_found = connections.equal_range(id);
-	std::vector< IR_Node* > adjacentNodes_ls;
+	std::vector< int > dependentNodes_ls;
 
 	if(range_found.first != range_found.second) {
 		std::multimap<int,int>::iterator iter = range_found.first;
 		std::multimap<int,int>::iterator end = range_found.second;
-		int num_of_adj_nodes = std::distance(connections.begin(),end) - std::distance(connections.begin(),iter) + 1;
-		adjacentNodes_ls.reserve(num_of_adj_nodes);
+		int num_of_dependent_nodes = std::distance(connections.begin(),end) - std::distance(connections.begin(),iter) + 1;
+		dependentNodes_ls.reserve(num_of_dependent_nodes);
 
 		while(iter != end) {
-			int adj_node_id = iter->second;
+			int dependent_node_id = iter->second;
 			std::map<int,int>::iterator it;
-			it = operations_index.find(adj_node_id);
-			if(it != operations_index.end()) {
-				IR_Node* adj_node = getNode(adj_node_id);
-				adjacentNodes_ls.push_back(adj_node);
-			}
+			it = operations_index.find(dependent_node_id);
+			if(it != operations_index.end())
+				dependentNodes_ls.push_back(dependent_node_id);
 			++iter;
 		}
 	}
 
-	return adjacentNodes_ls;
+	return dependentNodes_ls;
+}
+
+std::vector< int > IR_Graph::getDependentDataNodes(int id) {
+	std::pair <std::multimap<int,int>::iterator, std::multimap<int,int>::iterator> range_found;
+	range_found = connections.equal_range(id);
+	std::vector< int > dependentNodes_ls;
+
+	if(range_found.first != range_found.second) {
+		std::multimap<int,int>::iterator iter = range_found.first;
+		std::multimap<int,int>::iterator end = range_found.second;
+		int num_of_dependent_nodes = std::distance(connections.begin(),end) - std::distance(connections.begin(),iter) + 1;
+		dependentNodes_ls.reserve(num_of_dependent_nodes);
+
+		while(iter != end) {
+			int dependent_node_id = iter->second;
+			std::map<int,int>::iterator it;
+			it = data_index.find(dependent_node_id);
+			if(it != data_index.end())
+				dependentNodes_ls.push_back(dependent_node_id);
+			++iter;
+		}
+	}
+
+	return dependentNodes_ls;
+}
+
+std::vector< int > IR_Graph::getIncomingOperationNodes(int id) {
+	std::vector< int > incomingNodes_ls;
+	int sz = 0;
+
+	std::multimap<int,int>::iterator iter = connections.begin();
+	std::multimap<int,int>::iterator end = connections.end();
+
+	while(iter != end) {
+		incomingNodes_ls.reserve(++sz);
+		int src = iter->first;
+		int dst = iter->second;
+
+		if(dst == id) {
+			std::map<int,int>::iterator it;
+			it = operations_index.find(src);
+			if(it != operations_index.end())
+				incomingNodes_ls.push_back(src);
+		}
+
+		++iter;
+	}
+
+	return incomingNodes_ls;
+}
+
+std::vector< int > IR_Graph::getIncomingDataNodes(int id) {
+	std::vector< int > incomingNodes_ls;
+	int sz = 0;
+
+	std::multimap<int,int>::iterator iter = connections.begin();
+	std::multimap<int,int>::iterator end = connections.end();
+
+	while(iter != end) {
+		incomingNodes_ls.reserve(++sz);
+		int src = iter->first;
+		int dst = iter->second;
+
+		if(dst == id) {
+			std::map<int,int>::iterator it;
+			it = data_index.find(src);
+			if(it != data_index.end())
+				incomingNodes_ls.push_back(src);
+		}
+
+		++iter;
+	}
+
+	return incomingNodes_ls;
 }
 
 int IR_Graph::getLastOperationID() {
@@ -363,6 +417,43 @@ void IR_Graph::appendGraph( IR_Graph* appendedGraph, int src_node ) {
 	}
 }
 
+void IR_Graph::copyGraph(IR_Graph* copiedGraph) {
+	if( copiedGraph != NULL ) {
+		copiedGraph->setClean(false);
+
+		// Appending operations and data nodes pointers
+		int num_of_ops_appended_graph = copiedGraph->getNumOfOperations();
+		int num_of_data_appended_graph = copiedGraph->getNumOfData();
+
+		if(num_of_ops_appended_graph > 0) {
+			int src = getLastOperationID();
+			IR_OperationNode* op_node = copiedGraph->getOperationCopy(0);
+			int dst = op_node->getID();
+			addOperationNode(op_node);
+			// Adding connection between operation nodes of two graphs
+			if( src > 0 )
+				addConnection(src,dst);
+		}
+		for(int i = 1; i < num_of_ops_appended_graph; i++) {
+			IR_OperationNode* op_node = copiedGraph->getOperationCopy(i);
+			addOperationNode(op_node);
+		}
+		for(int i = 0; i < num_of_data_appended_graph; i++) {
+			IR_DataNode* data_node = copiedGraph->getDataCopy(i);
+			addDataNode(data_node);
+		}
+
+		// Appending connections
+		int connections_num = copiedGraph->getNumOfConnections();
+		for(int i = 0; i < connections_num; i++) {
+			int src = copiedGraph->getConnectionSrc(i);
+			int dst = copiedGraph->getConnectionDst(i);
+			if(( src > 0 ) && ( dst > 0 ))
+				addConnection(src,dst);
+		}
+	}
+}
+
 int IR_Graph::getNumOfOperations() {
 	return operations.size();
 }
@@ -385,12 +476,44 @@ IR_OperationNode* IR_Graph::getOperation(int index) {
 	return return_node;
 }
 
+IR_OperationNode* IR_Graph::getOperationCopy(int index) {
+	IR_OperationNode* return_node;
+	if(index > operations.size() - 1)
+		return_node = NULL;
+	else {
+		return_node = new IR_OperationNode();
+		IR_OperationNode* tmp_node = operations[index];
+		return_node->setID(tmp_node->getID());
+		return_node->setNodeASTSubTree(tmp_node->getNodeASTSubTreeCopy());
+		return_node->setOperationType(tmp_node->getOperationType());
+		return_node->setProcType(tmp_node->getProcType());
+	}
+
+	return return_node;
+}
+
 IR_DataNode* IR_Graph::getData(int index) {
 	IR_DataNode* return_node;
 	if(index > data.size() - 1)
 		return_node = NULL;
 	else
 		return_node = data[index];
+
+	return return_node;
+}
+
+IR_DataNode* IR_Graph::getDataCopy(int index) {
+	IR_DataNode* return_node;
+	if(index > data.size() - 1)
+		return_node = NULL;
+	else {
+		return_node = new IR_DataNode();
+		IR_DataNode* tmp_node = data[index];
+		return_node->setID(tmp_node->getID());
+		return_node->setDataType(tmp_node->getDataType());
+		return_node->setSimpleType(tmp_node->getSimpleType());
+		return_node->setProcType(tmp_node->getProcType());
+	}
 
 	return return_node;
 }

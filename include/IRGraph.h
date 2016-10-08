@@ -39,22 +39,25 @@ public:
 	int getLastDataID();
 	int getFirstOperationID();
 
-	std::vector< IR_Node* > getAdjacentNodes(int id);
-	std::vector< IR_Node* > getAdjacentDataNodes(int id);
-	std::vector< IR_Node* > getAdjacentOperationNodes(int id);
+	std::vector< int > getDependentOperationNodes(int id);
+	std::vector< int > getDependentDataNodes(int id);
+	std::vector< int > getIncomingOperationNodes(int id);
+	std::vector< int > getIncomingDataNodes(int id);
+	std::vector< int > getOperationNodesIDs();
+	std::vector< int > getDataNodesIDs();
 
-	// Methods needed to append graphs
 	int getNumOfOperations();
 	int getNumOfData();
 	int getNumOfConnections();
-	IR_OperationNode* getOperation(int index);
-	IR_DataNode* getData(int index);
-	int getConnectionSrc(int index);
-	int getConnectionDst(int index);
 
 	// Methods to output graphs for the purpose of check
 	void printConnections();
 	void printNodes();
+
+	// Methods to copy graph
+	void copyGraph(IR_Graph* copiedGraph);
+	IR_OperationNode* getOperationCopy(int index);
+	IR_DataNode* getDataCopy(int index);
 
 private:
 	std::vector< IR_OperationNode* > operations;
@@ -67,6 +70,12 @@ private:
 	int last_operation_id;
 	int last_data_id;
 	bool full_clean;// Controlling the destructor's behavior; true - destroy nodes too (normal state); false - destroy everything except for nodes
+
+	// Methods needed to append graphs
+	IR_OperationNode* getOperation(int index);
+	IR_DataNode* getData(int index);
+	int getConnectionSrc(int index);
+	int getConnectionDst(int index);
 };
 
 #endif /* IRGRAPH_H_ */

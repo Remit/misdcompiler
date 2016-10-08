@@ -28,6 +28,7 @@ typedef enum {
 typedef enum {
 	IR_DATA_STRUCTURE,\
 	IR_DATA_SIMPLE,\
+	IR_DATA_SIMPLE_TMP,\
 	IR_DATA_TAG,\
 	IR_UNDEFINED
 } data_type; // Type of data nodes.

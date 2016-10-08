@@ -33,6 +33,12 @@ operation_type IR_OperationNode::getOperationType() {
 	return operationType;
 }
 
+Base_AST* IR_OperationNode::getNodeASTSubTreeCopy() {
+	//TODO describe copy method for AST
+	Base_AST* ret_AST = NULL;
+	return ret_AST;
+}
+
 void IR_OperationNode::print() {
 	switch(operationType) {
 		case IR_OP_TERMINATOR:

@@ -28,6 +28,7 @@ public:
 	void setOperationType(operation_type a_operationType);
 
 	Base_AST* getNodeASTSubTree();
+	Base_AST* getNodeASTSubTreeCopy();
 	operation_type getOperationType();
 
 	void print();
