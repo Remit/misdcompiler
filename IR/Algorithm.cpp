@@ -7,6 +7,54 @@
 
 #include "../include/Algorithm.h"
 
+// Check of presence of structure node among specific nodes of graph
+bool check_presence_str_node(std::vector< int > * op_nodes, IR_Graph * graph) {
+	bool ret_val = false;
+	int i = 0;
+	while( (i < op_nodes->size()) && !ret_val) {
+		int op_id = (*op_nodes)[i];
+		IR_OperationNode* op_node = ( IR_OperationNode* )graph->getNode(op_id);
+		if(op_node->getProcType() == IR_SPU)
+			ret_val = true;
+		i++;
+	}
+
+	return ret_val;
+}
+
+// Checking whether we have an enclosing condition node among specific nodes
+bool check_presence_enclosing_condition(std::vector< int > * op_nodes, int enclosing_guid) {
+	bool ret_val = false;
+	int i = 0;
+	while( (i < op_nodes->size()) && !ret_val) {
+		int op_id = (*op_nodes)[i];
+		if(op_id == enclosing_guid)
+			ret_val = true;
+		i++;
+	}
+
+	return ret_val;
+}
+
+// Recursive check of presence of structure processing nodes among a chain of cond-dependent nodes
+bool check_presence_structure_nodes(std::vector< int > * dependent_op_nodes, IR_Graph * graph, int enclosing_guid) {
+	bool ret_val = false;
+	if(check_presence_str_node(dependent_op_nodes,graph))
+		ret_val = true;
+	else if(check_presence_enclosing_condition(dependent_op_nodes,enclosing_guid))
+		ret_val = false;
+	else {
+		for(int i = 0; i < dependent_op_nodes->size(); i++) {
+			int op_id = (*dependent_op_nodes)[i];
+			std::vector< int > * dependent_op_nodes_next = graph->getDependentOperationNodes(op_id);
+			bool sub_ret = check_presence_structure_nodes(dependent_op_nodes_next,graph,enclosing_guid);
+			ret_val = ret_val || sub_ret;
+		}
+	}
+
+	return ret_val;
+}
+
 IR_Graph* Graph_ArithmeticLogicProcessing( IR_Graph* src_graph ) {
 	// Copying program graph to transform it to AL-form
 	IR_Graph* alp_graph = new IR_Graph();
@@ -135,31 +183,36 @@ IR_Graph* Graph_ArithmeticLogicProcessing( IR_Graph* src_graph ) {
 			std::vector< int > * dep_op_ids = alp_graph->getDependentOperationNodes(op_id);
 			std::vector< int > * dep_data_ids = alp_graph->getDependentDataNodes(op_id);
 
-			// Adding tag variable (data node) to store the result of condition calculation
-			IR_DataNode *tag_node = new IR_DataNode();
-			tag_node->setProcType(IR_CPU);
-			tag_node->setDataType(IR_DATA_TAG);
-			tag_node->setSimpleType(0);
-			alp_graph->addDataNode(tag_node);
+			// Checking whether the conditional branches require data transfer to SPU
+			int enclosing_condition_id = op_node->getConnectedNodeID();
+			if(check_presence_structure_nodes(dep_op_ids,alp_graph,enclosing_condition_id)) {
+				// Adding tag variable (data node) to store the result of condition calculation
+				IR_DataNode *tag_node = new IR_DataNode();
+				tag_node->setProcType(IR_CPU);
+				tag_node->setDataType(IR_DATA_TAG);
+				tag_node->setSimpleType(0);
+				alp_graph->addDataNode(tag_node);
 
-			// Adding connection from branch condition node to newly added tag data node
-			int tag_node_id = alp_graph->getLastDataID();
-			alp_graph->addConnection(op_id,tag_node_id);
+				// Adding connection from branch condition node to newly added tag data node
+				int tag_node_id = alp_graph->getLastDataID();
+				alp_graph->addConnection(op_id,tag_node_id);
 
-			// Adding send to SPU operations in each branch after the branch
-			// condition nodes and connections from newly added tag data node to
-			// send to SPU operations
-			for(int j = 0; j < dep_op_ids->size(); j++) {
-				IR_OperationNode* send_tag_node = new IR_OperationNode();
-				send_tag_node->setOperationType(IR_OP_SEND);
-				send_tag_node->setProcType(IR_CPU);
-				alp_graph->addOperationNode(send_tag_node);
-				int send_tag_node_id = alp_graph->getLastOperationID();
-				int cur_dep_id = (*dep_op_ids)[j];
+				// Adding send to SPU operations in each branch after the branch
+				// condition nodes and connections from newly added tag data node to
+				// send to SPU operations
+				for(int j = 0; j < dep_op_ids->size(); j++) {
+					IR_OperationNode* send_tag_node = new IR_OperationNode();
+					send_tag_node->setOperationType(IR_OP_SEND);
+					send_tag_node->setProcType(IR_CPU);
+					alp_graph->addOperationNode(send_tag_node);
+					int send_tag_node_id = alp_graph->getLastOperationID();
+					int cur_dep_id = (*dep_op_ids)[j];
 
-				alp_graph->addConnection(op_id,send_tag_node_id);
-				alp_graph->addConnection(send_tag_node_id,cur_dep_id);
-				alp_graph->removeConnection(op_id,cur_dep_id);
+					alp_graph->addConnection(op_id,send_tag_node_id);
+					alp_graph->addConnection(tag_node_id,send_tag_node_id);
+					alp_graph->addConnection(send_tag_node_id,cur_dep_id);
+					alp_graph->removeConnection(op_id,cur_dep_id);
+				}
 			}
 		}
 	}

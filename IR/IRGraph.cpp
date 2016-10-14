@@ -39,6 +39,25 @@ void IR_Graph::addOperationNode(IR_OperationNode* a_OperationNode) {
 		}
 
 		int last_id = a_OperationNode->getID();
+		if(last_id < 0) {
+			// Calculating global id for a node, which was created
+			// outside the parser (i.e. when slicing)
+			int max_gid = -1;
+			std::map<int,int>::iterator seek_iter;
+			for(seek_iter = operations_index.begin(); seek_iter != operations_index.end(); seek_iter++) {
+				int found_gid = seek_iter->first;
+				if(found_gid > max_gid)
+					max_gid = found_gid;
+			}
+
+			for(seek_iter = data_index.begin(); seek_iter != data_index.end(); seek_iter++) {
+				int found_gid = seek_iter->first;
+				if(found_gid > max_gid)
+					max_gid = found_gid;
+			}
+
+			last_id = max_gid + 1;
+		}
 		operations.push_back(a_OperationNode);
 		operations_index[last_id] = operations.size() - 1;
 		last_operation_id = last_id;
@@ -55,6 +74,25 @@ void IR_Graph::addDataNode(IR_DataNode* a_DataNode) { //Needs update to preserve
 		}
 
 		int last_id = a_DataNode->getID();
+		if(last_id < 0) {
+			// Calculating global id for a node, which was created
+			// outside the parser (i.e. when slicing)
+			int max_gid = -1;
+			std::map<int,int>::iterator seek_iter;
+			for(seek_iter = operations_index.begin(); seek_iter != operations_index.end(); seek_iter++) {
+				int found_gid = seek_iter->first;
+				if(found_gid > max_gid)
+					max_gid = found_gid;
+			}
+
+			for(seek_iter = data_index.begin(); seek_iter != data_index.end(); seek_iter++) {
+				int found_gid = seek_iter->first;
+				if(found_gid > max_gid)
+					max_gid = found_gid;
+			}
+
+			last_id = max_gid + 1;
+		}
 		data.push_back(a_DataNode);
 		data_index[last_id] = data.size() - 1;
 		last_data_id = last_id;

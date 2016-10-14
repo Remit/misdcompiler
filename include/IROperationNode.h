@@ -31,11 +31,15 @@ public:
 	Base_AST* getNodeASTSubTreeCopy();
 	operation_type getOperationType();
 
+	void setConnectedNodeID(int gid);
+	int getConnectedNodeID();
+
 	void print();
 
 private:
 	Base_AST* nodeASTSubTree; // A part of AST tree growing from this operation node
 	operation_type operationType;
+	int connected_node_gid; // Global ID of node from node pair (used for end condition nodes in if-then-else and loop stmts)
 };
 
 #endif /* IROPERATIONNODE_H_ */

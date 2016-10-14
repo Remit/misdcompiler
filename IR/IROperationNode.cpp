@@ -9,7 +9,7 @@
 
 IR_OperationNode::IR_OperationNode() {
 	// TODO Auto-generated constructor stub
-
+	connected_node_gid = -1;
 }
 
 IR_OperationNode::~IR_OperationNode() {
@@ -63,4 +63,12 @@ void IR_OperationNode::print() {
 			std::cout << "receive type";
 			break;
 	}
+}
+
+void IR_OperationNode::setConnectedNodeID(int gid) {
+	connected_node_gid = gid;
+}
+
+int IR_OperationNode::getConnectedNodeID() {
+	return connected_node_gid;
 }

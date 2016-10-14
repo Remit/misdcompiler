@@ -49,6 +49,7 @@ public:
 	int getNumOfOperations();
 	int getNumOfData();
 	int getNumOfConnections();
+	int getLastID();
 
 	// Methods to output graphs for the purpose of check
 	void printConnections();
