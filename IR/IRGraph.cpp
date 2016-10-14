@@ -171,6 +171,8 @@ IR_Node* IR_Graph::getNode(int a_id) {
 			if(it != data_index.end()) {
 				int pos = it->second;
 				ret_node = data[pos];
+			} else {
+				ret_node = NULL;
 			}
 	} else {
 		int pos = it->second;

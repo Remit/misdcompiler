@@ -12,8 +12,9 @@ StructuresTable::StructuresTable() {
 	// The number of structures is constant, so we initialize them simultaneously.
 	// Structures can be erased by deleting data from SPU mem (or disassigning pointer to a certain structure in SPU mem).
 	// Structures can be modified using external data. The format of the data must be provided beforehand.
-	std::ostringstream stream_for_string;
+
 	for(int i = 1; i <= num_of_structures_for_usage; i++ ) {
+		std::ostringstream stream_for_string;
 		IR_DataNode* data_node = new IR_DataNode();
 		data_node->setID(i);
 		data_node->setDataType(IR_DATA_STRUCTURE);

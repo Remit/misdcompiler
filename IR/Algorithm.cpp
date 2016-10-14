@@ -167,9 +167,12 @@ IR_Graph* Graph_ArithmeticLogicProcessing( IR_Graph* src_graph ) {
 	for(int i = 0; i < data_cnt; i++) {
 		int data_id = data_ids[i];
 
-		IR_DataNode* data_node = ( IR_DataNode* )alp_graph->getNode(data_id);
-		if(data_node->getProcType() == IR_SPU)
-			alp_graph->removeNode(data_id);
+		IR_Node* node = alp_graph->getNode(data_id);
+		if(node != NULL) {
+			IR_DataNode* data_node = ( IR_DataNode* )node;
+			if(data_node->getProcType() == IR_SPU)
+				alp_graph->removeNode(data_id);
+		}
 	}
 
 	return alp_graph;

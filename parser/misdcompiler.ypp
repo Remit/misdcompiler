@@ -23,6 +23,8 @@
  #include <vector>
  #include <iostream>
  
+ #include "../include/Algorithm.h"
+ 
  #ifndef BUILD_H_
  #include "../include/build.h"
  #endif
@@ -113,7 +115,7 @@
 
 %%
 program:
-   stmts_ls						{ $$ = new IR_Graph(); last_node++; IR_OperationNode * terminalNode = buildTerminalNode( ); terminalNode->setID(last_node); $$->addOperationNode( terminalNode ); $$->appendGraph($1); last_node++; IR_OperationNode * terminalNode_end = buildTerminalNode( ); terminalNode_end->setID(last_node); IR_Graph* last_gr = new IR_Graph(); last_gr->addOperationNode( terminalNode_end ); $$->appendGraph(last_gr); $$->printNodes(); $$->printConnections(); }
+   stmts_ls						{ $$ = new IR_Graph(); last_node++; IR_OperationNode * terminalNode = buildTerminalNode( ); terminalNode->setID(last_node); $$->addOperationNode( terminalNode ); $$->appendGraph($1); last_node++; IR_OperationNode * terminalNode_end = buildTerminalNode( ); terminalNode_end->setID(last_node); IR_Graph* last_gr = new IR_Graph(); last_gr->addOperationNode( terminalNode_end ); $$->appendGraph(last_gr); $$->printNodes(); $$->printConnections(); IR_Graph* al_graph = Graph_ArithmeticLogicProcessing($$); al_graph->printNodes(); al_graph->printConnections();}
 ;
 
 stmts_ls:
