@@ -39,12 +39,12 @@ public:
 	int getLastDataID();
 	int getFirstOperationID();
 
-	std::vector< int > getDependentOperationNodes(int id);
-	std::vector< int > getDependentDataNodes(int id);
-	std::vector< int > getIncomingOperationNodes(int id);
-	std::vector< int > getIncomingDataNodes(int id);
-	std::vector< int > getOperationNodesIDs();
-	std::vector< int > getDataNodesIDs();
+	std::vector< int > * getDependentOperationNodes(int id);
+	std::vector< int > * getDependentDataNodes(int id);
+	std::vector< int > * getIncomingOperationNodes(int id);
+	std::vector< int > * getIncomingDataNodes(int id);
+	std::vector< int > * getOperationNodesIDs();
+	std::vector< int > * getDataNodesIDs();
 
 	int getNumOfOperations();
 	int getNumOfData();

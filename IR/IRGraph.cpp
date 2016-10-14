@@ -98,6 +98,12 @@ void IR_Graph::removeNode(int a_id) {
 			int pos = it->second;
 			delete data[pos];
 			data.erase(data.begin() + pos);
+			// Correcting links to nodes
+			std::map<int,int>::iterator iter;
+			for(iter = data_index.begin(); iter != data_index.end(); iter++) {
+				if(iter->second > pos)
+					iter->second--;
+			}
 		}
 	} else {// Deleting an element from operations vertices in case a_id is a global id for operation node
 		node_found = true;
@@ -105,6 +111,11 @@ void IR_Graph::removeNode(int a_id) {
 		int pos = it->second;
 		delete operations[pos];
 		operations.erase(operations.begin() + pos);
+		std::map<int,int>::iterator iter;
+		for(iter = operations_index.begin(); iter != operations_index.end(); iter++) {
+			if(iter->second > pos)
+				iter->second--;
+		}
 	}
 
 	if(node_found) { // Removing connections
@@ -192,53 +203,47 @@ IR_Node* IR_Graph::getFirstNode() {
 	return first_node;
 }
 
-std::vector< int > IR_Graph::getOperationNodesIDs() {
-	std::vector< int > operationNodesIDs;
+std::vector< int > * IR_Graph::getOperationNodesIDs() {
+	std::vector< int > * operationNodesIDs = new std::vector< int >;
 	int num_of_ops = getNumOfOperations();
-	operationNodesIDs.reserve(num_of_ops);
-	std::map<int,int>::iterator it;
-
-	for(int i = 0; i < num_of_ops; i++) {
-		it = operations_index.find(i);
-		if(it != operations_index.end())
-			operationNodesIDs.push_back(it->second);
+	operationNodesIDs->reserve(num_of_ops);
+	std::map< int, int >::iterator it;
+	for(it = operations_index.begin(); it != operations_index.end(); it++) {
+		operationNodesIDs->push_back(it->first);
 	}
 
 	return operationNodesIDs;
 }
 
-std::vector< int > IR_Graph::getDataNodesIDs() {
-	std::vector< int > dataNodesIDs;
+std::vector< int > * IR_Graph::getDataNodesIDs() {
+	std::vector< int > * dataNodesIDs = new std::vector< int >;
 	int num_of_datas = getNumOfData();
-	dataNodesIDs.reserve(num_of_datas);
+	dataNodesIDs->reserve(num_of_datas);
 	std::map<int,int>::iterator it;
-
-	for(int i = 0; i < num_of_datas; i++) {
-		it = data_index.find(i);
-		if(it != data_index.end())
-			dataNodesIDs.push_back(it->second);
+	for(it = data_index.begin(); it != data_index.end(); it++) {
+		dataNodesIDs->push_back(it->first);
 	}
 
 	return dataNodesIDs;
 }
 
-std::vector< int > IR_Graph::getDependentOperationNodes(int id) {
+std::vector< int > * IR_Graph::getDependentOperationNodes(int id) {
 	std::pair <std::multimap<int,int>::iterator, std::multimap<int,int>::iterator> range_found;
 	range_found = connections.equal_range(id);
-	std::vector< int > dependentNodes_ls;
+	std::vector< int > * dependentNodes_ls = new std::vector< int >;
 
 	if(range_found.first != range_found.second) {
 		std::multimap<int,int>::iterator iter = range_found.first;
 		std::multimap<int,int>::iterator end = range_found.second;
 		int num_of_dependent_nodes = std::distance(connections.begin(),end) - std::distance(connections.begin(),iter) + 1;
-		dependentNodes_ls.reserve(num_of_dependent_nodes);
+		dependentNodes_ls->reserve(num_of_dependent_nodes);
 
 		while(iter != end) {
 			int dependent_node_id = iter->second;
 			std::map<int,int>::iterator it;
 			it = operations_index.find(dependent_node_id);
 			if(it != operations_index.end())
-				dependentNodes_ls.push_back(dependent_node_id);
+				dependentNodes_ls->push_back(dependent_node_id);
 			++iter;
 		}
 	}
@@ -246,23 +251,23 @@ std::vector< int > IR_Graph::getDependentOperationNodes(int id) {
 	return dependentNodes_ls;
 }
 
-std::vector< int > IR_Graph::getDependentDataNodes(int id) {
+std::vector< int > * IR_Graph::getDependentDataNodes(int id) {
 	std::pair <std::multimap<int,int>::iterator, std::multimap<int,int>::iterator> range_found;
 	range_found = connections.equal_range(id);
-	std::vector< int > dependentNodes_ls;
+	std::vector< int > * dependentNodes_ls = new std::vector< int >;
 
 	if(range_found.first != range_found.second) {
 		std::multimap<int,int>::iterator iter = range_found.first;
 		std::multimap<int,int>::iterator end = range_found.second;
 		int num_of_dependent_nodes = std::distance(connections.begin(),end) - std::distance(connections.begin(),iter) + 1;
-		dependentNodes_ls.reserve(num_of_dependent_nodes);
+		dependentNodes_ls->reserve(num_of_dependent_nodes);
 
 		while(iter != end) {
 			int dependent_node_id = iter->second;
 			std::map<int,int>::iterator it;
 			it = data_index.find(dependent_node_id);
 			if(it != data_index.end())
-				dependentNodes_ls.push_back(dependent_node_id);
+				dependentNodes_ls->push_back(dependent_node_id);
 			++iter;
 		}
 	}
@@ -270,15 +275,15 @@ std::vector< int > IR_Graph::getDependentDataNodes(int id) {
 	return dependentNodes_ls;
 }
 
-std::vector< int > IR_Graph::getIncomingOperationNodes(int id) {
-	std::vector< int > incomingNodes_ls;
+std::vector< int > * IR_Graph::getIncomingOperationNodes(int id) {
+	std::vector< int > * incomingNodes_ls = new std::vector< int >;
 	int sz = 0;
 
 	std::multimap<int,int>::iterator iter = connections.begin();
 	std::multimap<int,int>::iterator end = connections.end();
 
 	while(iter != end) {
-		incomingNodes_ls.reserve(++sz);
+		incomingNodes_ls->reserve(++sz);
 		int src = iter->first;
 		int dst = iter->second;
 
@@ -286,7 +291,7 @@ std::vector< int > IR_Graph::getIncomingOperationNodes(int id) {
 			std::map<int,int>::iterator it;
 			it = operations_index.find(src);
 			if(it != operations_index.end())
-				incomingNodes_ls.push_back(src);
+				incomingNodes_ls->push_back(src);
 		}
 
 		++iter;
@@ -295,15 +300,15 @@ std::vector< int > IR_Graph::getIncomingOperationNodes(int id) {
 	return incomingNodes_ls;
 }
 
-std::vector< int > IR_Graph::getIncomingDataNodes(int id) {
-	std::vector< int > incomingNodes_ls;
+std::vector< int > * IR_Graph::getIncomingDataNodes(int id) {
+	std::vector< int > * incomingNodes_ls = new std::vector< int >;
 	int sz = 0;
 
 	std::multimap<int,int>::iterator iter = connections.begin();
 	std::multimap<int,int>::iterator end = connections.end();
 
 	while(iter != end) {
-		incomingNodes_ls.reserve(++sz);
+		incomingNodes_ls->reserve(++sz);
 		int src = iter->first;
 		int dst = iter->second;
 
@@ -311,7 +316,7 @@ std::vector< int > IR_Graph::getIncomingDataNodes(int id) {
 			std::map<int,int>::iterator it;
 			it = data_index.find(src);
 			if(it != data_index.end())
-				incomingNodes_ls.push_back(src);
+				incomingNodes_ls->push_back(src);
 		}
 
 		++iter;
