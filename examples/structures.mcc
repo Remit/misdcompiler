@@ -1,10 +1,5 @@
 int cpu_mem x, cpu_mem y;
-_misdop_UNION_STR STRUCT1, STRUCT2, STRUCT7;
-if (x < y) then
+for (x = y; x < y; x = x + y)
 {
-x = y;
-}
-else
-{
-y = x;
+_misdop_LT_STR STRUCT1, STRUCT2, x;
 }

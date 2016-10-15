@@ -532,6 +532,7 @@ IR_OperationNode* IR_Graph::getOperationCopy(int index) {
 		return_node->setNodeASTSubTree(tmp_node->getNodeASTSubTreeCopy());
 		return_node->setOperationType(tmp_node->getOperationType());
 		return_node->setProcType(tmp_node->getProcType());
+		return_node->setConnectedNodeID(tmp_node->getConnectedNodeID());
 	}
 
 	return return_node;

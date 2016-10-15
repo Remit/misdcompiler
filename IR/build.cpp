@@ -56,6 +56,7 @@ IR_OperationNode* buildConditionalBeginBranchNode() {
 	op_node = new IR_OperationNode();
 	op_node->setOperationType(IR_OP_BRANCH_COND_BEGIN);
 	op_node->setProcType(IR_CPU);
+	op_node->setConnectedNodeID(13);
 	return op_node;
 }
 
