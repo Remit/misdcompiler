@@ -323,8 +323,9 @@ IR_Graph* Graph_StructureProcessing( IR_Graph* src_graph ) {
 					}
 
 				branch_ids_for_deletion.push_back(op_id);
-				sp_graph->removeNode(op_id);
 			}
+
+			sp_graph->removeNode(op_id);
 		} else if (op_node->getOperationType() == IR_OP_BRANCH_END) {
 			// Checking whether end branch node should be deleted with begin condition node.
 			// If yes, deleting the current end branch node and

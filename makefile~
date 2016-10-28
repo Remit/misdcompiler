@@ -14,7 +14,7 @@ main.o:
 	g++ -c -g main.cpp
 
 clean:
-	cd parser && make clean
+	cd parsmer && make clean
 	cd IR && make clean
 	-rm main.o misdcompiler
 	-rm $(GCH_FILES)
