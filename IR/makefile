@@ -5,6 +5,8 @@ all: $(OBJ_FILES)
 
 %.o: %.cpp ../include/%.h
 	g++ -c -o $@ $<
-	
+
+.SILENT : clean
+.PHONY : clean	
 clean:
-	-rm $(OBJ_FILES)
+	-rm -f $(OBJ_FILES)

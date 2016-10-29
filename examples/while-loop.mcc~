@@ -1,6 +1,0 @@
-int cpu_mem x, cpu_mem y, cpu_mem a;
-while (x < y) do
-{
-x += a;
-}
-y = x / a;

@@ -1,6 +1,0 @@
-int cpu_mem x, cpu_mem y;
-if (x < y) then
-{
-x = y;
-}
-y = x;

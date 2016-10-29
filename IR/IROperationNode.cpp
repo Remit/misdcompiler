@@ -10,6 +10,7 @@
 IR_OperationNode::IR_OperationNode() {
 	// TODO Auto-generated constructor stub
 	connected_node_gid = -1;
+	last_loop_node_gid = -1;
 }
 
 IR_OperationNode::~IR_OperationNode() {
@@ -71,4 +72,12 @@ void IR_OperationNode::setConnectedNodeID(int gid) {
 
 int IR_OperationNode::getConnectedNodeID() {
 	return connected_node_gid;
+}
+
+void IR_OperationNode::setLastNodeID_forLoops(int gid) {
+	last_loop_node_gid = gid;
+}
+
+int IR_OperationNode::getLastNodeID_forLoops() {
+	return last_loop_node_gid;
 }

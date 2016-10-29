@@ -14,3 +14,7 @@ Commands for translation and compilation of misdcompiler.ypp:
 Commands for translation and compilation of misdcompiler.lex:
 - translation: flex misdcompiler.lex
 - compilation using tokens defs and other defs by bison: g++ -o misdlex flex-misdcompiler.cpp misdcompiler.tab.hpp -lfl
+
+## Development ideas
+- graphs visualisation using JS (there are special libraries): generating JS page and opening it with browser (use flag to specify whether we need to generate those visualisations or not
+- libraries for different applications (e.g. graph databases)

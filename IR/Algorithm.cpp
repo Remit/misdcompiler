@@ -56,6 +56,47 @@ bool check_presence_structure_nodes(std::vector< int > * dependent_op_nodes, IR_
 	return ret_val;
 }
 
+// Checking whether there are CPU data nodes among nodes under consideration
+bool check_presence_cpu_data_nodes(std::vector< int > * data_nodes, IR_Graph * graph) {
+	bool check = false;
+	if(data_nodes != NULL) {
+		int j = 0;
+		while( !check && (j < data_nodes->size())) {
+			int data_id = (*data_nodes)[j];
+			IR_DataNode* data_node = ( IR_DataNode* )graph->getNode(data_id);
+			if(data_node != NULL) {
+				if(data_node->getProcType() == IR_CPU) {
+					check = true;
+				}
+			}
+			j++;
+		}
+	}
+
+	return check;
+}
+
+//// Getting the last operation node that is directly or indirectly dependent
+//// on conditional begin node and at the same time conditional begin node
+//// depends on this node.
+//bool get_last_dep_cond_node(std::vector< int > * dep_op_ids, IR_Graph* graph, int inc_id) {
+//	bool ret = false;
+//	if(dep_op_ids != NULL) {
+//		for(int i = 0; i < dep_op_ids->size(); i++) {
+//			int op_id = (*dep_op_ids)[i];
+//			if(op_id == inc_id)
+//				ret = true;
+//			else {
+//				std::vector< int > * dep_op_ids_dep = graph->getDependentOperationNodes(op_id);
+//				bool ret_recursive = get_last_dep_cond_node(dep_op_ids_dep, graph, inc_id);
+//				ret = ret || ret_recursive;
+//			}
+//		}
+//	}
+//
+//	return ret;
+//}
+
 IR_Graph* Graph_ArithmeticLogicProcessing( IR_Graph* src_graph ) {
 	// Copying program graph to transform it to AL-form
 	IR_Graph* alp_graph = new IR_Graph();
@@ -284,11 +325,6 @@ IR_Graph* Graph_StructureProcessing( IR_Graph* src_graph ) {
 
 				op_node->setOperationType(IR_OP_BRANCH_BEGIN);
 				op_node->setProcType(IR_SPU);
-/*				IR_OperationNode* op_simple_branch_node = new IR_OperationNode();
-				op_simple_branch_node->setProcType(IR_SPU);
-				op_simple_branch_node->setOperationType(IR_OP_BRANCH_BEGIN);
-				sp_graph->addOperationNode(op_simple_branch_node);
-				int op_simple_branch_node_id = sp_graph->getLastOperationID();*/
 
 				IR_DataNode* data_tag_node = new IR_DataNode();
 				data_tag_node->setProcType(IR_SPU);
@@ -302,15 +338,15 @@ IR_Graph* Graph_StructureProcessing( IR_Graph* src_graph ) {
 				sp_graph->addConnection(data_tag_node_id,op_id);
 
 				for(int j = 0; j < inc_op_ids->size(); j++) {
-					//TODO: BUG - the last node of the cycle connects with the receive node but should with the begin branch 
 					int inc_op_id = (*inc_op_ids)[j];
-					sp_graph->addConnection(inc_op_id,op_recv_node_id);
-				}
+					int last_loop_body_id = op_node->getLastNodeID_forLoops();
 
-				/*for(int j = 0; j < dep_op_ids->size(); j++) {
-					int dep_op_id = (*dep_op_ids)[j];
-					sp_graph->addConnection(op_simple_branch_node_id,dep_op_id);
-				}*/
+					if(inc_op_id != last_loop_body_id) {
+						sp_graph->addConnection(inc_op_id,op_recv_node_id);
+						// Deleting connections with previous nodes
+						sp_graph->removeConnection(inc_op_id,op_id);
+					}
+				}
 			} else {
 				// If there are no structure nodes among
 				// branches of checked conditional node
@@ -379,7 +415,7 @@ IR_Graph* Graph_StructureProcessing( IR_Graph* src_graph ) {
 
 				sp_graph->removeNode(op_id);
 			}
-		} else if(op_node->getProcType() == IR_SPU) {
+		} else if((op_node->getProcType() == IR_SPU) && (op_node->getOperationType() == IR_OP_PROCESSING)) {
 			// Considering connection possibilities for current node
 			std::vector< int > * inc_op_ids = sp_graph->getIncomingOperationNodes(op_id);
 			std::vector< int > * inc_data_ids = sp_graph->getIncomingDataNodes(op_id);
@@ -391,41 +427,57 @@ IR_Graph* Graph_StructureProcessing( IR_Graph* src_graph ) {
 			// them are stored in CPU memory and processed by CPU.
 			int last_recv_added_id = 0;
 
-			for( int j = 0; j < inc_data_ids->size(); j++) {
-				int data_id = (*inc_data_ids)[j];
-				IR_DataNode* data_node = ( IR_DataNode* )sp_graph->getNode(data_id);
-				if(data_node != NULL) {
-					if(data_node->getProcType() == IR_CPU) {
-						// Setting temporary type
-						data_node->setDataType(IR_DATA_SIMPLE_TMP);
+			bool check_cpu_data_presence = check_presence_cpu_data_nodes(inc_data_ids,sp_graph);
+			if(check_cpu_data_presence) {
+				for(int k = 0; k < inc_op_ids->size(); k++) {
+					sp_graph->removeConnection((*inc_op_ids)[k],op_id);
+				}
 
-						// Creating and adding new receive from CPU node to S-graph
-						IR_OperationNode* op_trans_node = new IR_OperationNode();
-						op_trans_node->setProcType(IR_CPU);
-						op_trans_node->setOperationType(IR_OP_RECEIVE);
-						sp_graph->addOperationNode(op_trans_node);
-						int op_recv_id = sp_graph->getLastOperationID();
+				for( int j = 0; j < inc_data_ids->size(); j++) {
+					int data_id = (*inc_data_ids)[j];
+					IR_DataNode* data_node = ( IR_DataNode* )sp_graph->getNode(data_id);
+					if(data_node != NULL) {
+						if(data_node->getProcType() == IR_CPU) {
+							// Setting temporary type
+							data_node->setDataType(IR_DATA_SIMPLE_TMP);
 
-						// Adding to graph a connection between encountered CPU
-						// processed data node and newly created receive from CPU node
-						sp_graph->addConnection(op_recv_id,data_id);
+							// Removing connections with begin branch operation nodes
+							std::vector< int > * dep_op_ids_for_dn = sp_graph->getDependentOperationNodes(data_id);
+							if(dep_op_ids_for_dn != NULL)
+								for(int k = 0; k < dep_op_ids_for_dn->size(); k++) {
+									IR_OperationNode* op_node_dep = ( IR_OperationNode* )sp_graph->getNode((*dep_op_ids_for_dn)[k]);
+									if(op_node_dep != NULL)
+										if(op_node_dep->getOperationType() == IR_OP_BRANCH_BEGIN)
+											sp_graph->removeConnection(data_id,(*dep_op_ids_for_dn)[k]);
+								}
 
-						// Adding connections for predecessors to new node
-						// Removing connections of current node with predecessors
-						for(int k = 0; k < inc_op_ids->size(); k++) {
-							sp_graph->removeConnection((*inc_op_ids)[k],op_id);
-							sp_graph->addConnection((*inc_op_ids)[k],op_recv_id);
+							// Creating and adding new receive from CPU node to S-graph
+							IR_OperationNode* op_trans_node = new IR_OperationNode();
+							op_trans_node->setProcType(IR_CPU);
+							op_trans_node->setOperationType(IR_OP_RECEIVE);
+							sp_graph->addOperationNode(op_trans_node);
+							int op_recv_id = sp_graph->getLastOperationID();
+
+							// Adding to graph a connection between encountered CPU
+							// processed data node and newly created receive from CPU node
+							sp_graph->addConnection(op_recv_id,data_id);
+
+							// Adding connections for predecessors to new node
+							// Removing connections of current node with predecessors
+							for(int k = 0; k < inc_op_ids->size(); k++) {
+								sp_graph->addConnection((*inc_op_ids)[k],op_recv_id);
+							}
+
+							// Receive node is now a sole predecessor for other
+							// possible receive nodes
+							inc_op_ids->clear();
+							inc_op_ids->reserve(1);
+							inc_op_ids->push_back(op_recv_id);
+
+							// Saving last added id in order to add connection
+							// between last added send node and dependent operation nodes
+							last_recv_added_id = op_recv_id;
 						}
-
-						// Receive node is now a sole predecessor for other
-						// possible receive nodes
-						inc_op_ids->clear();
-						inc_op_ids->reserve(1);
-						inc_op_ids->push_back(op_recv_id);
-
-						// Saving last added id in order to add connection
-						// between last added send node and dependent operation nodes
-						last_recv_added_id = op_recv_id;
 					}
 				}
 			}
@@ -435,42 +487,44 @@ IR_Graph* Graph_StructureProcessing( IR_Graph* src_graph ) {
 			// them are stored in CPU memory and processed by CPU.
 			int last_send_added_id = 0;
 
-			for( int j = 0; j < dep_data_ids->size(); j++) {
-				int data_id = (*dep_data_ids)[j];
-				IR_DataNode* data_node = ( IR_DataNode* )sp_graph->getNode(data_id);
-				if(data_node != NULL) {
-					if(data_node->getProcType() == IR_CPU) {
-						// Setting temporary type
-						data_node->setDataType(IR_DATA_SIMPLE_TMP);
+			check_cpu_data_presence = check_presence_cpu_data_nodes(dep_data_ids,sp_graph);
+			if(check_cpu_data_presence) {
+				// Remove unnecessary connections from current node to dependent ops nodes
+				for(int k = 0; k < dep_op_ids->size(); k++) {
+					sp_graph->removeConnection(op_id,(*dep_op_ids)[k]);
+				}
+				for( int j = 0; j < dep_data_ids->size(); j++) {
+					int data_id = (*dep_data_ids)[j];
+					IR_DataNode* data_node = ( IR_DataNode* )sp_graph->getNode(data_id);
+					if(data_node != NULL) {
+						if(data_node->getProcType() == IR_CPU) {
+							// Setting temporary type
+							data_node->setDataType(IR_DATA_SIMPLE_TMP);
 
-						// Creating and adding new send from SPU node to S-graph
-						IR_OperationNode* op_trans_node = new IR_OperationNode();
-						op_trans_node->setProcType(IR_SPU);
-						op_trans_node->setOperationType(IR_OP_SEND);
-						sp_graph->addOperationNode(op_trans_node);
-						int op_send_id = sp_graph->getLastOperationID();
+							// Creating and adding new send from SPU node to S-graph
+							IR_OperationNode* op_trans_node = new IR_OperationNode();
+							op_trans_node->setProcType(IR_SPU);
+							op_trans_node->setOperationType(IR_OP_SEND);
+							sp_graph->addOperationNode(op_trans_node);
+							int op_send_id = sp_graph->getLastOperationID();
 
-						// Adding to graph a connection between encountered CPU
-						// processed result data node and newly created send to CPU node
-						sp_graph->addConnection(data_id,op_send_id);
+							// Adding to graph a connection between encountered CPU
+							// processed result data node and newly created send to CPU node
+							sp_graph->addConnection(data_id,op_send_id);
 
-						// Adding connections for predecessor - SPU proc. node
-						sp_graph->addConnection(op_id,op_send_id);
+							// Adding connections for predecessor - SPU proc. node
+							sp_graph->addConnection(op_id,op_send_id);
 
-						// Remove unnecessary connections from current node to dependent ops nodes
-						for(int k = 0; k < dep_op_ids->size(); k++) {
-							sp_graph->removeConnection(op_id,(*dep_op_ids)[k]);
+							// Send node is now a sole predecessor for other
+							// possible send nodes
+							inc_op_ids->clear();
+							inc_op_ids->reserve(1);
+							inc_op_ids->push_back(op_send_id);
+
+							// Saving last added id in order to add connection
+							// between last added send node and dependent operation nodes
+							last_send_added_id = op_send_id;
 						}
-
-						// Send node is now a sole predecessor for other
-						// possible send nodes
-						inc_op_ids->clear();
-						inc_op_ids->reserve(1);
-						inc_op_ids->push_back(op_send_id);
-
-						// Saving last added id in order to add connection
-						// between last added send node and dependent operation nodes
-						last_send_added_id = op_send_id;
 					}
 				}
 			}

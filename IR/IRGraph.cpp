@@ -195,12 +195,13 @@ void IR_Graph::removeConnection(int id_src, int id_dst) {
 	} else if( (id_src > -1) && (id_dst > -1)) { // Removing single connection from id_src to id_dst
 		std::pair <std::multimap<int,int>::iterator, std::multimap<int,int>::iterator> range_found;
 		range_found = connections.equal_range(id_src);
+
 		if(range_found.first != range_found.second) {
 			std::multimap<int,int>::iterator iter = range_found.first;
 			std::multimap<int,int>::iterator end = range_found.second;
 			bool connection_found = false;
 
-			while( (connection_found == false) || (iter != end) ) {
+			while( (connection_found == false) && (iter != end) ) {
 				if(iter->second == id_dst) {
 					connection_found = true;
 					connections.erase(iter);
@@ -533,6 +534,7 @@ IR_OperationNode* IR_Graph::getOperationCopy(int index) {
 		return_node->setOperationType(tmp_node->getOperationType());
 		return_node->setProcType(tmp_node->getProcType());
 		return_node->setConnectedNodeID(tmp_node->getConnectedNodeID());
+		return_node->setLastNodeID_forLoops(tmp_node->getLastNodeID_forLoops());
 	}
 
 	return return_node;

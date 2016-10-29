@@ -11,9 +11,11 @@ bison-misdcompiler.cpp: misdcompiler.ypp
 	
 flex-misdcompiler.cpp: misdcompiler.lex
 	flex misdcompiler.lex
-	
+
+.SILENT : clean
+.PHONY : clean	
 clean:
-	-rm flex-misdcompiler.o bison-misdcompiler.o \
+	-rm -f flex-misdcompiler.o bison-misdcompiler.o \
 		 flex-misdcompiler.cpp bison-misdcompiler.cpp \
 		 ../include/bison-misdcompiler.h.gch ../include/flex-misdcompiler.h.gch \
 		 ../include/bison-misdcompiler.h ../include/flex-misdcompiler.h

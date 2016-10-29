@@ -33,6 +33,8 @@ public:
 
 	void setConnectedNodeID(int gid);
 	int getConnectedNodeID();
+	void setLastNodeID_forLoops(int gid);
+	int getLastNodeID_forLoops();
 
 	void print();
 
@@ -40,6 +42,7 @@ private:
 	Base_AST* nodeASTSubTree; // A part of AST tree growing from this operation node
 	operation_type operationType;
 	int connected_node_gid; // Global ID of node from node pair (used for end condition nodes in if-then-else and loop stmts)
+	int last_loop_node_gid; // Global ID of the last operation node in the body of loop
 };
 
 #endif /* IROPERATIONNODE_H_ */
