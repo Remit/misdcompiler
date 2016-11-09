@@ -5,7 +5,7 @@
  *      Author: remit
  */
 
-#include "..\include\BaseAST.h"
+#include "../include/BaseAST.h"
 
 Base_AST::Base_AST() {
 	// TODO Auto-generated constructor stub

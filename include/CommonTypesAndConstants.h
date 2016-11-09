@@ -13,7 +13,7 @@ typedef enum {
 	IR_SPU,\
 	IR_CPU,\
 	IR_BOTH
-} proc_type; // Type of node by processor.
+} proc_type; // Type of node by processor
 
 typedef enum {
 	IR_OP_TERMINATOR,\
@@ -23,7 +23,7 @@ typedef enum {
 	IR_OP_BRANCH_COND_BEGIN,\
 	IR_OP_SEND,\
 	IR_OP_RECEIVE
-} operation_type; // Type of operation in node.
+} operation_type; // Type of operation in node
 
 typedef enum {
 	IR_DATA_STRUCTURE,\
@@ -31,6 +31,61 @@ typedef enum {
 	IR_DATA_SIMPLE_TMP,\
 	IR_DATA_TAG,\
 	IR_UNDEFINED
-} data_type; // Type of data nodes.
+} data_type; // Type of data nodes
+
+typedef enum {
+	OP_PLUS,\
+	OP_MINUS,\
+	OP_DIV,\
+	OP_MUL,\
+	OP_MOD,\
+	OP_AND,\
+	OP_OR,\
+	OP_LT,\
+	OP_GT,\
+	OP_LTE,\
+	OP_GTE,\
+	OP_EQ,\
+	OP_BINARY_UNDEFINED
+} bin_op_types; // Types of binary operations for AST
+
+typedef enum {
+	OP_NOT,\
+	OP_UMINUS,\
+	OP_UNARY_UNDEFINED
+} unary_op_types; // Types of binary operations for AST
+
+typedef enum {
+    OP_SEARCH_STR,\
+    OP_SEARCH_SML_STR,\
+    OP_SEARCH_GRT_STR,\
+    OP_INSERT_STR,\
+    OP_DELETE_FROM_STR,\
+    OP_NEXT_STR,\
+    OP_DELETE_STR,\
+    OP_MAX_STR,\
+    OP_MIN_STR,\
+    OP_POWER_STR,\
+    OP_UNION_STR,\
+    OP_INTERSECT_STR,\
+    OP_NOT_STR,\
+    OP_GT_STR,\
+    OP_LT_STR,\
+    OP_LTE_STR,\
+    OP_GTE_STR,\
+    OP_SEND_TO_SPU,\
+    OP_SEND_TO_CPU,\
+    OP_RECEIVE_FROM_SPU,\
+    OP_RECEIVE_FROM_CPU,\
+	OP_STRUCT_UNDEFINED
+} structures_proc_op_types; // Types of structures processing operations
+
+typedef enum {
+	VAR_INT,\
+	VAR_LONG,\
+	VAR_FLOAT,\
+	VAR_DOUBLE,\
+	VAR_UNDEFINED
+} variable_type; // Types of variables for AST
 
 #endif

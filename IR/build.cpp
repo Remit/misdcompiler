@@ -56,16 +56,15 @@ IR_OperationNode* buildConditionalBeginBranchNode() {
 	op_node = new IR_OperationNode();
 	op_node->setOperationType(IR_OP_BRANCH_COND_BEGIN);
 	op_node->setProcType(IR_CPU);
-	op_node->setConnectedNodeID(13);
 	return op_node;
 }
 
 // Building Data Node and storing it with the variable name in the variable table
-void buildDataNode(std::string identifier_name, proc_type p_type, data_type dt, int id) {
+void buildDataNode(std::string identifier_name, data_type dt, int id) {
 	IR_DataNode* data_node = new IR_DataNode();
 	data_node->setID(id);
 	data_node->setDataType(dt);
-	data_node->setProcType(p_type);
+	data_node->setProcType(IR_CPU);
 	var_table.addVariableToTable(identifier_name,data_node);
 }
 

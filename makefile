@@ -14,8 +14,9 @@ all: misdcompiler.exe
 
 misdcompiler.exe: main.o
 	cd IR && make
+	cd AST && make
 	cd parser && make
-	g++ -g -o misdcompiler main.o $(OBJ_FILES_IR) $(OBJ_FILES_PARSER) -lfl
+	g++ -g -o misdcompiler main.o $(OBJ_FILES_IR) $(OBJ_FILES_PARSER)
 
 main.o:
 	g++ -c -g main.cpp

@@ -28,7 +28,7 @@ floatLiteral     	{digit}+"."{exponent}
 {digit}+			return NUMLITERAL;
 {floatLiteral}		return NUMLITERAL;
 int					return TINT;
-char				return TCHAR;
+double				return TDOUBLE;
 long 				return TLONG;
 float				return TFLOAT;
 if					return TIF;
@@ -37,8 +37,6 @@ else				return TELSE;
 while				return TWHILE;
 do					return TDO;
 for					return TFOR;
-spu_mem				return TMEMTYPESPU;
-cpu_mem				return TMEMTYPECPU;
 _misdop_SEARCH_STR	return TMISDOPSEARCHSTR;
 _misdop_SEARCH_SML_STR	return TMISDOPSEARCHSMLSTR;
 _misdop_SEARCH_GRT_STR	return TMISDOPSEARCHGRTSTR;

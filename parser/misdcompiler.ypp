@@ -75,7 +75,7 @@
 %token <pch> STRINGLITERAL
 
 //Keywords
-%token TINT TCHAR TLONG TFLOAT TIF TTHEN TELSE TWHILE TDO TFOR 
+%token TINT TDOUBLE TLONG TFLOAT TIF TTHEN TELSE TWHILE TDO TFOR 
 //Keywords MISD-specific
 //Type of memory used
 %token TMEMTYPESPU TMEMTYPECPU
@@ -109,7 +109,6 @@
 %left TLP TLCBR
 
 %type <graph> program stmts_ls stmt stmts_block assign_stmt loop_stmt count_loop while_loop if_stmt expr_stmt str_delete str_bin_expr str_compare_expr str_insert_to_str str_delete_from_str def_expr id_ls str_search_in_str
-%type <ptype> mem_type
 %type <str> struct ident
 %type <type_int> id_type
 
@@ -153,19 +152,14 @@ def_expr:
 
 id_type:
    TINT 			
-|  TCHAR 			
 |  TLONG			
 |  TFLOAT			
+|  TDOUBLE
 ;
 
 id_ls:
-   mem_type TIDENT				{ std::string ident_name(yylval.pch, 0, 1024); last_node++; buildDataNode(ident_name,$1,IR_DATA_SIMPLE,last_node); idents.reserve(1024); idents.push_back(ident_name); $$ = new IR_Graph(); }
-|  id_ls TCOMMA mem_type TIDENT { std::string ident_name(yylval.pch, 0, 1024); last_node++; buildDataNode(ident_name,$3,IR_DATA_SIMPLE,last_node); idents.push_back(ident_name); $$ = $1; }
-;
-
-mem_type:
-   TMEMTYPESPU					{ $$ = IR_SPU; }
-|  TMEMTYPECPU					{ $$ = IR_CPU; }
+   TIDENT				{ std::string ident_name(yylval.pch, 0, 1024); last_node++; buildDataNode(ident_name,IR_DATA_SIMPLE,last_node); idents.reserve(1024); idents.push_back(ident_name); $$ = new IR_Graph(); }
+|  id_ls TCOMMA TIDENT { std::string ident_name(yylval.pch, 0, 1024); last_node++; buildDataNode(ident_name,IR_DATA_SIMPLE,last_node); idents.push_back(ident_name); $$ = $1; }
 ;
 
 str_delete:

@@ -109,7 +109,7 @@ IR_Graph* Graph_ArithmeticLogicProcessing( IR_Graph* src_graph ) {
 	int op_cnt = op_ids->size();
 
 	for( int i = 0; i < op_cnt; i++) {
-		int op_id = (*op_ids)[i];
+		int op_id = (*op_ids)[i]; 
 
 		IR_OperationNode* op_node = ( IR_OperationNode* )alp_graph->getNode(op_id);
 		if(op_node->getOperationType() == IR_OP_BRANCH_COND_BEGIN) {
