@@ -15,6 +15,7 @@ IR_Graph::IR_Graph() {
 	last_operation_id = -1;
 	last_data_id = -1;
 	full_clean = true;
+	variable_scope = NULL;
 }
 
 IR_Graph::~IR_Graph() {
@@ -26,6 +27,8 @@ IR_Graph::~IR_Graph() {
 		int num_of_datas = data.size();
 		for(int i = 0; i < num_of_datas; i++)
 			delete data[i];
+		
+		delete variable_scope;
 	}
 }
 
@@ -458,6 +461,9 @@ void IR_Graph::appendGraph( IR_Graph* appendedGraph, int src_node ) {
 			if(( src > 0 ) && ( dst > 0 ))
 				addConnection(src,dst);
 		}
+		
+		// Adding scope of the appended graph as a subscope
+		addSubScope(appendedGraph->getScopeCopy());
 
 		delete appendedGraph;
 	}
@@ -497,6 +503,9 @@ void IR_Graph::copyGraph(IR_Graph* copiedGraph) {
 			if(( src > 0 ) && ( dst > 0 ))
 				addConnection(src,dst);
 		}
+		
+		// Copying scope
+		addScope(copiedGraph->getScopeCopy());
 	}
 }
 
@@ -527,6 +536,7 @@ IR_OperationNode* IR_Graph::getOperationCopy(int index) {
 	if(index > operations.size() - 1)
 		return_node = NULL;
 	else {
+		//ATTENTION: When adding a field to a node, do not forget to add here in order to copy!
 		return_node = new IR_OperationNode();
 		IR_OperationNode* tmp_node = operations[index];
 		return_node->setID(tmp_node->getID());
@@ -535,6 +545,7 @@ IR_OperationNode* IR_Graph::getOperationCopy(int index) {
 		return_node->setProcType(tmp_node->getProcType());
 		return_node->setConnectedNodeID(tmp_node->getConnectedNodeID());
 		return_node->setLastNodeID_forLoops(tmp_node->getLastNodeID_forLoops());
+		return_node->setOperationType(tmp_node->getOperationType());
 	}
 
 	return return_node;
@@ -629,4 +640,30 @@ void IR_Graph::printNodes() {
 		cur_data_node->print();
 		std::cout << std::endl;
 	}
+}
+
+void IR_Graph::createScope(std::vector<std::string>* variables_for_scope) {
+	variable_scope = new Scope();
+	variable_scope->addVariablesInScope(variables_for_scope);
+	return;
+}
+
+Scope* IR_Graph::getScope() {
+	return variable_scope;
+}
+
+void IR_Graph::addSubScope(Scope* scope_to_add) {
+	if(scope_to_add != NULL)
+		variable_scope->addSubScope(scope_to_add);
+	return;
+}
+
+void IR_Graph::addScope(Scope * scope_to_add) {
+	if(scope_to_add != NULL)
+		variable_scope = scope_to_add;
+	return;
+}
+
+Scope* IR_Graph::getScopeCopy() {
+	return variable_scope->getScopeCopy();
 }

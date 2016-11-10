@@ -26,6 +26,7 @@ public:
 	void print();
 
 private:
+//ATTENTION: When adding a field to a node, do not forget to add code to copy method!
 	// Link to a corresponding identifier in data table.
 	data_type dataType;
 	int simple_type;

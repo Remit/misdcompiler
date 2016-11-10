@@ -1,9 +1,17 @@
-int cpu_mem x, cpu_mem y;
+int x, y;
+{
+x = 5;
+y = 1;
 if (x < y) then
 {
-x = y;
+int x;
+x = 7;
 }
 else
 {
-y = x;
+y = 8;
+}
+}
+{
+x = 13;
 }

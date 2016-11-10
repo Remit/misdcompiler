@@ -16,6 +16,10 @@
 #include "IRDataNode.h"
 #endif
 
+#ifndef SCOPE_H_
+#include "Scope.h"
+#endif
+
 #define initial_size 1000
 
 class IR_Graph {
@@ -59,6 +63,11 @@ public:
 	void copyGraph(IR_Graph* copiedGraph);
 	IR_OperationNode* getOperationCopy(int index);
 	IR_DataNode* getDataCopy(int index);
+	
+	// Methods to work with scopes
+	void createScope(std::vector<std::string>* variables_for_scope);
+	Scope * getScope();
+	Scope* getScopeCopy();
 
 private:
 	std::vector< IR_OperationNode* > operations;
@@ -71,12 +80,16 @@ private:
 	int last_operation_id;
 	int last_data_id;
 	bool full_clean;// Controlling the destructor's behavior; true - destroy nodes too (normal state); false - destroy everything except for nodes
+	Scope* variable_scope;// Scopes graph to track variables visibility in program 
 
 	// Methods needed to append graphs
 	IR_OperationNode* getOperation(int index);
 	IR_DataNode* getData(int index);
 	int getConnectionSrc(int index);
 	int getConnectionDst(int index);
+	void addSubScope(Scope * scope_to_add);
+	void addScope(Scope * scope_to_add);
+	
 };
 
 #endif /* IRGRAPH_H_ */

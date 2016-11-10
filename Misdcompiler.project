@@ -97,21 +97,13 @@
   <VirtualDirectory Name="AST">
     <File Name="AST/BaseAST.cpp"/>
     <File Name="include/BinaryExpression.cpp"/>
-    <File Name="AST/UnaryExpression.h"/>
     <File Name="AST/UnaryExpression.cpp"/>
-    <File Name="AST/StructuresExpression.h"/>
     <File Name="AST/StructuresExpression.cpp"/>
-    <File Name="AST/ExpressionAST.h"/>
     <File Name="AST/ExpressionAST.cpp"/>
-    <File Name="AST/IfExpression.h"/>
     <File Name="AST/IfExpression.cpp"/>
-    <File Name="AST/ForLoop.h"/>
     <File Name="AST/ForLoop.cpp"/>
-    <File Name="AST/WhileLoop.h"/>
     <File Name="AST/WhileLoop.cpp"/>
-    <File Name="AST/NumberExpr.h"/>
     <File Name="AST/NumberExpr.cpp"/>
-    <File Name="AST/VariableExpr.h"/>
     <File Name="AST/VariableExpr.cpp"/>
   </VirtualDirectory>
   <VirtualDirectory Name="IR">
@@ -124,6 +116,7 @@
     <File Name="IR/IRDataNode.cpp"/>
     <File Name="IR/Algorithm.cpp"/>
     <File Name="IR/IRNode.cpp"/>
+    <File Name="IR/Scope.cpp"/>
   </VirtualDirectory>
   <VirtualDirectory Name="include">
     <File Name="include/BaseAST.h"/>
@@ -137,5 +130,14 @@
     <File Name="include/IRGraph.h"/>
     <File Name="include/IRDataNode.h"/>
     <File Name="include/BinaryExpression.h"/>
+    <File Name="AST/ExpressionAST.h"/>
+    <File Name="AST/ForLoop.h"/>
+    <File Name="AST/IfExpression.h"/>
+    <File Name="AST/NumberExpr.h"/>
+    <File Name="AST/StructuresExpression.h"/>
+    <File Name="AST/UnaryExpression.h"/>
+    <File Name="AST/VariableExpr.h"/>
+    <File Name="AST/WhileLoop.h"/>
+    <File Name="IR/Scope.h"/>
   </VirtualDirectory>
 </CodeLite_Project>

@@ -1,4 +1,4 @@
-int cpu_mem x, cpu_mem y;
+int x, y;
 if (x < y) then
 {
 _misdop_INSERT_STR STRUCT1, x, y;

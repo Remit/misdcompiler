@@ -23,6 +23,16 @@ IR_OperationNode* buildAssignNode( data_type dt ) {
 	return op_node;
 }
 
+//Building definition node in order to correctly transform graph to AST and then to proceed to llvm
+IR_OperationNode* buildDefineNode( std::vector< std::string > * def_vars) {
+	IR_OperationNode* op_node = NULL;
+	op_node = new IR_OperationNode();
+	op_node->setOperationType(IR_OP_DEFINITION);
+	op_node->setDefinedVars(def_vars);
+	op_node->setProcType(IR_CPU);
+	return op_node;
+}
+
 //Building terminal node
 IR_OperationNode* buildTerminalNode() {
 	IR_OperationNode* op_node = NULL;

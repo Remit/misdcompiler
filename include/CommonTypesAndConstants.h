@@ -22,7 +22,8 @@ typedef enum {
 	IR_OP_BRANCH_END,\
 	IR_OP_BRANCH_COND_BEGIN,\
 	IR_OP_SEND,\
-	IR_OP_RECEIVE
+	IR_OP_RECEIVE,\
+	IR_OP_DEFINITION
 } operation_type; // Type of operation in node
 
 typedef enum {
@@ -32,6 +33,17 @@ typedef enum {
 	IR_DATA_TAG,\
 	IR_UNDEFINED
 } data_type; // Type of data nodes
+
+typedef enum {
+	I_IF,\
+	I_IF_ELSE,\
+	I_FOR_LOOP,\
+	I_WHILE_LOOP,\
+	I_DEFINE,\
+	I_ASSIGN,\
+	I_STRUCTURE,\
+	I_UNDEFINED
+} low_level_instruction_type; // Low-level type of instruction/construction in the node used to transform graph in AST
 
 typedef enum {
 	OP_PLUS,\

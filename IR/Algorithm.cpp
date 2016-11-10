@@ -401,7 +401,7 @@ IR_Graph* Graph_StructureProcessing( IR_Graph* src_graph ) {
 			std::vector< int > * dep_op_ids = sp_graph->getDependentOperationNodes(op_id);
 			std::vector< int > * dep_data_ids = sp_graph->getDependentDataNodes(op_id);
 
-			if(op_node->getOperationType() == IR_OP_PROCESSING) {
+			if((op_node->getOperationType() == IR_OP_PROCESSING) || (op_node->getOperationType() == IR_OP_DEFINITION)) {
 				// Connecting input operation nodes to dependent operation nodes.
 				// In reality, both sets of operations should consist of one operation node,
 				// so it is correct to connect each of input operation nodes with each of

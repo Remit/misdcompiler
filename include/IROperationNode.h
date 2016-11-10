@@ -35,14 +35,32 @@ public:
 	int getConnectedNodeID();
 	void setLastNodeID_forLoops(int gid);
 	int getLastNodeID_forLoops();
+	
+	void setInstructionType(low_level_instruction_type a_instructionType);
+	low_level_instruction_type getInstructionType();
+	void setDefinedVars(std::vector< std::string > * def_vars);
+	std::vector< std::string > * getDefinedVars();
+	
+	void setInputNames(std::vector< std::string > * a_input_names);
+	void setOutputName(std::string * a_output_name);
+	std::vector< std::string > * getInputNames();
+	std::string * getOutputName();
 
 	void print();
 
 private:
+//ATTENTION: When adding a field to a node, do not forget to add code to copy method!
 	Base_AST* nodeASTSubTree; // A part of AST tree growing from this operation node
 	operation_type operationType;
 	int connected_node_gid; // Global ID of node from node pair (used for end condition nodes in if-then-else and loop stmts)
 	int last_loop_node_gid; // Global ID of the last operation node in the body of loop
+	low_level_instruction_type instructionType; // Low-level type of the instruction in this node, used to transform graph in AST
+//Field only for definition nodes
+	std::vector< std::string > * defined_vars;
+//Data input
+	std::vector< std::string > * input_names;
+//Data output
+	std::string * output_name;
 };
 
 #endif /* IROPERATIONNODE_H_ */

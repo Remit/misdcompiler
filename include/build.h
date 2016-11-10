@@ -21,6 +21,7 @@
 #endif
 
 IR_OperationNode* buildAssignNode( data_type dt );
+IR_OperationNode* buildDefineNode( std::vector< std::string > * def_vars);
 IR_OperationNode* buildTerminalNode();
 IR_OperationNode* buildBeginBranchNode();
 IR_OperationNode* buildEndBranchNode();

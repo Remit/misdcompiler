@@ -25,6 +25,7 @@ main.o:
 .PHONY : clean
 clean:
 	cd parser && make clean
+	cd AST && make clean
 	cd IR && make clean
 	-rm -f main.o misdcompiler
 	-rm -rf $(TMP_FILES_ROOT) $(TMP_FILES_IR) $(TMP_FILES_INCLUDE) $(TMP_FILES_PARSER) $(TMP_FILES_AST) $(TMP_FILES_EXAMPLES)
