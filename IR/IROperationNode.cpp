@@ -182,3 +182,43 @@ std::string* IR_OperationNode::getOutputName() {
 	(*ret_output_name) = tmp_str;
 	return ret_output_name;
 }
+
+std::string IR_OperationNode::getPicturePath() {
+	std::string pic_path;
+	pic_path = "Cytospace/images/";
+	proc_type pr = getProcType();
+	if((pr == IR_CPU) || (pr == IR_BOTH))
+		pic_path += "cpu/";
+	else if(pr == IR_SPU)
+		pic_path += "spu/";
+
+	switch(operationType) {
+	case IR_OP_TERMINATOR:
+		pic_path += "Terminator";
+		break;
+	case IR_OP_PROCESSING:
+		pic_path += "Processing";
+		break;
+	case IR_OP_BRANCH_BEGIN:
+		pic_path += "Branch_begin";
+		break;
+	case IR_OP_BRANCH_END:
+		pic_path += "Branch_end";
+		break;
+	case IR_OP_BRANCH_COND_BEGIN:
+		pic_path += "Branch_cond_begin";
+		break;
+	case IR_OP_SEND:
+		pic_path += "Send";
+		break;
+	case IR_OP_RECEIVE:
+		pic_path += "Receive";
+		break;
+	case IR_OP_DEFINITION:
+		pic_path += "Define";
+		break;
+	}
+
+	pic_path += ".jpg";
+	return pic_path;
+}

@@ -4,7 +4,7 @@ OBJ_FILES := $(notdir $(CPP_FILES:.cpp=.o))
 all: $(OBJ_FILES)
 
 %.o: %.cpp ../include/%.h
-	g++ -c -o $@ $<
+	g++ -c -o $@ $< -std=c++11
 
 .SILENT : clean
 .PHONY : clean	

@@ -23,7 +23,9 @@ public:
 	data_type getDataType();
 	int getSimpleType();
 
+	// Visualisation
 	void print();
+	std::string getPicturePath();
 
 private:
 //ATTENTION: When adding a field to a node, do not forget to add code to copy method!

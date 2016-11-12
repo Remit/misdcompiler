@@ -100,4 +100,12 @@ typedef enum {
 	VAR_UNDEFINED
 } variable_type; // Types of variables for AST
 
+typedef enum {
+	VIS_ALL_TOGETHER,\
+	VIS_ALL_SEPARATELY,\
+	VIS_ONLY_INITIAL_GRAPH,\
+	VIS_ONLY_AL_GRAPH,\
+	VIS_ONLY_SP_GRAPH
+} visualisation_option; // Options to visualise the graph
+
 #endif

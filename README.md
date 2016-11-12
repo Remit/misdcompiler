@@ -18,3 +18,8 @@ Commands for translation and compilation of misdcompiler.lex:
 ## Development ideas
 - graphs visualisation using JS (there are special libraries): generating JS page and opening it with browser (use flag to specify whether we need to generate those visualisations or not
 - libraries for different applications (e.g. graph databases)
+
+## Visualisation in form of graphs
+- We use free open-source Cytospace library to visualise program graphs
+- Graph visualisations of programs are stored in the folder "Visualisation"
+- Visualisation is provided by using "-v" when compiling

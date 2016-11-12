@@ -46,7 +46,9 @@ public:
 	std::vector< std::string > * getInputNames();
 	std::string * getOutputName();
 
+	// Visualisation
 	void print();
+	std::string getPicturePath();
 
 private:
 //ATTENTION: When adding a field to a node, do not forget to add code to copy method!

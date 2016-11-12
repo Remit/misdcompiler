@@ -137,6 +137,8 @@ program:
 																		IR_Graph* sp_graph = Graph_StructureProcessing($$);
 																		sp_graph->printNodes();
 																		sp_graph->printConnections();
+																		std::string fname = "example.js";
+																		sp_graph->visualise(fname);
 																	}
 ;
 

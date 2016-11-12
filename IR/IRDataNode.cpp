@@ -40,6 +40,9 @@ void IR_DataNode::print() {
 		case IR_DATA_SIMPLE:
 			std::cout << "simple data type";
 			break;
+		case IR_DATA_SIMPLE_TMP:
+			std::cout << "simple temporary data";
+			break;
 		case IR_DATA_TAG:
 			std::cout << "tag type";
 			break;
@@ -47,4 +50,35 @@ void IR_DataNode::print() {
 			std::cout << "UNDEFINED type";
 			break;
 	}
+}
+
+std::string IR_DataNode::getPicturePath() {
+	std::string pic_path;
+	pic_path = "Cytospace/images/";
+	proc_type pr = getProcType();
+	if((pr == IR_CPU) || (pr == IR_BOTH))
+		pic_path += "cpu/";
+	else if(pr == IR_SPU)
+		pic_path += "spu/";
+
+	switch(dataType) {
+	case IR_DATA_STRUCTURE:
+		pic_path += "Data_structure";
+		break;
+	case IR_DATA_SIMPLE:
+		pic_path += "Data_simple";
+		break;
+	case IR_DATA_SIMPLE_TMP:
+		pic_path += "Data_simple_tmp";
+		break;
+	case IR_DATA_TAG:
+		pic_path += "Data_tag";
+		break;
+	case IR_UNDEFINED:
+		pic_path += "Data_undefined";
+		break;
+	}
+
+	pic_path += ".jpg";
+	return pic_path;
 }

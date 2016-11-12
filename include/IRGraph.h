@@ -8,6 +8,9 @@
 #ifndef IRGRAPH_H_
 #define IRGRAPH_H_
 
+#include <iostream>
+#include <fstream>
+
 #ifndef IROPERATIONNODE_H_
 #include "IROperationNode.h"
 #endif
@@ -68,6 +71,9 @@ public:
 	void createScope(std::vector<std::string>* variables_for_scope);
 	Scope * getScope();
 	Scope* getScopeCopy();
+
+	// Visualising a graph using cytospace
+	void visualise(std::string full_filename);
 
 private:
 	std::vector< IR_OperationNode* > operations;

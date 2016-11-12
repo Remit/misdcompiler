@@ -463,7 +463,7 @@ void IR_Graph::appendGraph( IR_Graph* appendedGraph, int src_node ) {
 		}
 		
 		// Adding scope of the appended graph as a subscope
-		addSubScope(appendedGraph->getScopeCopy());
+		//addSubScope(appendedGraph->getScopeCopy());
 
 		delete appendedGraph;
 	}
@@ -505,7 +505,7 @@ void IR_Graph::copyGraph(IR_Graph* copiedGraph) {
 		}
 		
 		// Copying scope
-		addScope(copiedGraph->getScopeCopy());
+		//addScope(copiedGraph->getScopeCopy());
 	}
 }
 
@@ -666,4 +666,187 @@ void IR_Graph::addScope(Scope * scope_to_add) {
 
 Scope* IR_Graph::getScopeCopy() {
 	return variable_scope->getScopeCopy();
+}
+
+void IR_Graph::visualise(std::string full_filename) {
+	// This method outputs a js file with a graph description
+	std::ofstream vis_file;// = std::ofstream(full_filename);
+	vis_file.open(full_filename.c_str());
+
+	// Output of general cytospace settings
+	vis_file << "$(function(){\n" \
+			<< "var cy = cytoscape({\n" \
+			<< "   container: document.getElementById('cy'),\n" \
+			<< "   boxSelectionEnabled: false,\n" \
+			<< "   autounselectify: true,\n" \
+			<< "\n   style: cytoscape.stylesheet()\n" \
+			<< "		.selector('node')\n" \
+			<< "			.css({\n" \
+	        << "				'height': 80,\n" \
+	        << "				'width': 80,\n" \
+	        << "				'background-fit': 'cover',\n" \
+	        << "				'border-color': '#000',\n" \
+	        << "				'border-width': 3,\n" \
+	        << "				'border-opacity': 0.5\n"\
+	      	<< "			})\n"\
+	      	<< "		.selector('edge')\n" \
+	      	<< "			.css({\n" \
+	        << "				'width': 6,\n" \
+	        << "				'target-arrow-shape': 'triangle',\n" \
+	        << "				'line-color': '#ffaaaa',\n" \
+	        << "				'target-arrow-color': '#ffaaaa',\n" \
+	        << "				'curve-style': 'bezier'\n" \
+	      	<< "			})\n";
+
+	// Output to set correspondence between pictures and nodes
+	std::map< int, int >::iterator iter_nodes;
+	int gid;
+	std::string gid_str;
+
+	for(iter_nodes = operations_index.begin(); iter_nodes != operations_index.end(); iter_nodes++) {
+		gid = iter_nodes->first;
+		int local_id = iter_nodes->second;
+		gid_str = std::to_string(gid);
+		IR_OperationNode * op_node = operations[local_id];
+		std::string path_to_pic;
+		if(op_node != NULL)
+			path_to_pic = op_node->getPicturePath();
+
+		vis_file << "		.selector(\'#"\
+				<< gid_str \
+				<< "\')\n" \
+				<< "			.css({\n"\
+				<< "				'background-image': \'" \
+				<< path_to_pic \
+				<< "\'\n" \
+				<< "				})\n";
+	}
+
+	std::map< int, int >::iterator iter_nodes_end_data = data_index.end()--;
+	for(iter_nodes = data_index.begin(); iter_nodes != iter_nodes_end_data; iter_nodes++) {
+		gid = iter_nodes->first;
+		int local_id = iter_nodes->second;
+		gid_str = std::to_string(gid);
+		IR_DataNode * data_node = data[local_id];
+		std::string path_to_pic;
+		if(data_node != NULL)
+			path_to_pic = data_node->getPicturePath();
+
+		vis_file << "		.selector(\'#"\
+				<< gid_str \
+				<< "\')\n" \
+				<< "			.css({\n"\
+				<< "				'background-image': \'" \
+				<< path_to_pic \
+				<< "\'\n" \
+				<< "				})\n";
+	}
+	// Last data node
+	gid = iter_nodes->first;
+	int local_id = iter_nodes->second;
+	gid_str = std::to_string(gid);
+	IR_DataNode * data_node = data[local_id];
+	std::string path_to_pic;
+	if(data_node != NULL)
+		path_to_pic = data_node->getPicturePath();
+
+	vis_file << "		.selector(\'#"\
+			<< gid_str \
+			<< "\')\n" \
+			<< "			.css({\n"\
+			<< "				'background-image': \'" \
+			<< path_to_pic \
+			<< "\'\n" \
+			<< "				}),\n";
+
+	// Output of JSON-formatted elements of graph (nodes and edges)
+	vis_file << "   elements: {\n" \
+			 << "      nodes: [\n";
+
+	// Nodes
+	std::map< int, int >::iterator iter_nodes_end = operations_index.end()--;
+	for(iter_nodes = operations_index.begin(); iter_nodes != iter_nodes_end; iter_nodes++) {
+		gid = iter_nodes->first;
+		gid_str = std::to_string(gid);
+		vis_file << "		{ data: { id: \'" \
+				 << gid_str \
+				 << "\' } },\n";
+	}
+
+	// Last op node
+	gid = iter_nodes->first;
+	gid_str = std::to_string(gid);
+	vis_file << "		{ data: { id: \'" \
+			 << gid_str \
+			 << "\' } }";
+	if(data_index.size() > 0)
+		vis_file << ",\n";
+	else
+		vis_file << "\n";
+
+	std::map< int, int >::iterator iter_nodes_data;
+	iter_nodes_end_data = data_index.end()--;
+	for(iter_nodes_data = data_index.begin(); iter_nodes_data != iter_nodes_end_data; iter_nodes_data++) {
+		gid = iter_nodes_data->first;
+		gid_str = std::to_string(gid);
+		vis_file << "		{ data: { id: \'" \
+				<< gid_str \
+				<< "\' } },\n";
+	}
+
+	// Last data node
+	gid = iter_nodes_data->first;
+	gid_str = std::to_string(gid);
+	vis_file << "		{ data: { id: \'" \
+			 << gid_str \
+			 << "\' } }\n";
+
+	vis_file << "      ],\n" \
+	         << "      edges: [\n";
+
+	// Edges
+	int gid_src;
+	int gid_dst;
+	std::string gid_src_str;
+	std::string gid_dst_str;
+
+	std::multimap< int, int >::iterator iter_edges;
+	std::multimap< int, int >::iterator iter_edges_end = connections.end()--;
+	for(iter_edges = connections.begin(); iter_edges != iter_edges_end; iter_edges++) {
+		gid_src = iter_edges->first;
+		gid_dst = iter_edges->second;
+		gid_src_str = std::to_string(gid_src);
+		gid_dst_str = std::to_string(gid_dst);
+		vis_file << "		{ data: { source: \'" \
+				<< gid_src_str \
+				<< "\', target: \'" \
+				<< gid_dst_str \
+				<< "\' } },\n";
+	}
+
+	// Last connection
+	gid_src = iter_edges->first;
+	gid_dst = iter_edges->second;
+	gid_src_str = std::to_string(gid_src);
+	gid_dst_str = std::to_string(gid_dst);
+	vis_file << "		{ data: { source: \'" \
+			<< gid_src_str \
+			<< "\', target: \'" \
+			<< gid_dst_str \
+			<< "\' } }\n";
+
+	vis_file << "      ]\n" \
+	         << "   },\n";
+
+	// Output to set layout and end of file
+	vis_file << "   layout: {\n" \
+			 << "		name: 'breadthfirst',\n" \
+			 << "		directed: true,\n" \
+			 << "		padding: 10\n" \
+			 << "	}\n" \
+			 << "});\n" \
+			 << "});\n";
+
+	vis_file.close();
+	return;
 }

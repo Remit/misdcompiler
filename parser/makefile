@@ -1,10 +1,10 @@
 all: bison-misdcompiler.o flex-misdcompiler.o
 
 bison-misdcompiler.o: bison-misdcompiler.cpp
-	g++ -c bison-misdcompiler.cpp -o bison-misdcompiler.o
+	g++ -c bison-misdcompiler.cpp -o bison-misdcompiler.o -std=c++11
 
 flex-misdcompiler.o: flex-misdcompiler.cpp
-	g++ -c flex-misdcompiler.cpp -o flex-misdcompiler.o
+	g++ -c flex-misdcompiler.cpp -o flex-misdcompiler.o -std=c++11
 
 bison-misdcompiler.cpp: misdcompiler.ypp
 	bison -d misdcompiler.ypp
