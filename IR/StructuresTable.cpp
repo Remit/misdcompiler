@@ -22,6 +22,7 @@ StructuresTable::StructuresTable() {
 		stream_for_string << i;
 		std::string converted_num(stream_for_string.str());
 		std::string structure_name = "STRUCT" + converted_num;
+		data_node->setDataName(structure_name);
 		initialized[structure_name] = false;
 		data_nodes[structure_name] = data_node;
 		added_to_graph[structure_name] = false;

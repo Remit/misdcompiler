@@ -82,3 +82,11 @@ std::string IR_DataNode::getPicturePath() {
 	pic_path += ".jpg";
 	return pic_path;
 }
+
+void IR_DataNode::setDataName(std::string a_name) {
+	name = a_name;
+}
+
+std::string IR_DataNode::getDataName() {
+	return name;
+}

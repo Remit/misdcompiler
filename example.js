@@ -52,39 +52,37 @@ var cy = cytoscape({
 				})
 		.selector('#1')
 			.css({
-				'background-image': 'Cytospace/images/spu/Data_structure.jpg'
+				'background-image': 'Cytospace/images/spu/Data_structure.jpg',
+				'label': 'STRUCT1'
 				})
 		.selector('#2')
 			.css({
-				'background-image': 'Cytospace/images/spu/Data_structure.jpg'
+				'background-image': 'Cytospace/images/spu/Data_structure.jpg',
+				'label': 'STRUCT2'
 				})
 		.selector('#8')
 			.css({
-				'background-image': 'Cytospace/images/cpu/Data_simple_tmp.jpg'
+				'background-image': 'Cytospace/images/cpu/Data_simple_tmp.jpg',
+				'label': 'x'
 				})
 		.selector('#19')
 			.css({
-				'background-image': 'Cytospace/images/spu/Data_tag.jpg'
-				})
-		.selector('#4')
-			.css({
-				'background-image': 'Cytospace/images/cpu/Data_simple.jpg'
+				'background-image': 'Cytospace/images/spu/Data_tag.jpg',
+				'label': ''
 				}),
    elements: {
       nodes: [
-		{ data: { id: '13' } },
-		{ data: { id: '14' } },
-		{ data: { id: '15' } },
-		{ data: { id: '16' } },
-		{ data: { id: '17' } },
-		{ data: { id: '18' } },
-		{ data: { id: '20' } },
-		{ data: { id: '7' } },
-		{ data: { id: '1' } },
-		{ data: { id: '2' } },
-		{ data: { id: '8' } },
-		{ data: { id: '19' } },
-		{ data: { id: '4' } }
+		{ data: { id: '13' }, position: { x: 0, y: 600 } },
+		{ data: { id: '14' }, position: { x: 0, y: 300 } },
+		{ data: { id: '15' }, position: { x: 0, y: 450 } },
+		{ data: { id: '16' }, position: { x: 0, y: 0 } },
+		{ data: { id: '17' }, position: { x: 0, y: 600 } },
+		{ data: { id: '18' }, position: { x: 0, y: 150 } },
+		{ data: { id: '20' }, position: { x: 0, y: 450 } },
+		{ data: { id: '1' }, position: { x: 800, y: 0 } },
+		{ data: { id: '2' }, position: { x: 800, y: 150 } },
+		{ data: { id: '8' }, position: { x: 800, y: 300 } },
+		{ data: { id: '19' }, position: { x: 800, y: 450 } }
       ],
       edges: [
 		{ data: { source: '2', target: '13' } },
@@ -104,7 +102,7 @@ var cy = cytoscape({
       ]
    },
    layout: {
-		name: 'breadthfirst',
+		name: 'preset',
 		directed: true,
 		padding: 10
 	}

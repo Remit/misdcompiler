@@ -74,6 +74,7 @@ public:
 
 	// Visualising a graph using cytospace
 	void visualise(std::string full_filename);
+	void calculate_coords();// Calculating coordinates in order to correctly output a graph
 
 private:
 	std::vector< IR_OperationNode* > operations;
@@ -87,6 +88,17 @@ private:
 	int last_data_id;
 	bool full_clean;// Controlling the destructor's behavior; true - destroy nodes too (normal state); false - destroy everything except for nodes
 	Scope* variable_scope;// Scopes graph to track variables visibility in program 
+
+	std::map< int, int > x_coords;// X coordinates of all graph nodes (gid - key)
+	std::map< int, int > y_coords;// Y coordinates of all graph nodes (gid - key)
+	std::map< int, int > y_levels;// Level of hierarchy of a node in graph (topmost - 0)
+	std::map< int, int > x_levels;// Level of hierarchy of a node in graph (leftmost - 0)
+
+	void range_nodes_by_y(int dep_node, int cur_level);
+	void range_nodes_by_x(int dep_node, int cur_level);
+	int calculate_num_of_branch_nodes(int node_id, int br_id);
+	std::vector< int > considered_branch_nodes;
+	std::vector< int > branch_nodes_search_stack;
 
 	// Methods needed to append graphs
 	IR_OperationNode* getOperation(int index);

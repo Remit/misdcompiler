@@ -75,6 +75,7 @@ void buildDataNode(std::string identifier_name, data_type dt, int id) {
 	data_node->setID(id);
 	data_node->setDataType(dt);
 	data_node->setProcType(IR_CPU);
+	data_node->setDataName(identifier_name);
 	var_table.addVariableToTable(identifier_name,data_node);
 }
 

@@ -572,6 +572,7 @@ IR_DataNode* IR_Graph::getDataCopy(int index) {
 		return_node->setDataType(tmp_node->getDataType());
 		return_node->setSimpleType(tmp_node->getSimpleType());
 		return_node->setProcType(tmp_node->getProcType());
+		return_node->setDataName(tmp_node->getDataName());
 	}
 
 	return return_node;
@@ -672,6 +673,7 @@ void IR_Graph::visualise(std::string full_filename) {
 	// This method outputs a js file with a graph description
 	std::ofstream vis_file;// = std::ofstream(full_filename);
 	vis_file.open(full_filename.c_str());
+	calculate_coords();
 
 	// Output of general cytospace settings
 	vis_file << "$(function(){\n" \
@@ -722,7 +724,7 @@ void IR_Graph::visualise(std::string full_filename) {
 				<< "				})\n";
 	}
 
-	std::map< int, int >::iterator iter_nodes_end_data = data_index.end()--;
+	std::map< int, int >::iterator iter_nodes_end_data = --data_index.end();
 	for(iter_nodes = data_index.begin(); iter_nodes != iter_nodes_end_data; iter_nodes++) {
 		gid = iter_nodes->first;
 		int local_id = iter_nodes->second;
@@ -738,6 +740,9 @@ void IR_Graph::visualise(std::string full_filename) {
 				<< "			.css({\n"\
 				<< "				'background-image': \'" \
 				<< path_to_pic \
+				<< "\',\n" \
+				<< "				'label': \'" \
+				<< data_node->getDataName() \
 				<< "\'\n" \
 				<< "				})\n";
 	}
@@ -756,6 +761,9 @@ void IR_Graph::visualise(std::string full_filename) {
 			<< "			.css({\n"\
 			<< "				'background-image': \'" \
 			<< path_to_pic \
+			<< "\',\n" \
+			<< "				'label': \'" \
+			<< data_node->getDataName() \
 			<< "\'\n" \
 			<< "				}),\n";
 
@@ -764,13 +772,17 @@ void IR_Graph::visualise(std::string full_filename) {
 			 << "      nodes: [\n";
 
 	// Nodes
-	std::map< int, int >::iterator iter_nodes_end = operations_index.end()--;
+	std::map< int, int >::iterator iter_nodes_end = --operations_index.end();
 	for(iter_nodes = operations_index.begin(); iter_nodes != iter_nodes_end; iter_nodes++) {
 		gid = iter_nodes->first;
 		gid_str = std::to_string(gid);
 		vis_file << "		{ data: { id: \'" \
 				 << gid_str \
-				 << "\' } },\n";
+				 << "\' }, position: { x: " \
+				 << x_coords[gid] \
+				 << ", y: " \
+				 << y_coords[gid] \
+				 << " } },\n";
 	}
 
 	// Last op node
@@ -778,20 +790,29 @@ void IR_Graph::visualise(std::string full_filename) {
 	gid_str = std::to_string(gid);
 	vis_file << "		{ data: { id: \'" \
 			 << gid_str \
-			 << "\' } }";
+			 << "\' }, position: { x: " \
+			 << x_coords[gid] \
+			 << ", y: " \
+			 << y_coords[gid] \
+			 << " } },\n";
 	if(data_index.size() > 0)
 		vis_file << ",\n";
 	else
 		vis_file << "\n";
 
 	std::map< int, int >::iterator iter_nodes_data;
-	iter_nodes_end_data = data_index.end()--;
+	iter_nodes_end_data = --data_index.end();
+	unsigned int sz = data_index.size();
 	for(iter_nodes_data = data_index.begin(); iter_nodes_data != iter_nodes_end_data; iter_nodes_data++) {
 		gid = iter_nodes_data->first;
 		gid_str = std::to_string(gid);
 		vis_file << "		{ data: { id: \'" \
 				<< gid_str \
-				<< "\' } },\n";
+				<< "\' }, position: { x: " \
+				<< x_coords[gid] \
+				<< ", y: " \
+				<< y_coords[gid] \
+				<< " } },\n";
 	}
 
 	// Last data node
@@ -799,7 +820,11 @@ void IR_Graph::visualise(std::string full_filename) {
 	gid_str = std::to_string(gid);
 	vis_file << "		{ data: { id: \'" \
 			 << gid_str \
-			 << "\' } }\n";
+			 << "\' }, position: { x: " \
+			 << x_coords[gid] \
+			 << ", y: " \
+			 << y_coords[gid] \
+			 << " } },\n";
 
 	vis_file << "      ],\n" \
 	         << "      edges: [\n";
@@ -840,7 +865,7 @@ void IR_Graph::visualise(std::string full_filename) {
 
 	// Output to set layout and end of file
 	vis_file << "   layout: {\n" \
-			 << "		name: 'breadthfirst',\n" \
+			 << "		name: 'preset',\n" \
 			 << "		directed: true,\n" \
 			 << "		padding: 10\n" \
 			 << "	}\n" \
@@ -849,4 +874,239 @@ void IR_Graph::visualise(std::string full_filename) {
 
 	vis_file.close();
 	return;
+}
+
+// Calculating coordinated of graph nodes in order to output them correctly
+void IR_Graph::calculate_coords() {
+	std::map< int, int >::iterator iter_nodes;
+	iter_nodes = operations_index.begin();
+	int start_node = -1;
+	bool start_node_found = false;
+	while(!start_node_found && (iter_nodes != operations_index.end())) {
+		int gid = iter_nodes->first;
+		int local_id = iter_nodes->second;
+		IR_OperationNode * op_node = operations[local_id];
+		if(op_node->getOperationType() == IR_OP_TERMINATOR) {
+			std::vector< int > * dep_op_ids = getDependentOperationNodes(gid);
+			// If the current node has dependent nodes then it is a starting node
+			if(dep_op_ids->size() > 0) {
+				start_node_found = true;
+				start_node = gid;
+			}
+		}
+		iter_nodes++;
+	}
+
+	//Ranging nodes to calculate coordinates
+	range_nodes_by_y(start_node,0);
+	range_nodes_by_x(start_node,0);
+
+	//Calculations for operation nodes
+	std::map< int, int >::iterator iter;
+	iter = operations_index.begin();
+	while(iter != operations_index.end()) {
+		int gid = iter->first;
+		x_coords[gid] = x_levels[gid] * 150; //150 - step
+		y_coords[gid] = y_levels[gid] * 150;
+		iter++;
+	}
+
+	//Calculations for data nodes
+	iter = data_index.begin();
+	int i = 0;
+	while(iter != data_index.end()) {
+		int gid = iter->first;
+		x_coords[gid] = 800; //150 - step
+		y_coords[gid] = i * 150;
+		iter++;
+		i++;
+	}
+}
+
+void IR_Graph::range_nodes_by_y(int dep_node, int cur_level) {
+	std::vector< int > * dep_op_ids = getDependentOperationNodes(dep_node);
+	if(dep_op_ids->size() == 0) {
+		y_levels[dep_node] = cur_level;
+	} else if(dep_op_ids->size() == 1) {
+		IR_OperationNode * op_node = ( IR_OperationNode* )getNode(dep_node);
+		if(op_node->getOperationType() == IR_OP_BRANCH_END) {// If it is an end for if-else construction, check whether we have fully considered other path
+			int connected_branch_id = op_node->getConnectedNodeID();
+			bool found_cond = false;
+			int i = 0;
+			int sz = considered_branch_nodes.size();
+			std::vector< int >::iterator iter_cons_br_node = considered_branch_nodes.begin();
+			while(!found_cond && (iter_cons_br_node != considered_branch_nodes.end())) {
+				if((*iter_cons_br_node) == connected_branch_id)
+					found_cond = true;
+				else
+					iter_cons_br_node++;
+			}
+			if(found_cond)
+				considered_branch_nodes.erase(iter_cons_br_node);
+			else {
+				y_levels[dep_node] = cur_level;
+				range_nodes_by_y((*dep_op_ids)[0],cur_level + 1);
+			}
+		} else {
+			y_levels[dep_node] = cur_level;
+			range_nodes_by_y((*dep_op_ids)[0],cur_level + 1);
+		}
+	} else if(dep_op_ids->size() == 2) {
+		IR_OperationNode * op_node = ( IR_OperationNode* )getNode(dep_node);
+		if((op_node->getOperationType() == IR_OP_BRANCH_COND_BEGIN) || (op_node->getOperationType() == IR_OP_BRANCH_BEGIN)) { // If have already visited then ignore this loop
+			bool found_cond = false;
+
+			std::vector< int >::iterator iter_cons_br_node = considered_branch_nodes.begin();
+			while(!found_cond && (iter_cons_br_node != considered_branch_nodes.end())) {
+				if((*iter_cons_br_node) == dep_node)
+					found_cond = true;
+				else
+					iter_cons_br_node++;
+			}
+			if(!found_cond) {
+				considered_branch_nodes.push_back(dep_node);
+				y_levels[dep_node] = cur_level;
+				int dep_op_id_1 = (*dep_op_ids)[0];
+				IR_OperationNode * dep_op_node_1 = ( IR_OperationNode* )getNode(dep_op_id_1);
+				if(dep_op_node_1->getOperationType() != IR_OP_BRANCH_END) {
+					range_nodes_by_y((*dep_op_ids)[0],cur_level + 1);
+					range_nodes_by_y((*dep_op_ids)[1],cur_level + 1);
+				} else {
+					range_nodes_by_y((*dep_op_ids)[1],cur_level + 1);
+					range_nodes_by_y((*dep_op_ids)[0],cur_level + 1);
+				}
+
+			} else
+				considered_branch_nodes.erase(iter_cons_br_node); //In case of loop
+		}
+	} else {
+		std::cout << "Problem! A node with three dependent operation nodes.\n";
+	}
+	return;
+}
+
+void IR_Graph::range_nodes_by_x(int dep_node, int cur_level) {
+	IR_OperationNode * op_node = ( IR_OperationNode* )getNode(dep_node);
+	if(op_node->getOperationType() == IR_OP_TERMINATOR) {
+		x_levels[dep_node] = 0;
+		std::vector< int > * dep_op_ids = getDependentOperationNodes(dep_node);
+		if(dep_op_ids->size() > 0)
+			range_nodes_by_x((*dep_op_ids)[0],0);
+	} else if((op_node->getOperationType() == IR_OP_BRANCH_COND_BEGIN) && (op_node->getOperationType() == IR_OP_BRANCH_BEGIN)) {
+		int connected_branch_id = op_node->getConnectedNodeID();
+		bool found_cond = false;
+
+		std::vector< int >::iterator iter_cons_br_node = considered_branch_nodes.begin();
+		while(!found_cond && (iter_cons_br_node != considered_branch_nodes.end())) {
+			if((*iter_cons_br_node) == connected_branch_id)
+				found_cond = true;
+			else
+				iter_cons_br_node++;
+		}
+		if(found_cond)
+			considered_branch_nodes.erase(iter_cons_br_node);
+		else {
+			considered_branch_nodes.push_back(dep_node);
+			x_levels[dep_node] = cur_level;
+			std::vector< int > * dep_op_ids = getDependentOperationNodes(dep_node);
+			if(dep_op_ids->size() > 1) {
+				IR_OperationNode * dep_op_node = ( IR_OperationNode* )getNode((*dep_op_ids)[0]);
+				if(dep_op_node->getOperationType() != IR_OP_BRANCH_END) {
+					range_nodes_by_x((*dep_op_ids)[0], cur_level);
+					branch_nodes_search_stack.push_back(dep_node);
+					int num_of_branch_nodes = calculate_num_of_branch_nodes((*dep_op_ids)[0], dep_node);
+					range_nodes_by_x((*dep_op_ids)[0], cur_level + num_of_branch_nodes + 1);
+				} else {
+					range_nodes_by_x((*dep_op_ids)[1], cur_level);
+				}
+			}
+		}
+	} else if(op_node->getOperationType() == IR_OP_BRANCH_END) {
+		std::vector< int > * inc_op_ids = getIncomingOperationNodes(dep_node);
+		int new_level = cur_level;
+		if(inc_op_ids->size() > 1) {
+			int level_1 = x_levels[(*inc_op_ids)[0]];
+			int level_2 = x_levels[(*inc_op_ids)[2]];
+
+			if(level_1 < level_2)
+				new_level = level_1;
+			else
+				new_level = level_2;
+			x_levels[dep_node] = new_level;
+		}
+		std::vector< int > * dep_op_ids = getDependentOperationNodes(dep_node);
+		if(dep_op_ids->size() > 0)
+			range_nodes_by_x((*dep_op_ids)[0],new_level);
+	} else {
+		x_levels[dep_node] = cur_level;
+		std::vector< int > * dep_op_ids = getDependentOperationNodes(dep_node);
+		if(dep_op_ids->size() > 0)
+			range_nodes_by_x((*dep_op_ids)[0],cur_level);
+	}
+
+	return;
+}
+
+int IR_Graph::calculate_num_of_branch_nodes(int node_id, int br_id) {
+	IR_OperationNode * op_node = ( IR_OperationNode* )getNode(node_id);
+	int ret = 0;
+	if(op_node->getOperationType() == IR_OP_BRANCH_END) {
+		int connected_branch_id = op_node->getConnectedNodeID();
+		bool found_cond = false;
+
+		std::vector< int >::iterator iter_cons_br_node = branch_nodes_search_stack.begin();
+		while(!found_cond && (iter_cons_br_node != branch_nodes_search_stack.end())) {
+			if((*iter_cons_br_node) == connected_branch_id)
+				found_cond = true;
+			else
+				iter_cons_br_node++;
+		}
+		if(found_cond) {
+			branch_nodes_search_stack.erase(iter_cons_br_node);
+			std::vector< int > * dep_op_ids = getDependentOperationNodes(node_id);
+			if(dep_op_ids->size() > 0)
+				ret = calculate_num_of_branch_nodes((*dep_op_ids)[0], br_id);
+		} else {
+			if(connected_branch_id == br_id)
+				ret = 0;
+			else
+				std::cout << "Error! Branch end without matching begin branch.\n";
+		}
+	} else if((op_node->getOperationType() != IR_OP_BRANCH_COND_BEGIN) && (op_node->getOperationType() != IR_OP_BRANCH_BEGIN) && (op_node->getInstructionType() != I_FOR_LOOP) && (op_node->getInstructionType() != I_WHILE_LOOP)) {
+		bool found_cond = false;
+
+		std::vector< int >::iterator iter_cons_br_node = branch_nodes_search_stack.begin();
+		while(!found_cond && (iter_cons_br_node != branch_nodes_search_stack.end())) {
+			if((*iter_cons_br_node) == node_id)
+				found_cond = true;
+			else
+				iter_cons_br_node++;
+		}
+		if(!found_cond) {
+			branch_nodes_search_stack.push_back(node_id);
+			std::vector< int > * dep_op_ids = getDependentOperationNodes(node_id);
+			int r1 = 0, r2 = 0;
+			if(dep_op_ids->size() > 1) {
+				r1 = calculate_num_of_branch_nodes((*dep_op_ids)[0],br_id);
+				r2 = calculate_num_of_branch_nodes((*dep_op_ids)[1],br_id);
+			}
+			ret = 1 + r1 + r2;
+		} else {
+			std::vector< int > * dep_op_ids = getDependentOperationNodes(node_id);
+			if(dep_op_ids->size() > 1) {
+				IR_OperationNode * dep_op_node = ( IR_OperationNode* )getNode((*dep_op_ids)[0]);
+				if(dep_op_node->getOperationType() != IR_OP_BRANCH_END) {
+					ret = calculate_num_of_branch_nodes((*dep_op_ids)[0],br_id);
+				} else {
+					ret = calculate_num_of_branch_nodes((*dep_op_ids)[1],br_id);
+				}
+			}
+		}
+	} else {
+		std::vector< int > * dep_op_ids = getDependentOperationNodes(node_id);
+		if(dep_op_ids->size() > 0)
+			ret = calculate_num_of_branch_nodes((*dep_op_ids)[0], br_id);
+	}
+
+	return ret;
 }
