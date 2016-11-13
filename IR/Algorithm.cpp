@@ -323,6 +323,7 @@ IR_Graph* Graph_StructureProcessing( IR_Graph* src_graph ) {
 				sp_graph->addOperationNode(op_recv_node);
 				int op_recv_node_id = sp_graph->getLastOperationID();
 
+
 				op_node->setOperationType(IR_OP_BRANCH_BEGIN);
 				op_node->setProcType(IR_SPU);
 
@@ -332,6 +333,28 @@ IR_Graph* Graph_StructureProcessing( IR_Graph* src_graph ) {
 				data_tag_node->setSimpleType(0);
 				sp_graph->addDataNode(data_tag_node);
 				int data_tag_node_id = sp_graph->getLastDataID();
+
+				// If it is a loop then add receive node in loop's body
+				if((op_node->getInstructionType() == I_FOR_LOOP) || (op_node->getInstructionType() == I_WHILE_LOOP)) {
+					IR_OperationNode* op_recv_node_in_body = new IR_OperationNode();
+					op_recv_node_in_body->setProcType(IR_SPU);
+					op_recv_node_in_body->setOperationType(IR_OP_RECEIVE);
+					sp_graph->addOperationNode(op_recv_node_in_body);
+					int op_recv_node_in_body_id = sp_graph->getLastOperationID();
+
+					sp_graph->addConnection(op_recv_node_in_body_id,data_tag_node_id);
+					sp_graph->addConnection(op_id,op_recv_node_in_body_id);
+					for(int j = 0; j < dep_op_ids->size(); j++) {
+						int dep_op_id = (*dep_op_ids)[j];
+
+						IR_OperationNode* dep_op_node = ( IR_OperationNode* )sp_graph->getNode(dep_op_id);
+						if(dep_op_node->getOperationType() != IR_OP_BRANCH_END) {
+							sp_graph->addConnection(op_recv_node_in_body_id,dep_op_id);
+							// Deleting connections with following nodes
+							sp_graph->removeConnection(op_id,dep_op_id);
+						}
+					}
+				}
 
 				sp_graph->addConnection(op_recv_node_id,data_tag_node_id);
 				sp_graph->addConnection(op_recv_node_id,op_id);

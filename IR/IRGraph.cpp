@@ -546,6 +546,7 @@ IR_OperationNode* IR_Graph::getOperationCopy(int index) {
 		return_node->setConnectedNodeID(tmp_node->getConnectedNodeID());
 		return_node->setLastNodeID_forLoops(tmp_node->getLastNodeID_forLoops());
 		return_node->setOperationType(tmp_node->getOperationType());
+		return_node->setInstructionType(tmp_node->getInstructionType());
 	}
 
 	return return_node;
@@ -697,7 +698,8 @@ void IR_Graph::visualise(std::string full_filename) {
 	        << "				'target-arrow-shape': 'triangle',\n" \
 	        << "				'line-color': '#ffaaaa',\n" \
 	        << "				'target-arrow-color': '#ffaaaa',\n" \
-	        << "				'curve-style': 'bezier'\n" \
+	        << "				'curve-style': 'unbundled-bezier',\n" \
+	        << "				'control-point-distance': '20px'\n" \
 	      	<< "			})\n";
 
 	// Output to set correspondence between pictures and nodes
@@ -794,7 +796,7 @@ void IR_Graph::visualise(std::string full_filename) {
 			 << x_coords[gid] \
 			 << ", y: " \
 			 << y_coords[gid] \
-			 << " } },\n";
+			 << " } }";
 	if(data_index.size() > 0)
 		vis_file << ",\n";
 	else
@@ -824,7 +826,7 @@ void IR_Graph::visualise(std::string full_filename) {
 			 << x_coords[gid] \
 			 << ", y: " \
 			 << y_coords[gid] \
-			 << " } },\n";
+			 << " } }\n";
 
 	vis_file << "      ],\n" \
 	         << "      edges: [\n";
@@ -932,8 +934,7 @@ void IR_Graph::range_nodes_by_y(int dep_node, int cur_level) {
 		if(op_node->getOperationType() == IR_OP_BRANCH_END) {// If it is an end for if-else construction, check whether we have fully considered other path
 			int connected_branch_id = op_node->getConnectedNodeID();
 			bool found_cond = false;
-			int i = 0;
-			int sz = considered_branch_nodes.size();
+
 			std::vector< int >::iterator iter_cons_br_node = considered_branch_nodes.begin();
 			while(!found_cond && (iter_cons_br_node != considered_branch_nodes.end())) {
 				if((*iter_cons_br_node) == connected_branch_id)
@@ -944,8 +945,19 @@ void IR_Graph::range_nodes_by_y(int dep_node, int cur_level) {
 			if(found_cond)
 				considered_branch_nodes.erase(iter_cons_br_node);
 			else {
-				y_levels[dep_node] = cur_level;
-				range_nodes_by_y((*dep_op_ids)[0],cur_level + 1);
+				std::vector< int > * inc_op_ids = getIncomingOperationNodes(dep_node);
+				int new_level = cur_level;
+				if(inc_op_ids->size() > 1) {
+					int level_1 = y_levels[(*inc_op_ids)[0]];
+					int level_2 = y_levels[(*inc_op_ids)[1]];
+					if(level_1 >= level_2)
+						new_level = level_1 + 1;
+					else
+						new_level = level_2 + 1;
+				}
+
+				y_levels[dep_node] = new_level;
+				range_nodes_by_y((*dep_op_ids)[0],new_level + 1);
 			}
 		} else {
 			y_levels[dep_node] = cur_level;
@@ -968,16 +980,25 @@ void IR_Graph::range_nodes_by_y(int dep_node, int cur_level) {
 				y_levels[dep_node] = cur_level;
 				int dep_op_id_1 = (*dep_op_ids)[0];
 				IR_OperationNode * dep_op_node_1 = ( IR_OperationNode* )getNode(dep_op_id_1);
+
 				if(dep_op_node_1->getOperationType() != IR_OP_BRANCH_END) {
 					range_nodes_by_y((*dep_op_ids)[0],cur_level + 1);
-					range_nodes_by_y((*dep_op_ids)[1],cur_level + 1);
+					int new_level = cur_level + 1;
+					if(max_level_by_loop.find(dep_node) != max_level_by_loop.end())
+						new_level = max_level_by_loop[dep_node];
+					range_nodes_by_y((*dep_op_ids)[1],new_level);
 				} else {
 					range_nodes_by_y((*dep_op_ids)[1],cur_level + 1);
-					range_nodes_by_y((*dep_op_ids)[0],cur_level + 1);
+					int new_level = cur_level + 1;
+					if(max_level_by_loop.find(dep_node) != max_level_by_loop.end())
+						new_level = max_level_by_loop[dep_node];
+					range_nodes_by_y((*dep_op_ids)[0],new_level);
 				}
 
-			} else
+			} else {
 				considered_branch_nodes.erase(iter_cons_br_node); //In case of loop
+				max_level_by_loop[dep_node] = cur_level;
+			}
 		}
 	} else {
 		std::cout << "Problem! A node with three dependent operation nodes.\n";

@@ -93,6 +93,7 @@ private:
 	std::map< int, int > y_coords;// Y coordinates of all graph nodes (gid - key)
 	std::map< int, int > y_levels;// Level of hierarchy of a node in graph (topmost - 0)
 	std::map< int, int > x_levels;// Level of hierarchy of a node in graph (leftmost - 0)
+	std::map< int, int > max_level_by_loop;
 
 	void range_nodes_by_y(int dep_node, int cur_level);
 	void range_nodes_by_x(int dep_node, int cur_level);

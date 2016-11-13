@@ -20,7 +20,8 @@ var cy = cytoscape({
 				'target-arrow-shape': 'triangle',
 				'line-color': '#ffaaaa',
 				'target-arrow-color': '#ffaaaa',
-				'curve-style': 'bezier'
+				'curve-style': 'unbundled-bezier',
+				'control-point-distance': '20px'
 			})
 		.selector('#13')
 			.css({
@@ -48,6 +49,10 @@ var cy = cytoscape({
 				})
 		.selector('#20')
 			.css({
+				'background-image': 'Cytospace/images/spu/Receive.jpg'
+				})
+		.selector('#21')
+			.css({
 				'background-image': 'Cytospace/images/cpu/Receive.jpg'
 				})
 		.selector('#1')
@@ -72,13 +77,14 @@ var cy = cytoscape({
 				}),
    elements: {
       nodes: [
-		{ data: { id: '13' }, position: { x: 0, y: 600 } },
+		{ data: { id: '13' }, position: { x: 0, y: 750 } },
 		{ data: { id: '14' }, position: { x: 0, y: 300 } },
-		{ data: { id: '15' }, position: { x: 0, y: 450 } },
+		{ data: { id: '15' }, position: { x: 0, y: 900 } },
 		{ data: { id: '16' }, position: { x: 0, y: 0 } },
-		{ data: { id: '17' }, position: { x: 0, y: 600 } },
+		{ data: { id: '17' }, position: { x: 0, y: 1050 } },
 		{ data: { id: '18' }, position: { x: 0, y: 150 } },
 		{ data: { id: '20' }, position: { x: 0, y: 450 } },
+		{ data: { id: '21' }, position: { x: 0, y: 600 } },
 		{ data: { id: '1' }, position: { x: 800, y: 0 } },
 		{ data: { id: '2' }, position: { x: 800, y: 150 } },
 		{ data: { id: '8' }, position: { x: 800, y: 300 } },
@@ -96,9 +102,11 @@ var cy = cytoscape({
 		{ data: { source: '18', target: '19' } },
 		{ data: { source: '18', target: '14' } },
 		{ data: { source: '19', target: '14' } },
-		{ data: { source: '20', target: '8' } },
-		{ data: { source: '20', target: '13' } },
-		{ data: { source: '13', target: '11' } }
+		{ data: { source: '20', target: '19' } },
+		{ data: { source: '20', target: '21' } },
+		{ data: { source: '21', target: '8' } },
+		{ data: { source: '21', target: '13' } },
+		{ data: { source: '15', target: '2' } }
       ]
    },
    layout: {
