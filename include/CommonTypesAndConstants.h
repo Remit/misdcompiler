@@ -101,11 +101,14 @@ typedef enum {
 } variable_type; // Types of variables for AST
 
 typedef enum {
-	VIS_ALL_TOGETHER,\
-	VIS_ALL_SEPARATELY,\
-	VIS_ONLY_INITIAL_GRAPH,\
-	VIS_ONLY_AL_GRAPH,\
-	VIS_ONLY_SP_GRAPH
+	VIS_ALL,\
+	VIS_INITIAL,\
+	VIS_ARITH,\
+	VIS_STRUCT,\
+	VIS_INITIAL_ARITH,\
+	VIS_INITIAL_STRUCT,\
+	VIS_ARITH_STRUCT,\
+	VIS_NONE
 } visualisation_option; // Options to visualise the graph
 
 #endif

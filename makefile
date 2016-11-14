@@ -26,6 +26,7 @@ main.o:
 .SILENT : clean
 .PHONY : clean
 clean:
+	cd Visualisation && make clean
 	cd parser && make clean
 	cd AST && make clean
 	cd IR && make clean

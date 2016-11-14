@@ -32,11 +32,12 @@
  #ifndef IRGRAPH_H_
  #include "../include/IRGraph.h"
  #endif
+ extern int yylineno; 
  
  static
- void yyerror(char *s)
+ void yyerror(YYLTYPE* yyloc, IR_Graph& gr, char *s)
  {
-        printf("yyerror: %s\n", s);
+        std::cerr << s << " at line " << yylineno << '\n';
  }
  
 }
@@ -56,6 +57,8 @@
 // The names for the output files
 %defines "../include/bison-misdcompiler.h"
 %output  "bison-misdcompiler.cpp"
+
+%parse-param { IR_Graph& gr }
 
 %locations
 %pure-parser
@@ -137,8 +140,7 @@ program:
 																		IR_Graph* sp_graph = Graph_StructureProcessing($$);
 																		sp_graph->printNodes();
 																		sp_graph->printConnections();
-																		std::string fname = "example.js";
-																		sp_graph->visualise(fname);
+																		gr = *$$;
 																	}
 ;
 
@@ -304,7 +306,7 @@ str_compare_expr:
 																			const char * name_ident = $6->c_str();
 																			strcpy(err,err_desc);
 																			strcat(err,name_ident);
-																			yyerror(err);
+																			yyerror(0, *$$, err);
 																		} else {
 																			if( !isAdded ) {
 																				$$->addDataNode(data_node_2);
@@ -353,7 +355,7 @@ str_insert_to_str:
 																			const char * name_ident = $4->c_str();
 																			strcpy(err,err_desc);
 																			strcat(err,name_ident);
-																			yyerror(err);
+																			yyerror(0, *$$, err);
 																		} else {
 																			if( !isAdded ) {
 																				$$->addDataNode(data_node_1);
@@ -371,7 +373,7 @@ str_insert_to_str:
 																			const char * name_ident = $6->c_str();
 																			strcpy(err,err_desc);
 																			strcat(err,name_ident);
-																			yyerror(err);
+																			yyerror(0, *$$, err);
 																		} else {
 																			if( !isAdded ) {
 																				$$->addDataNode(data_node_2);
@@ -413,7 +415,7 @@ str_delete_from_str:
 																			const char * name_ident = $4->c_str();
 																			strcpy(err,err_desc);
 																			strcat(err,name_ident);
-																			yyerror(err);
+																			yyerror(0, *$$, err);
 																		} else {
 																			if( !isAdded ) {
 																				$$->addDataNode(data_node_1);
@@ -452,7 +454,7 @@ str_search_in_str:
 																			const char * name_ident = $2->c_str();
 																			strcpy(err,err_desc);
 																			strcat(err,name_ident);
-																			yyerror(err);
+																			yyerror(0, *$$, err);
 																		} else {
 																			if( !isAdded ) {
 																				$$->addDataNode(data_node_result);
@@ -473,7 +475,7 @@ str_search_in_str:
 																			const char * name_ident = $6->c_str();
 																			strcpy(err,err_desc);
 																			strcat(err,name_ident);
-																			yyerror(err);
+																			yyerror(0, *$$, err);
 																		} else {
 																			if( !isAdded ) {
 																				$$->addDataNode(data_node_2);
@@ -520,7 +522,7 @@ assign_stmt:
 																			const char * name_ident = $1->c_str();
 																			strcpy(err,err_desc);
 																			strcat(err,name_ident);
-																			yyerror(err);
+																			yyerror(0, *$$, err);
 																		} else {
 																			if( !isAdded ) {
 																				$$->addDataNode(data_node_result);
@@ -546,7 +548,7 @@ assign_stmt:
 																				const char * name_ident = variable_name.c_str();
 																				strcpy(err,err_desc);
 																				strcat(err,name_ident);
-																				yyerror(err);
+																				yyerror(0, *$$, err);
 																			} else {
 																				if( !isAdded ) {
 																					$$->addDataNode(data_node_i);
@@ -635,7 +637,7 @@ if_stmt:
 																				const char * name_ident = variable_name.c_str();
 																				strcpy(err,err_desc);
 																				strcat(err,name_ident);
-																				yyerror(err);
+																				yyerror(0, *$$, err);
 																			} else {
 																				if( !isAdded ) {
 																					$$->addDataNode(data_node_i);
@@ -688,7 +690,7 @@ if_stmt:
 																				const char * name_ident = variable_name.c_str();
 																				strcpy(err,err_desc);
 																				strcat(err,name_ident);
-																				yyerror(err);
+																				yyerror(0, *$$, err);
 																			} else {
 																				if( !isAdded ) {
 																					$$->addDataNode(data_node_i);
