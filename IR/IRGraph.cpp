@@ -707,7 +707,28 @@ void IR_Graph::visualise(std::string full_filename) {
 	int gid;
 	std::string gid_str;
 
-	for(iter_nodes = operations_index.begin(); iter_nodes != operations_index.end(); iter_nodes++) {
+	if(operations_index.size() > 0) {
+		std::map< int, int >::iterator iter_nodes_end = --operations_index.end();
+		for(iter_nodes = operations_index.begin(); iter_nodes != iter_nodes_end; iter_nodes++) {
+			gid = iter_nodes->first;
+			int local_id = iter_nodes->second;
+			gid_str = std::to_string(gid);
+			IR_OperationNode * op_node = operations[local_id];
+			std::string path_to_pic;
+			if(op_node != NULL)
+				path_to_pic = op_node->getPicturePath();
+
+			vis_file << "		.selector(\'#"\
+					<< gid_str \
+					<< "\')\n" \
+					<< "			.css({\n"\
+					<< "				'background-image': \'" \
+					<< path_to_pic \
+					<< "\'\n" \
+					<< "				})\n";
+		}
+		
+		//Last node
 		gid = iter_nodes->first;
 		int local_id = iter_nodes->second;
 		gid_str = std::to_string(gid);
@@ -723,11 +744,37 @@ void IR_Graph::visualise(std::string full_filename) {
 				<< "				'background-image': \'" \
 				<< path_to_pic \
 				<< "\'\n" \
-				<< "				})\n";
+				<< "				})";
+		if(data_index.size() > 0)
+			vis_file << "\n";
+		else
+			vis_file << ",\n";
 	}
 
-	std::map< int, int >::iterator iter_nodes_end_data = --data_index.end();
-	for(iter_nodes = data_index.begin(); iter_nodes != iter_nodes_end_data; iter_nodes++) {
+	if(data_index.size() > 0) {
+		std::map< int, int >::iterator iter_nodes_end_data = --data_index.end();
+		for(iter_nodes = data_index.begin(); iter_nodes != iter_nodes_end_data; iter_nodes++) {
+			gid = iter_nodes->first;
+			int local_id = iter_nodes->second;
+			gid_str = std::to_string(gid);
+			IR_DataNode * data_node = data[local_id];
+			std::string path_to_pic;
+			if(data_node != NULL)
+				path_to_pic = data_node->getPicturePath();
+
+			vis_file << "		.selector(\'#"\
+					<< gid_str \
+					<< "\')\n" \
+					<< "			.css({\n"\
+					<< "				'background-image': \'" \
+					<< path_to_pic \
+					<< "\',\n" \
+					<< "				'label': \'" \
+					<< data_node->getDataName() \
+					<< "\'\n" \
+					<< "				})\n";
+		}
+		// Last data node
 		gid = iter_nodes->first;
 		int local_id = iter_nodes->second;
 		gid_str = std::to_string(gid);
@@ -746,36 +793,29 @@ void IR_Graph::visualise(std::string full_filename) {
 				<< "				'label': \'" \
 				<< data_node->getDataName() \
 				<< "\'\n" \
-				<< "				})\n";
+				<< "				}),\n";
 	}
-	// Last data node
-	gid = iter_nodes->first;
-	int local_id = iter_nodes->second;
-	gid_str = std::to_string(gid);
-	IR_DataNode * data_node = data[local_id];
-	std::string path_to_pic;
-	if(data_node != NULL)
-		path_to_pic = data_node->getPicturePath();
-
-	vis_file << "		.selector(\'#"\
-			<< gid_str \
-			<< "\')\n" \
-			<< "			.css({\n"\
-			<< "				'background-image': \'" \
-			<< path_to_pic \
-			<< "\',\n" \
-			<< "				'label': \'" \
-			<< data_node->getDataName() \
-			<< "\'\n" \
-			<< "				}),\n";
 
 	// Output of JSON-formatted elements of graph (nodes and edges)
 	vis_file << "   elements: {\n" \
 			 << "      nodes: [\n";
 
 	// Nodes
-	std::map< int, int >::iterator iter_nodes_end = --operations_index.end();
-	for(iter_nodes = operations_index.begin(); iter_nodes != iter_nodes_end; iter_nodes++) {
+	if(operations_index.size() > 0) {
+		std::map< int, int >::iterator iter_nodes_end = --operations_index.end();
+		for(iter_nodes = operations_index.begin(); iter_nodes != iter_nodes_end; iter_nodes++) {
+			gid = iter_nodes->first;
+			gid_str = std::to_string(gid);
+			vis_file << "		{ data: { id: \'" \
+					 << gid_str \
+					 << "\' }, position: { x: " \
+					 << x_coords[gid] \
+					 << ", y: " \
+					 << y_coords[gid] \
+					 << " } },\n";
+		}
+
+		// Last op node
 		gid = iter_nodes->first;
 		gid_str = std::to_string(gid);
 		vis_file << "		{ data: { id: \'" \
@@ -784,52 +824,42 @@ void IR_Graph::visualise(std::string full_filename) {
 				 << x_coords[gid] \
 				 << ", y: " \
 				 << y_coords[gid] \
-				 << " } },\n";
+				 << " } }";
+		if(data_index.size() > 0)
+			vis_file << ",\n";
+		else
+			vis_file << "\n";
 	}
 
-	// Last op node
-	gid = iter_nodes->first;
-	gid_str = std::to_string(gid);
-	vis_file << "		{ data: { id: \'" \
-			 << gid_str \
-			 << "\' }, position: { x: " \
-			 << x_coords[gid] \
-			 << ", y: " \
-			 << y_coords[gid] \
-			 << " } }";
-	if(data_index.size() > 0)
-		vis_file << ",\n";
-	else
-		vis_file << "\n";
+	if(data_index.size() > 0) {
+		std::map< int, int >::iterator iter_nodes_data;
+		std::map< int, int >::iterator iter_nodes_end_data = --data_index.end();
+		unsigned int sz = data_index.size();
+		for(iter_nodes_data = data_index.begin(); iter_nodes_data != iter_nodes_end_data; iter_nodes_data++) {
+			gid = iter_nodes_data->first;
+			gid_str = std::to_string(gid);
+			vis_file << "		{ data: { id: \'" \
+					<< gid_str \
+					<< "\' }, position: { x: " \
+					<< x_coords[gid] \
+					<< ", y: " \
+					<< y_coords[gid] \
+					<< " } },\n";
+		}
 
-	std::map< int, int >::iterator iter_nodes_data;
-	iter_nodes_end_data = --data_index.end();
-	unsigned int sz = data_index.size();
-	for(iter_nodes_data = data_index.begin(); iter_nodes_data != iter_nodes_end_data; iter_nodes_data++) {
+		// Last data node
 		gid = iter_nodes_data->first;
 		gid_str = std::to_string(gid);
 		vis_file << "		{ data: { id: \'" \
-				<< gid_str \
-				<< "\' }, position: { x: " \
-				<< x_coords[gid] \
-				<< ", y: " \
-				<< y_coords[gid] \
-				<< " } },\n";
+				 << gid_str \
+				 << "\' }, position: { x: " \
+				 << x_coords[gid] \
+				 << ", y: " \
+				 << y_coords[gid] \
+				 << " } }\n";
 	}
-
-	// Last data node
-	gid = iter_nodes_data->first;
-	gid_str = std::to_string(gid);
-	vis_file << "		{ data: { id: \'" \
-			 << gid_str \
-			 << "\' }, position: { x: " \
-			 << x_coords[gid] \
-			 << ", y: " \
-			 << y_coords[gid] \
-			 << " } }\n";
-
 	vis_file << "      ],\n" \
-	         << "      edges: [\n";
+			 << "      edges: [\n";
 
 	// Edges
 	int gid_src;
@@ -1013,7 +1043,7 @@ void IR_Graph::range_nodes_by_x(int dep_node, int cur_level) {
 		std::vector< int > * dep_op_ids = getDependentOperationNodes(dep_node);
 		if(dep_op_ids->size() > 0)
 			range_nodes_by_x((*dep_op_ids)[0],0);
-	} else if((op_node->getOperationType() == IR_OP_BRANCH_COND_BEGIN) && (op_node->getOperationType() == IR_OP_BRANCH_BEGIN)) {
+	} else if((op_node->getOperationType() == IR_OP_BRANCH_COND_BEGIN) || (op_node->getOperationType() == IR_OP_BRANCH_BEGIN)) {
 		int connected_branch_id = op_node->getConnectedNodeID();
 		bool found_cond = false;
 
@@ -1032,13 +1062,16 @@ void IR_Graph::range_nodes_by_x(int dep_node, int cur_level) {
 			std::vector< int > * dep_op_ids = getDependentOperationNodes(dep_node);
 			if(dep_op_ids->size() > 1) {
 				IR_OperationNode * dep_op_node = ( IR_OperationNode* )getNode((*dep_op_ids)[0]);
-				if(dep_op_node->getOperationType() != IR_OP_BRANCH_END) {
+				IR_OperationNode * dep_op_node_alt = ( IR_OperationNode* )getNode((*dep_op_ids)[1]);
+				if((dep_op_node->getOperationType() != IR_OP_BRANCH_END) && (dep_op_node_alt->getOperationType() != IR_OP_BRANCH_END) ) {
 					range_nodes_by_x((*dep_op_ids)[0], cur_level);
 					branch_nodes_search_stack.push_back(dep_node);
 					int num_of_branch_nodes = calculate_num_of_branch_nodes((*dep_op_ids)[0], dep_node);
-					range_nodes_by_x((*dep_op_ids)[0], cur_level + num_of_branch_nodes + 1);
-				} else {
+					range_nodes_by_x((*dep_op_ids)[1], cur_level + num_of_branch_nodes + 1);
+				} else if(dep_op_node_alt->getOperationType() != IR_OP_BRANCH_END) {
 					range_nodes_by_x((*dep_op_ids)[1], cur_level);
+				} else {
+					range_nodes_by_x((*dep_op_ids)[0], cur_level);
 				}
 			}
 		}
@@ -1090,10 +1123,8 @@ int IR_Graph::calculate_num_of_branch_nodes(int node_id, int br_id) {
 		} else {
 			if(connected_branch_id == br_id)
 				ret = 0;
-			else
-				std::cout << "Error! Branch end without matching begin branch.\n";
 		}
-	} else if((op_node->getOperationType() != IR_OP_BRANCH_COND_BEGIN) && (op_node->getOperationType() != IR_OP_BRANCH_BEGIN) && (op_node->getInstructionType() != I_FOR_LOOP) && (op_node->getInstructionType() != I_WHILE_LOOP)) {
+	} else if(((op_node->getOperationType() == IR_OP_BRANCH_COND_BEGIN) || (op_node->getOperationType() == IR_OP_BRANCH_BEGIN)) && (op_node->getInstructionType() != I_FOR_LOOP) && (op_node->getInstructionType() != I_WHILE_LOOP)) {
 		bool found_cond = false;
 
 		std::vector< int >::iterator iter_cons_br_node = branch_nodes_search_stack.begin();
