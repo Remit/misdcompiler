@@ -44,6 +44,7 @@
 
 %code {
  std::vector< std::string > idents; 
+ std::vector< std::string > scopes_ids_list {"0"};
  std::vector< std::string > exp_vars_list;
  std::vector< std::string > exp_bool_vars_list;
  std::vector< std::string > exp_nums_list;
@@ -116,7 +117,7 @@
 
 %type <graph> program stmts_ls stmt stmts_block assign_stmt loop_stmt count_loop while_loop if_stmt expr_stmt str_delete str_bin_expr str_compare_expr str_insert_to_str str_delete_from_str def_expr id_ls str_search_in_str
 %type <str> struct ident num
-%type <type_int> id_type
+%type <type_int> id_type tlc trc
 
 %%
 program:
@@ -125,21 +126,17 @@ program:
 																		last_node++;
 																		IR_OperationNode * terminalNode = buildTerminalNode( );
 																		terminalNode->setID(last_node);
+																		terminalNode->setScopesIDs(scopes_ids_list);
 																		$$->addOperationNode( terminalNode );
 																		$$->appendGraph($1);
 																		last_node++;
 																		IR_OperationNode * terminalNode_end = buildTerminalNode( );
 																		terminalNode_end->setID(last_node);
+																		terminalNode_end->setScopesIDs(scopes_ids_list);
 																		IR_Graph* last_gr = new IR_Graph();
 																		last_gr->addOperationNode( terminalNode_end );
 																		$$->appendGraph(last_gr);
-																		
-																		/* Printing section */
 																		$$->printNodes();
-																		$$->printConnections();
-																		IR_Graph* sp_graph = Graph_StructureProcessing($$);
-																		sp_graph->printNodes();
-																		sp_graph->printConnections();
 																		gr = *$$;
 																	}
 ;
@@ -156,7 +153,7 @@ stmts_ls:
 ;
 
 stmt:
-   stmts_block														{ scope_id++; std::cout << "Scope ID: " << scope_id << std::endl; }
+   stmts_block														
 |  expr_stmt TSEMI													{ $$ = $1; }
 |  assign_stmt TSEMI												{ $$ = $1; }
 |  if_stmt				
@@ -164,9 +161,20 @@ stmt:
 ;
 
 stmts_block:
-   TLCBR stmts_ls TRCBR												{ $$ = $2; }
-|  TLCBR          TRCBR												{ $$ = new IR_Graph(); }
+   tlc stmts_ls trc													{ $$ = $2; }
+|  tlc          trc													{ $$ = new IR_Graph(); }
 ;
+
+tlc:
+   TLCBR															{
+																		std::string scope_id_s = std::to_string(++scope_id);
+																		scopes_ids_list.push_back(scope_id_s);
+																	}
+   
+trc:
+   TRCBR															{ 
+																		scopes_ids_list.pop_back();
+																	}
 
 expr_stmt:
    																	{ $$ = new IR_Graph(); }
@@ -187,6 +195,7 @@ def_expr:
 																		IR_OperationNode* op_node = buildDefineNode(idents_ptr);
 																		op_node->setInstructionType(I_DEFINE);
 																		op_node->setID(last_node);
+																		op_node->setScopesIDs(scopes_ids_list);
 																		$$->addOperationNode(op_node);
 																		
 																		std::vector< std::string >::size_type sz = idents.size();
@@ -233,6 +242,7 @@ str_delete:
 																		IR_OperationNode* op_node = buildAssignNode(IR_DATA_STRUCTURE);
 																		op_node->setInstructionType(I_STRUCTURE);
 																		op_node->setID(last_node);
+																		op_node->setScopesIDs(scopes_ids_list);
 																		$$->addOperationNode(op_node);
 																		IR_DataNode* data_node = getStructureNodeByName(* $2);
 																		$$->addDataNode(data_node);
@@ -253,6 +263,7 @@ str_bin_expr:
 																		IR_OperationNode* op_node = buildAssignNode(IR_DATA_STRUCTURE);
 																		op_node->setInstructionType(I_STRUCTURE);
 																		op_node->setID(last_node);
+																		op_node->setScopesIDs(scopes_ids_list);
 																		$$ = new IR_Graph();
 																		$$->addOperationNode(op_node);
 																		IR_DataNode* data_node_result = getStructureNodeByName(* $2);
@@ -288,6 +299,7 @@ str_compare_expr:
 																		IR_OperationNode* op_node = buildAssignNode(IR_DATA_STRUCTURE);
 																		op_node->setInstructionType(I_STRUCTURE);
 																		op_node->setID(last_node);
+																		op_node->setScopesIDs(scopes_ids_list);
 																		$$ = new IR_Graph();
 																		$$->addOperationNode(op_node);
 																		IR_DataNode* data_node_result = getStructureNodeByName(* $2);
@@ -339,6 +351,7 @@ str_insert_to_str:
 																		IR_OperationNode* op_node = buildAssignNode(IR_DATA_STRUCTURE);
 																		op_node->setInstructionType(I_STRUCTURE);
 																		op_node->setID(last_node);
+																		op_node->setScopesIDs(scopes_ids_list);
 																		$$ = new IR_Graph();
 																		$$->addOperationNode(op_node);
 																		IR_DataNode* data_node_result = getStructureNodeByName(* $2);
@@ -399,6 +412,7 @@ str_delete_from_str:
 																		IR_OperationNode* op_node = buildAssignNode(IR_DATA_STRUCTURE);
 																		op_node->setInstructionType(I_STRUCTURE);
 																		op_node->setID(last_node);
+																		op_node->setScopesIDs(scopes_ids_list);
 																		$$ = new IR_Graph();
 																		$$->addOperationNode(op_node);
 																		IR_DataNode* data_node_result = getStructureNodeByName(* $2);
@@ -440,6 +454,7 @@ str_search_in_str:
 																		IR_OperationNode* op_node = buildAssignNode(IR_DATA_STRUCTURE);
 																		op_node->setInstructionType(I_STRUCTURE);
 																		op_node->setID(last_node);
+																		op_node->setScopesIDs(scopes_ids_list);
 																		$$ = new IR_Graph();
 																		$$->addOperationNode(op_node);
 																		int op_node_id = $$->getLastOperationID();
@@ -508,6 +523,7 @@ assign_stmt:
 																		IR_OperationNode* op_node = buildAssignNode(ident_type);
 																		op_node->setInstructionType(I_ASSIGN);
 																		op_node->setID(last_node);
+																		op_node->setScopesIDs(scopes_ids_list);
 																		$$ = new IR_Graph();
 																		$$->addOperationNode(op_node);
 																		int op_node_id = $$->getLastOperationID();
@@ -610,6 +626,7 @@ if_stmt:
 																		IR_OperationNode * cond_node = buildConditionalBeginBranchNode( );
 																		cond_node->setInstructionType(I_IF);
 																		cond_node->setID(last_node);
+																		cond_node->setScopesIDs(scopes_ids_list);
 																		$$->addOperationNode( cond_node );
 																		int op_node_id = $$->getLastOperationID();
 																		$$->appendGraph($6);
@@ -618,6 +635,7 @@ if_stmt:
 																		IR_OperationNode * end_node = buildEndBranchNode( );
 																		end_node->setInstructionType(I_IF);
 																		end_node->setID(last_node);
+																		end_node->setScopesIDs(scopes_ids_list);
 																		$$->addOperationNode( end_node );
 																		int op_end_node_id = $$->getLastOperationID();
 																		cond_node->setConnectedNodeID(op_end_node_id);
@@ -660,6 +678,7 @@ if_stmt:
 																		IR_OperationNode * cond_node = buildConditionalBeginBranchNode( );
 																		cond_node->setInstructionType(I_IF_ELSE);
 																		cond_node->setID(last_node);
+																		cond_node->setScopesIDs(scopes_ids_list);
 																		$$->addOperationNode( cond_node );
 																		int op_node_id = $$->getLastOperationID();
 																		$$->appendGraph($6);
@@ -670,6 +689,7 @@ if_stmt:
 																		IR_OperationNode * end_node = buildEndBranchNode( );
 																		end_node->setInstructionType(I_IF_ELSE);
 																		end_node->setID(last_node);
+																		end_node->setScopesIDs(scopes_ids_list);
 																		$$->addOperationNode( end_node );
 																		int op_end_node_id = $$->getLastOperationID();
 																		cond_node->setConnectedNodeID(op_end_node_id);
@@ -742,6 +762,7 @@ count_loop:
 																		IR_OperationNode * cond_node = buildConditionalBeginBranchNode( );
 																		cond_node->setInstructionType(I_FOR_LOOP);
 																		cond_node->setID(last_node);
+																		cond_node->setScopesIDs(scopes_ids_list);
 																		$$->addOperationNode( cond_node );
 																		int op_node_id = $$->getLastOperationID();
 																		int num_of_vars = exp_bool_vars_list.size();
@@ -766,6 +787,7 @@ count_loop:
 																		IR_OperationNode * end_node = buildEndBranchNode( );
 																		end_node->setInstructionType(I_FOR_LOOP);
 																		end_node->setID(last_node);
+																		end_node->setScopesIDs(scopes_ids_list);
 																		$$->addOperationNode( end_node );
 																		int op_end_node_id = $$->getLastOperationID();
 																		cond_node->setConnectedNodeID(op_node_id);
@@ -783,6 +805,7 @@ while_loop:
 																	   IR_OperationNode * cond_node = buildConditionalBeginBranchNode( );
 																	   cond_node->setInstructionType(I_WHILE_LOOP);
 																	   cond_node->setID(last_node);
+																	   cond_node->setScopesIDs(scopes_ids_list);
 																	   $$->addOperationNode( cond_node );
 																	   int op_node_id = $$->getLastOperationID();
 																	   int num_of_vars = exp_bool_vars_list.size();
@@ -806,6 +829,7 @@ while_loop:
 																		IR_OperationNode * end_node = buildEndBranchNode( );
 																		end_node->setInstructionType(I_WHILE_LOOP);
 																		end_node->setID(last_node);
+																		end_node->setScopesIDs(scopes_ids_list);
 																		$$->addOperationNode( end_node );
 																		int op_end_node_id = $$->getLastOperationID();
 																		cond_node->setConnectedNodeID(op_node_id);

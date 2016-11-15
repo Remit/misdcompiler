@@ -83,6 +83,12 @@ void IR_OperationNode::print()
 		std::cout << "definition type";
 		break;
     }
+	
+	std::cout << " --- Scopes: ";
+	std::vector< std::string >::iterator iter;
+	for(iter = scopes_ids.begin(); iter != scopes_ids.end(); iter++) {
+		std::cout << *iter << " ; ";
+	}
 }
 
 void IR_OperationNode::setConnectedNodeID(int gid)
@@ -221,4 +227,12 @@ std::string IR_OperationNode::getPicturePath() {
 
 	pic_path += ".jpg";
 	return pic_path;
+}
+
+void IR_OperationNode::setScopesIDs(std::vector< std::string > a_scopes_ids) {
+	scopes_ids = a_scopes_ids;
+}
+
+std::vector< std::string > IR_OperationNode::getScopesIDs() {
+	return scopes_ids;
 }

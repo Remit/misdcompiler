@@ -49,6 +49,10 @@ public:
 	// Visualisation
 	void print();
 	std::string getPicturePath();
+	
+	//Scopes
+	void setScopesIDs(std::vector< std::string > a_scopes_ids);
+	std::vector< std::string > getScopesIDs();
 
 private:
 //ATTENTION: When adding a field to a node, do not forget to add code to copy method!
@@ -63,6 +67,8 @@ private:
 	std::vector< std::string > * input_names;
 //Data output
 	std::string * output_name;
+//Scopes names in which we use current operation
+	std::vector< std::string > scopes_ids;
 };
 
 #endif /* IROPERATIONNODE_H_ */
