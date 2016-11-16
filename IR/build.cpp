@@ -70,13 +70,24 @@ IR_OperationNode* buildConditionalBeginBranchNode() {
 }
 
 // Building Data Node and storing it with the variable name in the variable table
-void buildDataNode(std::string identifier_name, data_type dt, int id) {
-	IR_DataNode* data_node = new IR_DataNode();
-	data_node->setID(id);
-	data_node->setDataType(dt);
-	data_node->setProcType(IR_CPU);
-	data_node->setDataName(identifier_name);
-	var_table.addVariableToTable(identifier_name,data_node);
+int buildDataNode(std::string identifier_name, data_type dt, int id, std::string scope_name) {
+	int ret;
+	std::string var_name_in_table = identifier_name + "-" + scope_name;
+	bool * ok = new bool();
+	int gid = var_table.getGIDbyName( var_name_in_table, ok );
+	if( (* ok) != true) {
+		IR_DataNode* data_node = new IR_DataNode();
+		data_node->setID(id);
+		data_node->setDataType(dt);
+		data_node->setProcType(IR_CPU);
+		data_node->setDataName(var_name_in_table);
+		var_table.addVariableToTable(var_name_in_table,data_node);
+		ret = 0;
+	} else {
+		ret = 1;
+	}
+	
+	return ret;
 }
 
 // Updating data type of data node in variables table
@@ -102,9 +113,20 @@ IR_DataNode* getStructureNodeByName( std::string structure_name ) {
 	return data_node;
 }
 
-IR_DataNode* getVariableNodeByName( std::string variable_name ) {
+IR_DataNode* getVariableNodeByName( std::string variable_name, std::vector <std::string > * scopes_ids_list ) {
 	bool* ok = new bool();
-	IR_DataNode* data_node = var_table.getDataNodeByVariableName( variable_name, ok );
+	bool found = false;
+	IR_DataNode* data_node = NULL;
+	
+	while(!found && (scopes_ids_list->size() > 0)) {
+		std::string last_scope_id = scopes_ids_list->back();
+		std::string variable_name_with_scope_id = variable_name + "-" + last_scope_id;
+		scopes_ids_list->pop_back();
+		data_node = var_table.getDataNodeByVariableName( variable_name_with_scope_id, ok );
+		if((*ok))
+			found = true;
+	}
+		
 	return data_node;
 }
 

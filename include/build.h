@@ -27,10 +27,10 @@ IR_OperationNode* buildBeginBranchNode();
 IR_OperationNode* buildEndBranchNode();
 IR_OperationNode* buildConditionalBeginBranchNode();
 IR_DataNode* getStructureNodeByName( std::string structure_name );
-IR_DataNode* getVariableNodeByName( std::string variable_name );
+IR_DataNode* getVariableNodeByName( std::string variable_name, std::vector <std::string > * scopes_ids_list );
 data_type getIdentType( std::string variable_name );
 
-void buildDataNode(std::string identifier_name, data_type dt, int id);
+int buildDataNode(std::string identifier_name, data_type dt, int id, std::string scope_name);
 void updateDataNode_SimpleDataType(std::string identifier_name, int dt);
 void addStructDataNodeToGraph(std::string identifier_name);
 void addVariableDataNodeToGraph(std::string identifier_name, int gid);

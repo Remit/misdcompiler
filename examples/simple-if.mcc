@@ -1,6 +1,9 @@
-int x, y;
+﻿int x, y;
+{
+int x;
 if (x < y) then
 {
+int y;
 x = y;
 }
-y = x;
+}

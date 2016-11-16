@@ -220,17 +220,35 @@ id_ls:
    TIDENT															{
 																		std::string ident_name(yylval.pch, 0, 1024);
 																		last_node++;
-																		buildDataNode(ident_name,IR_DATA_SIMPLE,last_node);
-																		idents.reserve(1024);
-																		idents.push_back(ident_name);
-																		$$ = new IR_Graph();
+																		int ercode = buildDataNode(ident_name,IR_DATA_SIMPLE,last_node,scopes_ids_list.back());
+																		if(ercode == 1) {
+																			char err[256];
+																			const char *err_desc = "ERROR. Variable declared more than one time in the same scope: ";
+																			const char * name_ident = ident_name.c_str();
+																			strcpy(err,err_desc);
+																			strcat(err,name_ident);
+																			yyerror(0, *$$, err);
+																		} else {
+																			idents.reserve(1024);
+																			idents.push_back(ident_name);
+																			$$ = new IR_Graph();
+																		}
 																	}
 |  id_ls TCOMMA TIDENT 												{
 																		std::string ident_name(yylval.pch, 0, 1024);
 																		last_node++;
-																		buildDataNode(ident_name,IR_DATA_SIMPLE,last_node);
-																		idents.push_back(ident_name);
-																		$$ = $1;
+																		int ercode = buildDataNode(ident_name,IR_DATA_SIMPLE,last_node,scopes_ids_list.back());
+																		if(ercode == 1) {
+																			char err[256];
+																			const char *err_desc = "ERROR. Variable declared more than one time in the same scope: ";
+																			const char * name_ident = ident_name.c_str();
+																			strcpy(err,err_desc);
+																			strcat(err,name_ident);
+																			yyerror(0, *$$, err);
+																		} else {
+																			idents.push_back(ident_name);
+																			$$ = $1;
+																		}
 																	}
 ;
 
@@ -304,35 +322,41 @@ str_compare_expr:
 																		$$->addOperationNode(op_node);
 																		IR_DataNode* data_node_result = getStructureNodeByName(* $2);
 																		IR_DataNode* data_node_1 = getStructureNodeByName(* $4);
-																		IR_DataNode* data_node_2 = getVariableNodeByName(* $6);
+																		std::vector< std::string > scopes_ids_list_cp = scopes_ids_list;
+																		std::vector< std::string > * scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
+																		IR_DataNode* data_node_2 = getVariableNodeByName(* $6, scopes_ids_list_cp_ptr);
 																		$$->addDataNode(data_node_result);
 																		int data_node_result_id = $$->getLastDataID();
 																		$$->addDataNode(data_node_1);
 																		int data_node_1_id = $$->getLastDataID();
-																		bool * check_existence = new bool();
-																		bool isAdded;
-																		isAdded = isAddedToGraph(* $6, check_existence);
-																		if( (* check_existence) == false ) {
+																		
+																		if(data_node_2 != NULL) {
+																			std::string data_node_2_name = data_node_2->getDataName();
+																			bool * check_existence = new bool();
+																			bool isAdded;
+																			isAdded = isAddedToGraph(data_node_2_name, check_existence);
+																			if( (* check_existence) == true ) {
+																				if( !isAdded ) {
+																					$$->addDataNode(data_node_2);
+																					int data_node_2_id = $$->getLastDataID();
+																					addVariableDataNodeToGraph(data_node_2_name,data_node_2_id);
+																				}
+																			}
+																		
+																			int node_2_id = identNameToGID(data_node_2_name);
+																			int op_node_id = $$->getLastOperationID();
+																			if((data_node_result_id > 0) && (op_node_id > 0) && (data_node_1_id > 0) && (node_2_id > 0)) {
+																				$$->addConnection(op_node_id,data_node_result_id);
+																				$$->addConnection(data_node_1_id,op_node_id);
+																				$$->addConnection(node_2_id,op_node_id);
+																			}
+																		} else {
 																			char err[256];
 																			const char *err_desc = "No such variable was declared: ";
 																			const char * name_ident = $6->c_str();
 																			strcpy(err,err_desc);
 																			strcat(err,name_ident);
 																			yyerror(0, *$$, err);
-																		} else {
-																			if( !isAdded ) {
-																				$$->addDataNode(data_node_2);
-																				int data_node_2_id = $$->getLastDataID();
-																				addVariableDataNodeToGraph(* $6,data_node_2_id);
-																			}
-																		}
-																		
-																		int node_2_id = identNameToGID(* $6);
-																		int op_node_id = $$->getLastOperationID();
-																		if((data_node_result_id > 0) && (op_node_id > 0) && (data_node_1_id > 0) && (node_2_id > 0)) {
-																			$$->addConnection(op_node_id,data_node_result_id);
-																			$$->addConnection(data_node_1_id,op_node_id);
-																			$$->addConnection(node_2_id,op_node_id);
 																		}
 																	}
 ;
@@ -355,52 +379,64 @@ str_insert_to_str:
 																		$$ = new IR_Graph();
 																		$$->addOperationNode(op_node);
 																		IR_DataNode* data_node_result = getStructureNodeByName(* $2);
-																		IR_DataNode* data_node_1 = getVariableNodeByName(* $4);
-																		IR_DataNode* data_node_2 = getVariableNodeByName(* $6);
+																		std::vector< std::string > scopes_ids_list_cp = scopes_ids_list;
+																		std::vector< std::string > * scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
+																		IR_DataNode* data_node_1 = getVariableNodeByName(* $4, scopes_ids_list_cp_ptr);
+																		scopes_ids_list_cp = scopes_ids_list;
+																		scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
+																		IR_DataNode* data_node_2 = getVariableNodeByName(* $6, scopes_ids_list_cp_ptr);
 																		$$->addDataNode(data_node_result);
 																		int data_node_result_id = $$->getLastDataID();
-																		bool * check_existence = new bool();
-																		bool isAdded;
-																		isAdded = isAddedToGraph(* $4, check_existence);
-																		if( (* check_existence) == false ) {
+																		
+																		if(data_node_1 != NULL) {
+																			std::string data_node_1_name = data_node_1->getDataName();
+																			bool * check_existence = new bool();
+																			bool isAdded;
+																			isAdded = isAddedToGraph(data_node_1_name, check_existence);
+																			if( (* check_existence) == true ) {
+																				if( !isAdded ) {
+																					$$->addDataNode(data_node_1);
+																					int data_node_1_id = $$->getLastDataID();
+																					addVariableDataNodeToGraph(data_node_1_name,data_node_1_id);
+																				}
+																			}
+																			
+																			int node_1_id = identNameToGID(data_node_1_name);
+																			if(data_node_2 != NULL) {
+																				std::string data_node_2_name = data_node_1->getDataName();
+																				isAdded = isAddedToGraph(data_node_2_name, check_existence);
+																			
+																				if( (* check_existence) == true ) {
+																					if( !isAdded ) {
+																						$$->addDataNode(data_node_2);
+																						int data_node_2_id = $$->getLastDataID();
+																						addVariableDataNodeToGraph(data_node_2_name,data_node_2_id);
+																					}
+																				}
+																			
+																				int node_2_id = identNameToGID(data_node_2_name);
+																				int op_node_id = $$->getLastOperationID();
+																			
+																				if((data_node_result_id > 0) && (op_node_id > 0) && (node_1_id > 0) && (node_2_id > 0)) {
+																					$$->addConnection(op_node_id,data_node_result_id);
+																					$$->addConnection(node_1_id,op_node_id);
+																					$$->addConnection(node_2_id,op_node_id);
+																				}
+																			} else {
+																				char err[256];
+																				const char *err_desc = "No such variable was declared: ";
+																				const char * name_ident = $6->c_str();
+																				strcpy(err,err_desc);
+																				strcat(err,name_ident);
+																				yyerror(0, *$$, err);
+																			}
+																		} else {
 																			char err[256];
 																			const char *err_desc = "No such variable was declared: ";
 																			const char * name_ident = $4->c_str();
 																			strcpy(err,err_desc);
 																			strcat(err,name_ident);
 																			yyerror(0, *$$, err);
-																		} else {
-																			if( !isAdded ) {
-																				$$->addDataNode(data_node_1);
-																				int data_node_1_id = $$->getLastDataID();
-																				addVariableDataNodeToGraph(* $4,data_node_1_id);
-																			}
-																		}
-																		
-																		int node_1_id = identNameToGID(* $4);
-																		isAdded = isAddedToGraph(* $6, check_existence);
-																		
-																		if( (* check_existence) == false ) {
-																			char err[256];
-																			const char *err_desc = "No such variable was declared: ";
-																			const char * name_ident = $6->c_str();
-																			strcpy(err,err_desc);
-																			strcat(err,name_ident);
-																			yyerror(0, *$$, err);
-																		} else {
-																			if( !isAdded ) {
-																				$$->addDataNode(data_node_2);
-																				int data_node_2_id = $$->getLastDataID();
-																				addVariableDataNodeToGraph(* $6,data_node_2_id);
-																			}
-																		}
-																		
-																		int node_2_id = identNameToGID(* $6);
-																		int op_node_id = $$->getLastOperationID();
-																		if((data_node_result_id > 0) && (op_node_id > 0) && (node_1_id > 0) && (node_2_id > 0)) {
-																			$$->addConnection(op_node_id,data_node_result_id);
-																			$$->addConnection(node_1_id,op_node_id);
-																			$$->addConnection(node_2_id,op_node_id);
 																		}
 																	}
 ;
@@ -416,33 +452,38 @@ str_delete_from_str:
 																		$$ = new IR_Graph();
 																		$$->addOperationNode(op_node);
 																		IR_DataNode* data_node_result = getStructureNodeByName(* $2);
-																		IR_DataNode* data_node_1 = getVariableNodeByName(* $4);
+																		std::vector< std::string > scopes_ids_list_cp = scopes_ids_list;
+																		std::vector< std::string > * scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
+																		IR_DataNode* data_node_1 = getVariableNodeByName(* $4, scopes_ids_list_cp_ptr);
 																		$$->addDataNode(data_node_result);
 																		int data_node_result_id = $$->getLastDataID();
-																		bool * check_existence = new bool();
-																		bool isAdded;
-																		isAdded = isAddedToGraph(* $4, check_existence);
 																		
-																		if( (* check_existence) == false ) {
+																		if(data_node_1 != NULL) {
+																			std::string data_node_1_name = data_node_1->getDataName();
+																			bool * check_existence = new bool();
+																			bool isAdded;
+																			isAdded = isAddedToGraph(data_node_1_name, check_existence);
+																			if( (* check_existence) == true ) {
+																				if( !isAdded ) {
+																					$$->addDataNode(data_node_1);
+																					int data_node_1_id = $$->getLastDataID();
+																					addVariableDataNodeToGraph(data_node_1_name,data_node_1_id);
+																				}
+																			}
+																		
+																			int node_1_id = identNameToGID(data_node_1_name);
+																			int op_node_id = $$->getLastOperationID();
+																			if((data_node_result_id > 0) && (op_node_id > 0) && (node_1_id > 0)) {
+																				$$->addConnection(op_node_id,data_node_result_id);
+																				$$->addConnection(node_1_id,op_node_id);
+																			}
+																		} else {
 																			char err[256];
 																			const char *err_desc = "No such variable was declared: ";
 																			const char * name_ident = $4->c_str();
 																			strcpy(err,err_desc);
 																			strcat(err,name_ident);
 																			yyerror(0, *$$, err);
-																		} else {
-																			if( !isAdded ) {
-																				$$->addDataNode(data_node_1);
-																				int data_node_1_id = $$->getLastDataID();
-																				addVariableDataNodeToGraph(* $4,data_node_1_id);
-																			}
-																		}
-																		
-																		int node_1_id = identNameToGID(* $4);
-																		int op_node_id = $$->getLastOperationID();
-																		if((data_node_result_id > 0) && (op_node_id > 0) && (node_1_id > 0)) {
-																			$$->addConnection(op_node_id,data_node_result_id);
-																			$$->addConnection(node_1_id,op_node_id);
 																		}
 																	}
 ;
@@ -458,53 +499,65 @@ str_search_in_str:
 																		$$ = new IR_Graph();
 																		$$->addOperationNode(op_node);
 																		int op_node_id = $$->getLastOperationID();
-																		IR_DataNode* data_node_result = getVariableNodeByName(* $2);
-																		bool * check_existence = new bool();
-																		bool isAdded;
-																		isAdded = isAddedToGraph(* $2, check_existence);
+																		IR_DataNode* data_node_1 = getStructureNodeByName(* $4);
+																		$$->addDataNode(data_node_1);
+																		int data_node_1_id = $$->getLastDataID();
 																		
-																		if( (* check_existence) == false ) {
+																		std::vector< std::string > scopes_ids_list_cp = scopes_ids_list;
+																		std::vector< std::string > * scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
+																		IR_DataNode* data_node_result = getVariableNodeByName(* $2, scopes_ids_list_cp_ptr);
+																		scopes_ids_list_cp = scopes_ids_list;
+																		scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
+																		IR_DataNode* data_node_2 = getVariableNodeByName(* $6, scopes_ids_list_cp_ptr);
+																		
+																		if(data_node_result != NULL) {
+																			std::string data_node_result_name = data_node_result->getDataName();
+																			bool * check_existence = new bool();
+																			bool isAdded;
+																			isAdded = isAddedToGraph(data_node_result_name, check_existence);
+																			if( (* check_existence) == true ) {
+																				if( !isAdded ) {
+																					$$->addDataNode(data_node_result);
+																					int data_node_result_id = $$->getLastDataID();
+																					addVariableDataNodeToGraph(data_node_result_name,data_node_result_id);
+																				}
+																			}
+																			
+																			int res_id = identNameToGID(data_node_result_name);
+																			if(data_node_2 != NULL) {
+																				std::string data_node_2_name = data_node_1->getDataName();
+																				isAdded = isAddedToGraph(data_node_2_name, check_existence);
+																			
+																				if( (* check_existence) == true ) {
+																					if( !isAdded ) {
+																						$$->addDataNode(data_node_2);
+																						int data_node_2_id = $$->getLastDataID();
+																						addVariableDataNodeToGraph(data_node_2_name,data_node_2_id);
+																					}
+																				}
+																			
+																				int node_2_id = identNameToGID(data_node_2_name);
+																			
+																				if((res_id > 0) && (op_node_id > 0) && (data_node_1_id > 0) && (node_2_id > 0)) {
+																					$$->addConnection(op_node_id,res_id);
+																					$$->addConnection(data_node_1_id,op_node_id);
+																					$$->addConnection(node_2_id,op_node_id);
+																				}
+																			} else {
+																				char err[256];
+																				const char *err_desc = "No such variable was declared: ";
+																				const char * name_ident = $6->c_str();
+																				strcpy(err,err_desc);
+																				strcat(err,name_ident);
+																				yyerror(0, *$$, err);
+																			}
+																		} else {
 																			char err[256];
 																			const char *err_desc = "No such variable was declared: ";
 																			const char * name_ident = $2->c_str();
 																			strcpy(err,err_desc);
 																			strcat(err,name_ident);
 																			yyerror(0, *$$, err);
-																		} else {
-																			if( !isAdded ) {
-																				$$->addDataNode(data_node_result);
-																				int data_node_result_id = $$->getLastDataID();
-																				addVariableDataNodeToGraph(* $2,data_node_result_id);
-																			}
-																		}
-																		
-																		int res_id = identNameToGID(* $2);
-																		IR_DataNode* data_node_1 = getStructureNodeByName(* $4);
-																		$$->addDataNode(data_node_1);
-																		int data_node_1_id = $$->getLastDataID();
-																		IR_DataNode* data_node_2 = getVariableNodeByName(* $6);
-																		isAdded = isAddedToGraph(* $6, check_existence);
-																		if( (* check_existence) == false ) {
-																			char err[256];
-																			const char *err_desc = "No such variable was declared: ";
-																			const char * name_ident = $6->c_str();
-																			strcpy(err,err_desc);
-																			strcat(err,name_ident);
-																			yyerror(0, *$$, err);
-																		} else {
-																			if( !isAdded ) {
-																				$$->addDataNode(data_node_2);
-																				int data_node_2_id = $$->getLastDataID();
-																				addVariableDataNodeToGraph(* $6,data_node_2_id);
-																			}
-																		}
-																		
-																		int node_2_id = identNameToGID(* $6);
-																		
-																		if((res_id > 0) && (op_node_id > 0) && (data_node_1_id > 0) && (node_2_id > 0)) {
-																			$$->addConnection(op_node_id,res_id);
-																			$$->addConnection(data_node_1_id,op_node_id);
-																			$$->addConnection(node_2_id,op_node_id);
 																		}
 																	}
 ;	
@@ -527,55 +580,68 @@ assign_stmt:
 																		$$ = new IR_Graph();
 																		$$->addOperationNode(op_node);
 																		int op_node_id = $$->getLastOperationID();
-																		IR_DataNode* data_node_result = getVariableNodeByName(* $1);
-																		bool * check_existence = new bool();
-																		bool isAdded;
-																		isAdded = isAddedToGraph(* $1, check_existence);
+																		std::vector< std::string > scopes_ids_list_cp = scopes_ids_list;
+																		std::vector< std::string > * scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
+																		IR_DataNode* data_node_result = getVariableNodeByName(* $1, scopes_ids_list_cp_ptr);
 																		
-																		if( (* check_existence) == false ) {
+																		if(data_node_result != NULL) {
+																			std::string data_node_result_name = data_node_result->getDataName();
+																			bool * check_existence = new bool();
+																			bool isAdded;
+																			isAdded = isAddedToGraph(data_node_result_name, check_existence);
+																			if( (* check_existence) == true ) {
+																				if( !isAdded ) {
+																					$$->addDataNode(data_node_result);
+																					int data_node_result_id = $$->getLastDataID();
+																					addVariableDataNodeToGraph(data_node_result_name,data_node_result_id);
+																				}
+																			}
+																		
+																			int res_id = identNameToGID(data_node_result_name);
+																			if((res_id > 0) && (op_node_id > 0)) {
+																				$$->addConnection(op_node_id,res_id);
+																			}
+																		} else {
 																			char err[256];
 																			const char *err_desc = "No such variable was declared: ";
 																			const char * name_ident = $1->c_str();
 																			strcpy(err,err_desc);
 																			strcat(err,name_ident);
 																			yyerror(0, *$$, err);
-																		} else {
-																			if( !isAdded ) {
-																				$$->addDataNode(data_node_result);
-																				int data_node_result_id = $$->getLastDataID();
-																				addVariableDataNodeToGraph(* $1,data_node_result_id);
-																			}
-																		}
-																		
-																		int res_id = identNameToGID(* $1);
-																		if((res_id > 0) && (op_node_id > 0)) {
-																			$$->addConnection(op_node_id,res_id);
 																		}
 																		
 																		int num_of_vars = exp_vars_list.size();
 																		for(int i = 0; i < num_of_vars; i++ ) {
 																			std::string variable_name = exp_vars_list[i];
-																			IR_DataNode* data_node_i = getVariableNodeByName(variable_name);
-																			isAdded = isAddedToGraph(variable_name, check_existence);
+
+																			scopes_ids_list_cp = scopes_ids_list;
+																			scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
+																			IR_DataNode* data_node_i = getVariableNodeByName(variable_name, scopes_ids_list_cp_ptr);
 																			
-																			if( (* check_existence) == false ) {
+																			if(data_node_i != NULL) {
+																				std::string data_node_i_name = data_node_i->getDataName();
+																				bool * check_existence = new bool();
+																				bool isAdded;
+																				isAdded = isAddedToGraph(data_node_i_name, check_existence);
+																				if( (* check_existence) == true ) {
+																					if( !isAdded ) {
+																						$$->addDataNode(data_node_i);
+																						int data_node_i_id = $$->getLastDataID();
+																						addVariableDataNodeToGraph(data_node_i_name,data_node_i_id);
+																					}
+																				}
+																		
+																				int i_id = identNameToGID(data_node_i_name);
+																				if((i_id > 0) && (op_node_id > 0)) {
+																					$$->addConnection(i_id,op_node_id);
+																				}
+																			} else {
 																				char err[256];
 																				const char *err_desc = "No such variable was declared: ";
 																				const char * name_ident = variable_name.c_str();
 																				strcpy(err,err_desc);
 																				strcat(err,name_ident);
 																				yyerror(0, *$$, err);
-																			} else {
-																				if( !isAdded ) {
-																					$$->addDataNode(data_node_i);
-																					int data_node_i_id = $$->getLastDataID();
-																					addVariableDataNodeToGraph(variable_name,data_node_i_id);
-																				}
-																			}
-																			
-																			int i_id = identNameToGID(variable_name);
-																			if((i_id > 0) && (op_node_id > 0)) {
-																				$$->addConnection(i_id,op_node_id);
 																			}
 																		}
 																		
@@ -601,7 +667,6 @@ num:
    NUMLITERAL														{
 																		std::string* num_str = new std::string(yylval.pch, 0, 1024);
 																		double num = std::stod(*num_str);
-																		std::cout << "Num: " << num << std::endl;
 																	}
 ;
 
@@ -648,25 +713,34 @@ if_stmt:
 																		
 																		for(int i = 0; i < num_of_vars; i++ ) {
 																			std::string variable_name = exp_bool_vars_list[i];
-																			IR_DataNode* data_node_i = getVariableNodeByName(variable_name);
-																			isAdded = isAddedToGraph(variable_name, check_existence);
-																			if( (* check_existence) == false ) {
-																				char err[256]; const char *err_desc = "No such variable was declared: ";
+																			std::vector< std::string > scopes_ids_list_cp = scopes_ids_list;
+																			std::vector< std::string > * scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
+																			IR_DataNode* data_node_i = getVariableNodeByName(variable_name, scopes_ids_list_cp_ptr);
+																			
+																			if(data_node_i != NULL) {
+																				std::string data_node_i_name = data_node_i->getDataName();
+																				bool * check_existence = new bool();
+																				bool isAdded;
+																				isAdded = isAddedToGraph(data_node_i_name, check_existence);
+																				if( (* check_existence) == true ) {
+																					if( !isAdded ) {
+																						$$->addDataNode(data_node_i);
+																						int data_node_i_id = $$->getLastDataID();
+																						addVariableDataNodeToGraph(data_node_i_name,data_node_i_id);
+																					}
+																				}
+																		
+																				int i_id = identNameToGID(data_node_i_name);
+																				if((i_id > 0) && (op_node_id > 0)) {
+																					$$->addConnection(i_id,op_node_id);
+																				}
+																			} else {
+																				char err[256];
+																				const char *err_desc = "No such variable was declared: ";
 																				const char * name_ident = variable_name.c_str();
 																				strcpy(err,err_desc);
 																				strcat(err,name_ident);
 																				yyerror(0, *$$, err);
-																			} else {
-																				if( !isAdded ) {
-																					$$->addDataNode(data_node_i);
-																					int data_node_i_id = $$->getLastDataID();
-																					addVariableDataNodeToGraph(variable_name,data_node_i_id);
-																				}
-																			}
-																			
-																			int i_id = identNameToGID(variable_name);
-																			if((i_id > 0) && (op_node_id > 0)) {
-																				$$->addConnection(i_id,op_node_id);
 																			}
 																		}
 																		
@@ -702,26 +776,34 @@ if_stmt:
 																		
 																		for(int i = 0; i < num_of_vars; i++ ) {
 																			std::string variable_name = exp_bool_vars_list[i];
-																			IR_DataNode* data_node_i = getVariableNodeByName(variable_name);
-																			isAdded = isAddedToGraph(variable_name, check_existence);
-																			if( (* check_existence) == false ) {
+																			std::vector< std::string > scopes_ids_list_cp = scopes_ids_list;
+																			std::vector< std::string > * scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
+																			IR_DataNode* data_node_i = getVariableNodeByName(variable_name, scopes_ids_list_cp_ptr);
+																			
+																			if(data_node_i != NULL) {
+																				std::string data_node_i_name = data_node_i->getDataName();
+																				bool * check_existence = new bool();
+																				bool isAdded;
+																				isAdded = isAddedToGraph(data_node_i_name, check_existence);
+																				if( (* check_existence) == true ) {
+																					if( !isAdded ) {
+																						$$->addDataNode(data_node_i);
+																						int data_node_i_id = $$->getLastDataID();
+																						addVariableDataNodeToGraph(data_node_i_name,data_node_i_id);
+																					}
+																				}
+																		
+																				int i_id = identNameToGID(data_node_i_name);
+																				if((i_id > 0) && (op_node_id > 0)) {
+																					$$->addConnection(i_id,op_node_id);
+																				}
+																			} else {
 																				char err[256];
 																				const char *err_desc = "No such variable was declared: ";
 																				const char * name_ident = variable_name.c_str();
 																				strcpy(err,err_desc);
 																				strcat(err,name_ident);
 																				yyerror(0, *$$, err);
-																			} else {
-																				if( !isAdded ) {
-																					$$->addDataNode(data_node_i);
-																					int data_node_i_id = $$->getLastDataID();
-																					addVariableDataNodeToGraph(variable_name,data_node_i_id);
-																				}
-																			}
-																			
-																			int i_id = identNameToGID(variable_name);
-																			if((i_id > 0) && (op_node_id > 0)) {
-																				$$->addConnection(i_id,op_node_id);
 																			}
 																		}
 																		
@@ -769,11 +851,34 @@ count_loop:
 																		
 																		for(int i = 0; i < num_of_vars; i++ ) {
 																			std::string variable_name = exp_bool_vars_list[i];
-																			IR_DataNode* data_node_i = getVariableNodeByName(variable_name);
-																			$$->addDataNode(data_node_i);
-																			int data_node_i_id = $$->getLastDataID();
-																			if((data_node_i_id > 0) && (op_node_id > 0)) {
-																				$$->addConnection(data_node_i_id,op_node_id);
+																			std::vector< std::string > scopes_ids_list_cp = scopes_ids_list;
+																			std::vector< std::string > * scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
+																			IR_DataNode* data_node_i = getVariableNodeByName(variable_name, scopes_ids_list_cp_ptr);
+																			
+																			if(data_node_i != NULL) {
+																				std::string data_node_i_name = data_node_i->getDataName();
+																				bool * check_existence = new bool();
+																				bool isAdded;
+																				isAdded = isAddedToGraph(data_node_i_name, check_existence);
+																				if( (* check_existence) == true ) {
+																					if( !isAdded ) {
+																						$$->addDataNode(data_node_i);
+																						int data_node_i_id = $$->getLastDataID();
+																						addVariableDataNodeToGraph(data_node_i_name,data_node_i_id);
+																					}
+																				}
+																		
+																				int i_id = identNameToGID(data_node_i_name);
+																				if((i_id > 0) && (op_node_id > 0)) {
+																					$$->addConnection(i_id,op_node_id);
+																				}
+																			} else {
+																				char err[256];
+																				const char *err_desc = "No such variable was declared: ";
+																				const char * name_ident = variable_name.c_str();
+																				strcpy(err,err_desc);
+																				strcat(err,name_ident);
+																				yyerror(0, *$$, err);
 																			}
 																		}
 																		
@@ -812,14 +917,35 @@ while_loop:
 																	   
 																	   for(int i = 0; i < num_of_vars; i++ ) {
 																		   std::string variable_name = exp_bool_vars_list[i];
-																		   IR_DataNode* data_node_i = getVariableNodeByName(variable_name);
-																		   $$->addDataNode(data_node_i);
-																		   int data_node_i_id = $$->getLastDataID();
-																		   
-																		   if((data_node_i_id > 0) && (op_node_id > 0)) { 
-																			   $$->addConnection(data_node_i_id,op_node_id);
-																			}
+																		   std::vector< std::string > scopes_ids_list_cp = scopes_ids_list;
+																			std::vector< std::string > * scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
+																			IR_DataNode* data_node_i = getVariableNodeByName(variable_name, scopes_ids_list_cp_ptr);
 																			
+																			if(data_node_i != NULL) {
+																				std::string data_node_i_name = data_node_i->getDataName();
+																				bool * check_existence = new bool();
+																				bool isAdded;
+																				isAdded = isAddedToGraph(data_node_i_name, check_existence);
+																				if( (* check_existence) == true ) {
+																					if( !isAdded ) {
+																						$$->addDataNode(data_node_i);
+																						int data_node_i_id = $$->getLastDataID();
+																						addVariableDataNodeToGraph(data_node_i_name,data_node_i_id);
+																					}
+																				}
+																		
+																				int i_id = identNameToGID(data_node_i_name);
+																				if((i_id > 0) && (op_node_id > 0)) {
+																					$$->addConnection(i_id,op_node_id);
+																				}
+																			} else {
+																				char err[256];
+																				const char *err_desc = "No such variable was declared: ";
+																				const char * name_ident = variable_name.c_str();
+																				strcpy(err,err_desc);
+																				strcat(err,name_ident);
+																				yyerror(0, *$$, err);
+																			}
 																		}
 																		
 																		exp_bool_vars_list.clear();
