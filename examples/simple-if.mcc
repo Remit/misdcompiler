@@ -1,9 +1,9 @@
 ﻿int x, y;
 {
-int x;
-if (x < y) then
-{
-int y;
-x = y;
-}
+	int x;
+	if (x < y) then
+	{
+		int y;
+		x = y;
+	}
 }

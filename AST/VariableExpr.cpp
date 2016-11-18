@@ -7,6 +7,12 @@ VariableExpr::VariableExpr()
 	isDeclaration = false;
 }
 
+VariableExpr::VariableExpr(std::string a_name, variable_type a_var_type, bool a_isDeclaration) {
+	name = a_name;
+	var_type = a_var_type;
+	isDeclaration = a_isDeclaration;
+}
+
 VariableExpr::~VariableExpr()
 {
 }

@@ -24,11 +24,11 @@ data_type IR_DataNode::getDataType() {
 	return dataType;
 }
 
-void IR_DataNode::setSimpleType(int a_simple_type) {
+void IR_DataNode::setSimpleType(variable_type a_simple_type) {
 	simple_type = a_simple_type;
 }
 
-int IR_DataNode::getSimpleType() {
+variable_type IR_DataNode::getSimpleType() {
 	return simple_type;
 }
 

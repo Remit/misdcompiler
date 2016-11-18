@@ -18,11 +18,11 @@ public:
 	virtual ~IR_DataNode();
 
 	void setDataType(data_type a_dataType);
-	void setSimpleType(int a_simple_type);
+	void setSimpleType(variable_type a_simple_type);
 	void setDataName(std::string a_name);
 
 	data_type getDataType();
-	int getSimpleType();
+	variable_type getSimpleType();
 	std::string getDataName();
 
 	// Visualisation
@@ -35,7 +35,7 @@ private:
 //ATTENTION: When adding a field to a node, do not forget to add code to copy method!
 	// Link to a corresponding identifier in data table.
 	data_type dataType;
-	int simple_type;
+	variable_type simple_type;
 	std::string name;
 };
 

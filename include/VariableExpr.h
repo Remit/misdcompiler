@@ -13,8 +13,8 @@ class VariableExpr : public Base_AST
 {
 public:
 	VariableExpr();
-	VariableExpr(std::string a_name, variable_type a_var_type, bool a_isDeclaration) : name(a_name), var_type(a_var_type), isDeclaration(a_isDeclaration) {}
-	~VariableExpr();
+	VariableExpr(std::string a_name, variable_type a_var_type, bool a_isDeclaration);
+	virtual ~VariableExpr();
 	
 	void setName(std::string a_name);
 	void setVarType(variable_type a_var_type);

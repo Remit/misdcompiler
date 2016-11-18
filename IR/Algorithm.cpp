@@ -127,7 +127,7 @@ IR_Graph* Graph_ArithmeticLogicProcessing( IR_Graph* src_graph ) {
 				IR_DataNode *tag_node = new IR_DataNode();
 				tag_node->setProcType(IR_CPU);
 				tag_node->setDataType(IR_DATA_TAG);
-				tag_node->setSimpleType(0);
+				tag_node->setSimpleType(VAR_INT);
 				alp_graph->addDataNode(tag_node);
 
 				// Adding connection from branch condition node to newly added tag data node
@@ -330,7 +330,7 @@ IR_Graph* Graph_StructureProcessing( IR_Graph* src_graph ) {
 				IR_DataNode* data_tag_node = new IR_DataNode();
 				data_tag_node->setProcType(IR_SPU);
 				data_tag_node->setDataType(IR_DATA_TAG);
-				data_tag_node->setSimpleType(0);
+				data_tag_node->setSimpleType(VAR_INT);
 				sp_graph->addDataNode(data_tag_node);
 				int data_tag_node_id = sp_graph->getLastDataID();
 

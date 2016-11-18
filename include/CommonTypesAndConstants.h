@@ -58,6 +58,7 @@ typedef enum {
 	OP_LTE,\
 	OP_GTE,\
 	OP_EQ,\
+	OP_ASSIGN,\
 	OP_BINARY_UNDEFINED
 } bin_op_types; // Types of binary operations for AST
 

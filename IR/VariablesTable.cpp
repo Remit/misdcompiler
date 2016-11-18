@@ -105,7 +105,7 @@ void VariablesTable::setDataType( std::string variable_name, data_type dt, bool*
 	}
 }
 
-void VariablesTable::setSimpleDataType( std::string variable_name, int dt, bool* ok ) {
+void VariablesTable::setSimpleDataType( std::string variable_name, variable_type dt, bool* ok ) {
 	std::map< std::string, IR_DataNode* >::iterator it;
 	it = data_nodes.find(variable_name);
 	if( it == data_nodes.end())
