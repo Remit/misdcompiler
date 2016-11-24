@@ -41,6 +41,7 @@ public:
 	int getLastOperationID();
 	int getLastDataID();
 	int getFirstOperationID();
+	int getStartTerminalNodeID();
 
 	std::vector< int > * getDependentOperationNodes(int id);
 	std::vector< int > * getDependentDataNodes(int id);

@@ -15,6 +15,8 @@ IR_OperationNode::IR_OperationNode()
     defined_vars = NULL;
 	input_names = NULL;
 	output_name = NULL;
+	then_id = 0;
+	else_id = 0;
 }
 
 IR_OperationNode::~IR_OperationNode()
@@ -235,4 +237,20 @@ void IR_OperationNode::setScopesIDs(std::vector< std::string > a_scopes_ids) {
 
 std::vector< std::string > IR_OperationNode::getScopesIDs() {
 	return scopes_ids;
+}
+
+void IR_OperationNode::setThenID(int tid) {
+	then_id = tid;
+}
+
+void IR_OperationNode::setElseID(int eid) {
+	else_id = eid;
+}
+
+int IR_OperationNode::getThenID() {
+	return then_id;
+}
+
+int IR_OperationNode::getElseID() {
+	return else_id;
 }

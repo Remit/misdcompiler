@@ -53,6 +53,12 @@ public:
 	//Scopes
 	void setScopesIDs(std::vector< std::string > a_scopes_ids);
 	std::vector< std::string > getScopesIDs();
+	
+	//Conditional IDs
+	void setThenID(int tid);
+	void setElseID(int eid);
+	int getThenID();
+	int getElseID();
 
 private:
 //ATTENTION: When adding a field to a node, do not forget to add code to copy method!
@@ -69,6 +75,9 @@ private:
 	std::string * output_name;
 //Scopes names in which we use current operation
 	std::vector< std::string > scopes_ids;
+//IDs of first nodes in different condition sections
+	int then_id;
+	int else_id;
 };
 
 #endif /* IROPERATIONNODE_H_ */

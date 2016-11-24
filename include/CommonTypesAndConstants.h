@@ -53,14 +53,18 @@ typedef enum {
 	OP_MOD,\
 	OP_AND,\
 	OP_OR,\
+	OP_ASSIGN,\
+	OP_BINARY_UNDEFINED
+} bin_op_types; // Types of binary operations for AST
+
+typedef enum {
 	OP_LT,\
 	OP_GT,\
 	OP_LTE,\
 	OP_GTE,\
 	OP_EQ,\
-	OP_ASSIGN,\
-	OP_BINARY_UNDEFINED
-} bin_op_types; // Types of binary operations for AST
+	OP_LOGICAL_UNDEFINED
+} cond_op_types; // Types of logical operations to implement conditions in loops and if-constructions
 
 typedef enum {
 	OP_NOT,\

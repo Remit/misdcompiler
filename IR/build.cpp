@@ -147,20 +147,34 @@ IR_OperationNode* buildBeginBranchNode() {
 }
 
 // Building branch node that ends the sequence of alternative control flows
-IR_OperationNode* buildEndBranchNode() {
+IR_OperationNode* buildEndBranchNode( low_level_instruction_type llit) {
 	IR_OperationNode* op_node = NULL;
 	op_node = new IR_OperationNode();
 	op_node->setOperationType(IR_OP_BRANCH_END);
 	op_node->setProcType(IR_BOTH);
+	op_node->setInstructionType(llit);
 	return op_node;
 }
 
 // Building branch node that checks some form of condition and decides which control flow will be active
-IR_OperationNode* buildConditionalBeginBranchNode() {
+IR_OperationNode* buildConditionalBeginBranchNode( LogicalExpression * le, low_level_instruction_type llit) {
 	IR_OperationNode* op_node = NULL;
 	op_node = new IR_OperationNode();
 	op_node->setOperationType(IR_OP_BRANCH_COND_BEGIN);
 	op_node->setProcType(IR_CPU);
+	op_node->setInstructionType(llit);
+	
+	if((llit == I_IF) || (llit == I_IF_ELSE)) {
+		IfExpression * ifexpr = new IfExpression(le,NULL,NULL);
+		op_node->setNodeASTSubTree(ifexpr);
+	} else if(llit == I_FOR_LOOP) {
+		ForLoop * forloop = new ForLoop(NULL,le,NULL,NULL);
+		op_node->setNodeASTSubTree(forloop);
+	} else if(llit == I_WHILE_LOOP) {
+		WhileLoop * whileloop = new WhileLoop(le,NULL);
+		op_node->setNodeASTSubTree(whileloop);
+	}
+
 	return op_node;
 }
 
@@ -299,4 +313,10 @@ VariableExpr * buildVariableExpr(std::string var_name) {
 NumberExpr * buildNumberExpr( double value ) {
 	NumberExpr * num_expr = new NumberExpr(value);
 	return num_expr;
+}
+
+// Build logical expression for conditions
+LogicalExpression * buildLogicalExpr(Base_AST * left, Base_AST * right, cond_op_types type_of_op) {
+	LogicalExpression * logical_ast = new LogicalExpression(type_of_op,left,right);
+	return logical_ast;
 }

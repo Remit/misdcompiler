@@ -379,10 +379,29 @@ int IR_Graph::getLastDataID() {
 }
 
 int IR_Graph::getFirstOperationID() {
-	int id = -1;
-	if(operations_index.size() > 0)
-		id = operations_index.begin()->first;
-	return id;
+	std::vector< int > * op_ids = getOperationNodesIDs();
+	int op_cnt = op_ids->size();
+	bool found;
+	int i = 0;
+	int ret = -1;
+
+	while((i < op_cnt) && !found) {
+		int op_id = (*op_ids)[i]; 
+		IR_OperationNode* op_node = ( IR_OperationNode* )getNode(op_id);
+		if(op_node != NULL) {
+			std::vector< int > * inc_op_ids = getIncomingOperationNodes(op_id);
+			if(inc_op_ids != NULL) {
+				if(inc_op_ids->size() == 0) {
+					found = true;
+					ret = op_id;
+				}
+			}
+		}
+		
+		i++;
+	}
+	
+	return ret;
 }
 
 void IR_Graph::appendGraph(IR_Graph* appendedGraph) {
@@ -1126,5 +1145,30 @@ int IR_Graph::calculate_num_of_branch_nodes(int node_id, int br_id) {
 			ret = calculate_num_of_branch_nodes((*dep_op_ids)[0], br_id);
 	}
 
+	return ret;
+}
+
+int IR_Graph::getStartTerminalNodeID() {
+	int ret = -1;
+	std::map< int, int >::iterator iter;
+	bool found = false;
+	iter = operations_index.begin();
+	
+	while((iter != operations_index.end()) && !found) {
+		int id_op = iter->second;
+		int gid = iter->second;
+		IR_OperationNode * op_node = operations[id_op];
+		
+		if(op_node->getOperationType() == IR_OP_TERMINATOR) {
+			std::vector< int > * inc_op_ids = getIncomingOperationNodes(gid);
+			if(inc_op_ids->size() == 0) {
+				found = true;
+				ret = gid;
+			}
+		}
+		
+		iter++;
+	}
+	
 	return ret;
 }
