@@ -27,115 +27,188 @@ void VariablesTable::addVariableToTable( std::string variable_name, IR_DataNode*
 	}
 }
 
-int VariablesTable::assignValueToVariable( std::string variable_name, int value ) {
+int VariablesTable::assignValueToVariable( std::string variable_name, int value, std::vector <std::string > * scopes_ids_list ) {
 	int ret = 0; // 0 - no errors; there is such variable in the table
 	std::map< std::string, float >::iterator it;
-	it = values.find(variable_name);
+	bool found = false;
+
+	while(!found && (scopes_ids_list->size() > 0)) {
+		std::string last_scope_id = scopes_ids_list->back();
+		std::string variable_name_with_scope_id = variable_name + "-" + last_scope_id;
+		scopes_ids_list->pop_back();
+		it = values.find(variable_name_with_scope_id);
+		if(it != values.end()) {
+			found = true;
+			values[variable_name_with_scope_id] = value;
+			initialized[variable_name_with_scope_id] = true;
+		}
+	}
+
 	if( it == values.end())
 		ret = 1; // 1 - error, no such variable in the table
-	else {
-		values[variable_name] = value;
-		initialized[variable_name] = true;
+
+	return ret;
+}
+
+float VariablesTable::getVariableValue( std::string variable_name, bool* ok, std::vector <std::string > * scopes_ids_list ) {
+	float ret = 0.0;
+	std::map< std::string, float >::iterator it;
+	bool found = false;
+
+	while(!found && (scopes_ids_list->size() > 0)) {
+		std::string last_scope_id = scopes_ids_list->back();
+		std::string variable_name_with_scope_id = variable_name + "-" + last_scope_id;
+		scopes_ids_list->pop_back();
+		it = values.find(variable_name_with_scope_id);
+		if(it != values.end()) {
+			found = true;
+			std::map< std::string, bool >::iterator it_init;
+			it_init = initialized.find(variable_name_with_scope_id);
+			if(!it_init->second)
+				*ok = false;
+			else {
+				ret = it->second;
+				*ok = true;
+			}
+		}
+	}
+
+	if( !found )
+		*ok = false;
+
+	return ret;
+}
+
+data_type VariablesTable::getVarDataType( std::string variable_name, bool* ok, std::vector <std::string > * scopes_ids_list ) {
+	IR_DataNode* node = NULL;
+	data_type ret;
+	std::map< std::string, IR_DataNode* >::iterator it;
+	bool found = false;
+
+	while(!found && (scopes_ids_list->size() > 0)) {
+		std::string last_scope_id = scopes_ids_list->back();
+		std::string variable_name_with_scope_id = variable_name + "-" + last_scope_id;
+		scopes_ids_list->pop_back();
+		it = data_nodes.find(variable_name_with_scope_id);
+		if(it != data_nodes.end()) {
+			found = true;
+			node = it->second;
+			ret = node->getDataType();
+			*ok = true;
+		}
+	}
+
+	if( !found )
+	{
+		*ok = false;
+		ret = IR_UNDEFINED;
 	}
 
 	return ret;
 }
 
-float VariablesTable::getVariableValue( std::string variable_name, bool* ok ) {
-	float ret = 0.0;
-	std::map< std::string, float >::iterator it;
-	it = values.find(variable_name);
-	if( it == values.end())
-		*ok = false;
-	else {
-		std::map< std::string, bool >::iterator it_init;
-		it_init = initialized.find(variable_name);
-		if(!it_init->second)
-			*ok = false;
-		else {
+IR_DataNode* VariablesTable::getDataNodeByVariableName( std::string variable_name, bool* ok, std::vector <std::string > * scopes_ids_list ) {
+	IR_DataNode* ret = NULL;
+	std::map< std::string, IR_DataNode* >::iterator it;
+	bool found = false;
+
+	while(!found && (scopes_ids_list->size() > 0)) {
+		std::string last_scope_id = scopes_ids_list->back();
+		std::string variable_name_with_scope_id = variable_name + "-" + last_scope_id;
+		scopes_ids_list->pop_back();
+		it = data_nodes.find(variable_name_with_scope_id);
+		if(it != data_nodes.end()) {
+			found = true;
 			ret = it->second;
 			*ok = true;
 		}
 	}
 
-	return ret;
-}
-
-data_type VariablesTable::getVarDataType( std::string variable_name, bool* ok ) {
-	IR_DataNode* node = NULL;
-	data_type ret;
-	std::map< std::string, IR_DataNode* >::iterator it;
-	it = data_nodes.find(variable_name);
-	if( it == data_nodes.end())
-	{
+	if( !found )
 		*ok = false;
-		ret = IR_UNDEFINED;
-	}
-	else {
-		node = it->second;
-		ret = node->getDataType();
-		*ok = true;
-	}
 
 	return ret;
 }
 
-IR_DataNode* VariablesTable::getDataNodeByVariableName( std::string variable_name, bool* ok ) {
-	IR_DataNode* ret = NULL;
+void VariablesTable::setDataType( std::string variable_name, data_type dt, bool* ok, std::vector <std::string > * scopes_ids_list ) {
 	std::map< std::string, IR_DataNode* >::iterator it;
-	it = data_nodes.find(variable_name);
-	if( it == data_nodes.end())
-		*ok = false;
-	else {
-		ret = it->second;
-		*ok = true;
+	bool found = false;
+
+	while(!found && (scopes_ids_list->size() > 0)) {
+		std::string last_scope_id = scopes_ids_list->back();
+		std::string variable_name_with_scope_id = variable_name + "-" + last_scope_id;
+		scopes_ids_list->pop_back();
+		it = data_nodes.find(variable_name_with_scope_id);
+		if(it != data_nodes.end()) {
+			found = true;
+			it->second->setDataType(dt);
+			*ok = true;
+		}
 	}
 
-	return ret;
-}
-
-void VariablesTable::setDataType( std::string variable_name, data_type dt, bool* ok ) {
-	std::map< std::string, IR_DataNode* >::iterator it;
-	it = data_nodes.find(variable_name);
-	if( it == data_nodes.end())
+	if( !found )
 		*ok = false;
-	else {
-		it->second->setDataType(dt);
-		*ok = true;
-	}
 }
 
-void VariablesTable::setSimpleDataType( std::string variable_name, variable_type dt, bool* ok ) {
+void VariablesTable::setSimpleDataType( std::string variable_name, variable_type dt, bool* ok, std::vector <std::string > * scopes_ids_list ) {
 	std::map< std::string, IR_DataNode* >::iterator it;
-	it = data_nodes.find(variable_name);
-	if( it == data_nodes.end())
-		*ok = false;
-	else {
-		it->second->setSimpleType(dt);
-		*ok = true;
+	bool found = false;
+
+	while(!found && (scopes_ids_list->size() > 0)) {
+		std::string last_scope_id = scopes_ids_list->back();
+		std::string variable_name_with_scope_id = variable_name + "-" + last_scope_id;
+		scopes_ids_list->pop_back();
+		it = data_nodes.find(variable_name_with_scope_id);
+		if(it != data_nodes.end()) {
+			found = true;
+			it->second->setSimpleType(dt);
+			*ok = true;
+		}
 	}
+
+	if( !found )
+		*ok = false;
 }
 
-void VariablesTable::setAddedToGraph( std::string variable_name, int gid, bool* ok ) {
+void VariablesTable::setAddedToGraph( std::string variable_name, int gid, bool* ok, std::vector <std::string > * scopes_ids_list ) {
 	std::map< std::string, int >::iterator it;
-	it = added_to_graph.find(variable_name);
-	if( it == added_to_graph.end())
-		*ok = false;
-	else {
-		added_to_graph[variable_name] = gid;
-		*ok = true;
+	bool found = false;
+
+	while(!found && (scopes_ids_list->size() > 0)) {
+		std::string last_scope_id = scopes_ids_list->back();
+		std::string variable_name_with_scope_id = variable_name + "-" + last_scope_id;
+		scopes_ids_list->pop_back();
+		it = added_to_graph.find(variable_name_with_scope_id);
+		if(it != added_to_graph.end()) {
+			found = true;
+			added_to_graph[variable_name_with_scope_id] = gid;
+			*ok = true;
+		}
 	}
+
+	if( !found )
+		*ok = false;
 }
 
-void VariablesTable::unsetAddedToGraph( std::string variable_name, bool* ok ) {
+void VariablesTable::unsetAddedToGraph( std::string variable_name, bool* ok, std::vector <std::string > * scopes_ids_list ) {
 	std::map< std::string, int >::iterator it;
-	it = added_to_graph.find(variable_name);
-	if( it == added_to_graph.end())
-		*ok = false;
-	else {
-		added_to_graph[variable_name] = -1;
-		*ok = true;
+	bool found = false;
+
+	while(!found && (scopes_ids_list->size() > 0)) {
+		std::string last_scope_id = scopes_ids_list->back();
+		std::string variable_name_with_scope_id = variable_name + "-" + last_scope_id;
+		scopes_ids_list->pop_back();
+		it = added_to_graph.find(variable_name_with_scope_id);
+		if(it != added_to_graph.end()) {
+			found = true;
+			added_to_graph[variable_name_with_scope_id] = -1;
+			*ok = true;
+		}
 	}
+
+	it = added_to_graph.find(variable_name);
+	if( !found )
+		*ok = false;
 }
 
 void VariablesTable::print() {
@@ -153,33 +226,51 @@ void VariablesTable::printAddedToGraph() {
 	}
 }
 
-bool VariablesTable::getStatusAddedToGraph( std::string variable_name, bool* ok ) {
+bool VariablesTable::getStatusAddedToGraph( std::string variable_name, bool* ok, std::vector <std::string > * scopes_ids_list ) {
 	std::map< std::string, int >::iterator it;
 	bool ret = false;
-	it = added_to_graph.find(variable_name);
-	if( it == added_to_graph.end())
-		*ok = false;
-	else {
-		if(added_to_graph[variable_name] > 0)
-			ret = true;
-		else
-			ret = false;
-		*ok = true;
+	bool found = false;
+
+	while(!found && (scopes_ids_list->size() > 0)) {
+		std::string last_scope_id = scopes_ids_list->back();
+		std::string variable_name_with_scope_id = variable_name + "-" + last_scope_id;
+		scopes_ids_list->pop_back();
+		it = added_to_graph.find(variable_name_with_scope_id);
+		if(it != added_to_graph.end()) {
+			found = true;
+			if(added_to_graph[variable_name_with_scope_id] > 0)
+				ret = true;
+			else
+				ret = false;
+			*ok = true;
+		}
 	}
+
+	if( !found )
+		*ok = false;
 
 	return ret;
 }
 
-int VariablesTable::getGIDbyName( std::string variable_name, bool* ok ) {
+int VariablesTable::getGIDbyName( std::string variable_name, bool* ok, std::vector <std::string > * scopes_ids_list ) {
 	std::map< std::string, int >::iterator it;
 	int ret = -1;
-	it = added_to_graph.find(variable_name);
-	if( it == added_to_graph.end())
-		*ok = false;
-	else {
-		ret = added_to_graph[variable_name];
-		*ok = true;
+	bool found = false;
+
+	while(!found && (scopes_ids_list->size() > 0)) {
+		std::string last_scope_id = scopes_ids_list->back();
+		std::string variable_name_with_scope_id = variable_name + "-" + last_scope_id;
+		scopes_ids_list->pop_back();
+		it = added_to_graph.find(variable_name_with_scope_id);
+		if(it != added_to_graph.end()) {
+			found = true;
+			ret = added_to_graph[variable_name_with_scope_id];
+			*ok = true;
+		}
 	}
+
+	if( !found )
+		*ok = false;
 
 	return ret;
 }

@@ -21,17 +21,17 @@ public:
 	VariablesTable();
 	virtual ~VariablesTable();
 	void addVariableToTable( std::string variable_name, IR_DataNode* data_node );
-	int assignValueToVariable( std::string variable_name, int value );
-	void setDataType( std::string variable_name, data_type dt, bool* ok );
-	void setSimpleDataType( std::string variable_name, variable_type dt, bool* ok );
+	int assignValueToVariable( std::string variable_name, int value, std::vector <std::string > * scopes_ids_list );
+	void setDataType( std::string variable_name, data_type dt, bool* ok, std::vector <std::string > * scopes_ids_list );
+	void setSimpleDataType( std::string variable_name, variable_type dt, bool* ok, std::vector <std::string > * scopes_ids_list );
 
-	float getVariableValue( std::string variable_name, bool* ok );
-	data_type getVarDataType( std::string variable_name, bool* ok );
-	IR_DataNode* getDataNodeByVariableName( std::string variable_name, bool* ok );
-	void setAddedToGraph( std::string variable_name, int gid, bool* ok );
-	void unsetAddedToGraph( std::string variable_name, bool* ok );
-	bool getStatusAddedToGraph( std::string variable_name, bool* ok );
-	int getGIDbyName( std::string variable_name, bool* ok );
+	float getVariableValue( std::string variable_name, bool* ok, std::vector <std::string > * scopes_ids_list );
+	data_type getVarDataType( std::string variable_name, bool* ok, std::vector <std::string > * scopes_ids_list );
+	IR_DataNode* getDataNodeByVariableName( std::string variable_name, bool* ok, std::vector <std::string > * scopes_ids_list );
+	void setAddedToGraph( std::string variable_name, int gid, bool* ok, std::vector <std::string > * scopes_ids_list );
+	void unsetAddedToGraph( std::string variable_name, bool* ok, std::vector <std::string > * scopes_ids_list );
+	bool getStatusAddedToGraph( std::string variable_name, bool* ok, std::vector <std::string > * scopes_ids_list );
+	int getGIDbyName( std::string variable_name, bool* ok, std::vector <std::string > * scopes_ids_list );
 	void print();
 	void printAddedToGraph();
 	void updateAddedToGraph(std::map<int,int> updateBlock);

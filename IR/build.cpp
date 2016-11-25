@@ -11,7 +11,7 @@ VariablesTable var_table;
 StructuresTable struct_table;
 
 //Building assignment node
-IR_OperationNode* buildAssignNode( data_type dt, std::vector< std::string > * idents_ptr, Base_AST * expr ) {
+IR_OperationNode* buildAssignNode( data_type dt, std::vector< std::string > * idents_ptr, Base_AST * expr, std::vector <std::string > * scopes_ids_list ) {
 	IR_OperationNode* op_node = NULL;
 	
 	op_node = new IR_OperationNode();
@@ -22,7 +22,8 @@ IR_OperationNode* buildAssignNode( data_type dt, std::vector< std::string > * id
 		
 		if(idents_ptr->size() == 1) {
 			bool * ok = new bool();
-			IR_DataNode * dn = var_table.getDataNodeByVariableName((*idents_ptr)[0],ok);
+
+			IR_DataNode * dn = var_table.getDataNodeByVariableName((*idents_ptr)[0],ok,scopes_ids_list);
 			if(dn != NULL) {
 				VariableExpr * var_assigned = new VariableExpr((*idents_ptr)[0],dn->getSimpleType(),false);
 				BinaryExpression * bin_expr = new BinaryExpression(OP_ASSIGN,var_assigned,expr);
@@ -35,7 +36,7 @@ IR_OperationNode* buildAssignNode( data_type dt, std::vector< std::string > * id
 		
 		if(idents_ptr->size() > 0) {
 			bool * ok = new bool();
-			IR_DataNode * dn = var_table.getDataNodeByVariableName((*idents_ptr)[0],ok);
+			IR_DataNode * dn = var_table.getDataNodeByVariableName((*idents_ptr)[0],ok,scopes_ids_list);
 			
 			if(dn == NULL) {
 				dn = struct_table.getDataNodeByVariableName((*idents_ptr)[0],ok);
@@ -52,7 +53,7 @@ IR_OperationNode* buildAssignNode( data_type dt, std::vector< std::string > * id
 		}
 		if(idents_ptr->size() > 1) {
 			bool * ok = new bool();
-			IR_DataNode * dn = var_table.getDataNodeByVariableName((*idents_ptr)[1],ok);
+			IR_DataNode * dn = var_table.getDataNodeByVariableName((*idents_ptr)[1],ok,scopes_ids_list);
 			
 			if(dn == NULL) {
 				dn = struct_table.getDataNodeByVariableName((*idents_ptr)[1],ok);
@@ -69,7 +70,7 @@ IR_OperationNode* buildAssignNode( data_type dt, std::vector< std::string > * id
 		}
 		if(idents_ptr->size() > 2) {
 			bool * ok = new bool();
-			IR_DataNode * dn = var_table.getDataNodeByVariableName((*idents_ptr)[2],ok);
+			IR_DataNode * dn = var_table.getDataNodeByVariableName((*idents_ptr)[2],ok,scopes_ids_list);
 			
 			if(dn == NULL) {
 				dn = struct_table.getDataNodeByVariableName((*idents_ptr)[2],ok);
@@ -188,7 +189,9 @@ int buildDataNode(std::string identifier_name, data_type dt, int id, std::string
 	int ret;
 	std::string var_name_in_table = identifier_name + "-" + scope_name;
 	bool * ok = new bool();
-	int gid = var_table.getGIDbyName( var_name_in_table, ok );
+	std::vector <std::string > * scopes_ids_list = new std::vector <std::string >;
+	scopes_ids_list->push_back(scope_name);
+	int gid = var_table.getGIDbyName( var_name_in_table, ok, scopes_ids_list );
 	if( (* ok) != true) {
 		IR_DataNode* data_node = new IR_DataNode();
 		data_node->setID(id);
@@ -205,9 +208,9 @@ int buildDataNode(std::string identifier_name, data_type dt, int id, std::string
 }
 
 // Updating data type of data node in variables table
-void updateDataNode_SimpleDataType(std::string identifier_name, variable_type dt) {
+void updateDataNode_SimpleDataType(std::string identifier_name, variable_type dt, std::vector <std::string > * scopes_ids_list) {
 	bool* ok = new bool();
-	var_table.setSimpleDataType(identifier_name,dt,ok);
+	var_table.setSimpleDataType(identifier_name,dt,ok,scopes_ids_list);
 }
 
 // Building data node for structures table
@@ -216,9 +219,9 @@ void addStructDataNodeToGraph(std::string identifier_name) {
 	struct_table.setAddedToGraph(identifier_name, ok);
 }
 
-void addVariableDataNodeToGraph(std::string identifier_name, int gid) {
+void addVariableDataNodeToGraph(std::string identifier_name, int gid, std::vector <std::string > * scopes_ids_list ) {
 	bool* ok  = new bool();
-	var_table.setAddedToGraph(identifier_name, gid, ok);
+	var_table.setAddedToGraph(identifier_name, gid, ok, scopes_ids_list);
 }
 
 IR_DataNode* getStructureNodeByName( std::string structure_name ) {
@@ -229,35 +232,30 @@ IR_DataNode* getStructureNodeByName( std::string structure_name ) {
 
 IR_DataNode* getVariableNodeByName( std::string variable_name, std::vector <std::string > * scopes_ids_list ) {
 	bool* ok = new bool();
-	bool found = false;
 	IR_DataNode* data_node = NULL;
 	
-	while(!found && (scopes_ids_list->size() > 0)) {
-		std::string last_scope_id = scopes_ids_list->back();
-		std::string variable_name_with_scope_id = variable_name + "-" + last_scope_id;
-		scopes_ids_list->pop_back();
-		data_node = var_table.getDataNodeByVariableName( variable_name_with_scope_id, ok );
-		if((*ok))
-			found = true;
-	}
+	data_node = var_table.getDataNodeByVariableName( variable_name, ok, scopes_ids_list );
 		
 	return data_node;
 }
 
 // Getting variable type by name
-data_type getIdentType( std::string variable_name ) {
+data_type getIdentType( std::string variable_name, std::vector <std::string > * scopes_ids_list ) {
 	bool* ok = new bool();
-	data_type type_of_variable = var_table.getVarDataType(variable_name, ok);
+	data_type type_of_variable = IR_UNDEFINED;
+
+	type_of_variable = var_table.getVarDataType( variable_name, ok, scopes_ids_list );
+
 	return type_of_variable;
 }
 
 // Getting to know whether variable/structure is added to a graph or not.
-bool isAddedToGraph(std::string identifier_name, bool * ok) {
+bool isAddedToGraph(std::string identifier_name, bool * ok, std::vector <std::string > * scopes_ids_list) {
 	bool ret = false;
 
 	bool added_as_var;
 	bool * ok_var = new bool();
-	added_as_var = var_table.getStatusAddedToGraph(identifier_name, ok_var);
+	added_as_var = var_table.getStatusAddedToGraph(identifier_name, ok_var, scopes_ids_list);
 
 	bool added_as_struct;
 	bool * ok_struct = new bool();
@@ -276,10 +274,10 @@ bool isAddedToGraph(std::string identifier_name, bool * ok) {
 	return ret;
 }
 
-int identNameToGID(std::string identifier_name) {
+int identNameToGID(std::string identifier_name, std::vector <std::string > * scopes_ids_list) {
 	int ret;
 	bool* ok = new bool();
-	ret = var_table.getGIDbyName(identifier_name, ok);
+	ret = var_table.getGIDbyName(identifier_name, ok, scopes_ids_list);
 	return ret; // must add for structs too
 }
 
@@ -305,12 +303,16 @@ Base_AST * buildUnaryExpression(Base_AST * ast, unary_op_types type_of_op) {
 }
 
 //Build variable (identifier)
-VariableExpr * buildVariableExpr(std::string var_name) {
+VariableExpr * buildVariableExpr(std::string var_name, std::vector <std::string > * scopes_ids_list ) {
 	bool * ok = new bool();
-	IR_DataNode * dn = var_table.getDataNodeByVariableName(var_name,ok);
+	IR_DataNode * dn = NULL;
+
+	dn = var_table.getDataNodeByVariableName( var_name, ok, scopes_ids_list );
+
 	VariableExpr * var_expr = NULL;
 	if(dn != NULL)
 		var_expr = new VariableExpr(var_name,dn->getSimpleType(),false);
+
 	return var_expr;
 }
 
