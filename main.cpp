@@ -16,6 +16,10 @@ using namespace std;
 #include "include/Algorithm.h"
 #endif
 
+#ifndef IR2AST_
+#include "include/IR2AST.h"
+#endif
+
 extern FILE *yyin;
 extern FILE *yyout;
 extern int yyparse(IR_Graph& gr);
@@ -105,6 +109,10 @@ int main(int argc, char *argv[]) {
 
 	IR_Graph* al_graph = Graph_ArithmeticLogicProcessing(&result_graph);
 	IR_Graph* sp_graph = Graph_StructureProcessing(&result_graph);
+	
+	Base_AST* al_AST = convertIRtoAST(al_graph);
+	Base_AST* sp_AST = convertIRtoAST(sp_graph);
+	
 	std::string i_gr_path;
 	std::string al_gr_path;
 	std::string sp_gr_path;

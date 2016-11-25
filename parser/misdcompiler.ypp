@@ -928,8 +928,8 @@ count_loop:
 																		exp_bool_vars_list.clear();
 																		int op_cnt_assign_id = $3->getLastOperationID();
 																		$$->addConnection(op_cnt_assign_id,op_node_id);
-																		$$->appendGraph($7);
 																		$$->appendGraph($9);
+																		$$->appendGraph($7);//Placing assignment of a new iteration index value at the end of current iteration
 																		int op_last_appended = $$->getLastOperationID();
 																		last_node++;
 																		IR_OperationNode * end_node = buildEndBranchNode( I_FOR_LOOP );

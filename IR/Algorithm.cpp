@@ -76,27 +76,6 @@ bool check_presence_cpu_data_nodes(std::vector< int > * data_nodes, IR_Graph * g
 	return check;
 }
 
-//// Getting the last operation node that is directly or indirectly dependent
-//// on conditional begin node and at the same time conditional begin node
-//// depends on this node.
-//bool get_last_dep_cond_node(std::vector< int > * dep_op_ids, IR_Graph* graph, int inc_id) {
-//	bool ret = false;
-//	if(dep_op_ids != NULL) {
-//		for(int i = 0; i < dep_op_ids->size(); i++) {
-//			int op_id = (*dep_op_ids)[i];
-//			if(op_id == inc_id)
-//				ret = true;
-//			else {
-//				std::vector< int > * dep_op_ids_dep = graph->getDependentOperationNodes(op_id);
-//				bool ret_recursive = get_last_dep_cond_node(dep_op_ids_dep, graph, inc_id);
-//				ret = ret || ret_recursive;
-//			}
-//		}
-//	}
-//
-//	return ret;
-//}
-
 IR_Graph* Graph_ArithmeticLogicProcessing( IR_Graph* src_graph ) {
 	// Copying program graph to transform it to AL-form
 	IR_Graph* alp_graph = new IR_Graph();
@@ -326,6 +305,8 @@ IR_Graph* Graph_StructureProcessing( IR_Graph* src_graph ) {
 
 				op_node->setOperationType(IR_OP_BRANCH_BEGIN);
 				op_node->setProcType(IR_SPU);
+				if(op_node->getInstructionType() == I_FOR_LOOP)
+					op_node->setInstructionType(I_WHILE_LOOP);
 
 				IR_DataNode* data_tag_node = new IR_DataNode();
 				data_tag_node->setProcType(IR_SPU);
@@ -392,6 +373,7 @@ IR_Graph* Graph_StructureProcessing( IR_Graph* src_graph ) {
 			std::vector< int > * inc_data_ids = sp_graph->getIncomingDataNodes(op_id);
 			std::vector< int > * dep_op_ids = sp_graph->getDependentOperationNodes(op_id);
 			std::vector< int > * dep_data_ids = sp_graph->getDependentDataNodes(op_id);
+			op_node->setProcType(IR_SPU);
 			
 			int beginning_condition_id = op_node->getConnectedNodeID();
 			std::vector<int>::iterator iter_search = std::find(branch_ids_for_deletion.begin(), branch_ids_for_deletion.end(), beginning_condition_id); 
@@ -463,6 +445,7 @@ IR_Graph* Graph_StructureProcessing( IR_Graph* src_graph ) {
 						if(data_node->getProcType() == IR_CPU) {
 							// Setting temporary type
 							data_node->setDataType(IR_DATA_SIMPLE_TMP);
+							data_node->setProcType(IR_SPU);
 
 							// Removing connections with begin branch operation nodes
 							std::vector< int > * dep_op_ids_for_dn = sp_graph->getDependentOperationNodes(data_id);
@@ -476,7 +459,7 @@ IR_Graph* Graph_StructureProcessing( IR_Graph* src_graph ) {
 
 							// Creating and adding new receive from CPU node to S-graph
 							IR_OperationNode* op_trans_node = new IR_OperationNode();
-							op_trans_node->setProcType(IR_CPU);
+							op_trans_node->setProcType(IR_SPU);
 							op_trans_node->setOperationType(IR_OP_RECEIVE);
 							sp_graph->addOperationNode(op_trans_node);
 							int op_recv_id = sp_graph->getLastOperationID();
@@ -522,6 +505,7 @@ IR_Graph* Graph_StructureProcessing( IR_Graph* src_graph ) {
 					if(data_node != NULL) {
 						if(data_node->getProcType() == IR_CPU) {
 							// Setting temporary type
+							data_node->setProcType(IR_SPU);
 							data_node->setDataType(IR_DATA_SIMPLE_TMP);
 
 							// Creating and adding new send from SPU node to S-graph
