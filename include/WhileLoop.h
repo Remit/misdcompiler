@@ -13,7 +13,7 @@ class WhileLoop : public Base_AST
 {
 public:
 	WhileLoop();
-	WhileLoop(Base_AST* a_cond, Base_AST* a_body) : Condition(a_cond), Body(a_body) {}
+	WhileLoop(Base_AST* a_cond, Base_AST* a_body) : Condition(a_cond), Body(a_body) { lbl = AST_WHILELOOP; }
 	~WhileLoop();
 	
 	void setCondition(Base_AST* a_cond);
@@ -21,6 +21,10 @@ public:
 	
 	Base_AST* getCondition();
 	Base_AST* getBody();
+	
+	Base_AST * copyAST();
+	
+	void print();
 
 private:
 	Base_AST* Condition;

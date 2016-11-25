@@ -19,6 +19,10 @@ public:
 	void setName(std::string a_name);
 	
 	std::string getName();
+	
+	Base_AST * copyAST();
+	
+	void print();
 
 private:
 	std::string name;

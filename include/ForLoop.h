@@ -13,7 +13,7 @@ class ForLoop : public Base_AST
 {
 public:
 	ForLoop();
-	ForLoop(Base_AST* a_start, Base_AST* a_end, Base_AST* a_step, Base_AST* a_body) : Start(a_start), End(a_end), Body(a_body) {}
+	ForLoop(Base_AST* a_start, Base_AST* a_end, Base_AST* a_step, Base_AST* a_body) : Start(a_start), End(a_end), Body(a_body) { lbl = AST_FORLOOP; }
 	~ForLoop();
 	
 	void setStart(Base_AST* a_start);
@@ -25,6 +25,10 @@ public:
 	Base_AST* getEnd();
 	Base_AST* getStep();
 	Base_AST* getBody();
+	
+	Base_AST * copyAST();
+	
+	void print();
 	
 private:
 	Base_AST* Start;

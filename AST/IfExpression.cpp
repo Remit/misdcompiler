@@ -5,6 +5,7 @@ IfExpression::IfExpression()
 	Condition = NULL;
 	ThenExpression = NULL;
 	ElseExpression = NULL;
+	lbl = AST_IFEXPRESSION;
 }
 
 IfExpression::~IfExpression()
@@ -33,4 +34,32 @@ Base_AST* IfExpression::getThenExpression() {
 
 Base_AST* IfExpression::getElseExpression() {
 	return ElseExpression;
+}
+
+void IfExpression::print() {
+	std::cout << "\n - If-expression - ";
+	if(Condition != NULL) {
+		std::cout << "\n - Condition: ";
+		Condition->print();
+	}
+	if(ThenExpression != NULL) {
+		std::cout << "\n - Then: ";
+		ThenExpression->print();
+	}
+	if(ElseExpression != NULL) {
+		std::cout << "\n - Else: ";
+		ElseExpression->print();
+	}
+}
+
+Base_AST * IfExpression::copyAST() {
+	IfExpression * cpy = new IfExpression();
+	if(Condition != NULL)
+		cpy->setCondition(Condition->copyAST());
+	if(ThenExpression != NULL)
+		cpy->setThenExpression(ThenExpression->copyAST());
+	if(ElseExpression != NULL)
+		cpy->setElseExpression(ElseExpression->copyAST());
+	
+	return cpy;
 }

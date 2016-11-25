@@ -23,6 +23,10 @@ public:
 	std::string getName();
 	variable_type getVarType();
 	bool getIsDeclaration();
+	
+	Base_AST * copyAST();
+	
+	void print();
 
 private:
 	std::string name;

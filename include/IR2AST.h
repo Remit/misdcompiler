@@ -33,7 +33,7 @@
 #include "BinaryExpression.h"
 #endif
 
-Base_AST * convertIRtoAST(IR_Graph * graph);
+SequenceAST * convertIRtoAST(IR_Graph * graph);
 IfExpression * AST_st_if(int node_id, IR_Graph * graph);
 WhileLoop * AST_st_whileloop(int node_id, IR_Graph * graph);
 ForLoop * AST_st_forloop(int node_id, IR_Graph * graph);

@@ -15,6 +15,7 @@ IR_OperationNode::IR_OperationNode()
     defined_vars = NULL;
 	input_names = NULL;
 	output_name = NULL;
+	nodeASTSubTree = NULL;
 	then_id = 0;
 	else_id = 0;
 }
@@ -32,7 +33,7 @@ IR_OperationNode::~IR_OperationNode()
 void IR_OperationNode::setNodeASTSubTree(Base_AST* a_subTree)
 {
     if(a_subTree != NULL)
-	nodeASTSubTree = a_subTree;
+		nodeASTSubTree = a_subTree;
 }
 
 void IR_OperationNode::setOperationType(operation_type a_operationType)
@@ -52,8 +53,9 @@ operation_type IR_OperationNode::getOperationType()
 
 Base_AST* IR_OperationNode::getNodeASTSubTreeCopy()
 {
-    // TODO describe copy method for AST
-    Base_AST* ret_AST = NULL;
+	Base_AST* ret_AST = NULL;
+	if(nodeASTSubTree != NULL)
+		ret_AST = nodeASTSubTree->copyAST();
     return ret_AST;
 }
 

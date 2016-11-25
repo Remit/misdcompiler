@@ -13,11 +13,15 @@ class NumberExpr : public Base_AST
 {
 public:
 	NumberExpr();
-	NumberExpr(double a_val) : value(a_val) {}
+	NumberExpr(double a_val) : value(a_val) { lbl = AST_NUMBEREXPR; }
 	~NumberExpr();
 	
 	void setValue(double a_val);
 	double getValue();
+	
+	Base_AST * copyAST();
+	
+	void print();
 
 private:
 	double value;

@@ -13,7 +13,7 @@ class StructuresExpression : public Base_AST
 {
 public:
 	StructuresExpression();
-	StructuresExpression(structures_proc_op_types a_op, Base_AST* a_arg1, Base_AST* a_arg2, Base_AST* a_arg3) : struct_op(a_op), arg1(a_arg1), arg2(a_arg2), arg3(a_arg3) {}
+	StructuresExpression(structures_proc_op_types a_op, Base_AST* a_arg1, Base_AST* a_arg2, Base_AST* a_arg3) : struct_op(a_op), arg1(a_arg1), arg2(a_arg2), arg3(a_arg3) { lbl = AST_STRUCTURESEXPRESSION; }
 	~StructuresExpression();
 	void setOperation(structures_proc_op_types a_op);
 	void setArg1(Base_AST* a_arg1);
@@ -24,6 +24,10 @@ public:
 	Base_AST* getArg1();
 	Base_AST* getArg2();
 	Base_AST* getArg3();
+	
+	Base_AST * copyAST();
+	
+	void print();
 
 private:
 	structures_proc_op_types struct_op;

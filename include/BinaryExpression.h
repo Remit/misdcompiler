@@ -13,7 +13,7 @@ class BinaryExpression : public Base_AST
 {
 public:
 	BinaryExpression();
-	BinaryExpression(bin_op_types a_op, Base_AST* LHS_AST, Base_AST* RHS_AST) : op(a_op), BinExpr_LHS(LHS_AST), BinExpr_RHS(RHS_AST) {}
+	BinaryExpression(bin_op_types a_op, Base_AST* LHS_AST, Base_AST* RHS_AST) : op(a_op), BinExpr_LHS(LHS_AST), BinExpr_RHS(RHS_AST) { lbl = AST_BINARYEXPRESSION; }
 	~BinaryExpression();
 	void setOperation(bin_op_types a_op);
 	void setLHS(Base_AST* LHS_AST);
@@ -22,6 +22,10 @@ public:
 	bin_op_types getOperation();
 	Base_AST* getLHS();
 	Base_AST* getRHS();
+	
+	Base_AST * copyAST();
+	
+	void print();
 
 private:
 	bin_op_types op;

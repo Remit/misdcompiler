@@ -13,21 +13,24 @@ StructuresTable struct_table;
 //Building assignment node
 IR_OperationNode* buildAssignNode( data_type dt, std::vector< std::string > * idents_ptr, Base_AST * expr ) {
 	IR_OperationNode* op_node = NULL;
-	StructuresExpression * struct_processing = new StructuresExpression();
+	
 	op_node = new IR_OperationNode();
 	op_node->setOperationType(IR_OP_PROCESSING);
-	
+
 	if(( dt == IR_DATA_SIMPLE ) || (dt == IR_DATA_TAG)) {
 		op_node->setProcType(IR_CPU);
+		
 		if(idents_ptr->size() == 1) {
 			bool * ok = new bool();
 			IR_DataNode * dn = var_table.getDataNodeByVariableName((*idents_ptr)[0],ok);
 			if(dn != NULL) {
 				VariableExpr * var_assigned = new VariableExpr((*idents_ptr)[0],dn->getSimpleType(),false);
 				BinaryExpression * bin_expr = new BinaryExpression(OP_ASSIGN,var_assigned,expr);
+				op_node->setNodeASTSubTree(bin_expr);
 			}
 		}
 	} else if(dt == IR_DATA_STRUCTURE) {
+		StructuresExpression * struct_processing = new StructuresExpression();
 		op_node->setProcType(IR_SPU);
 		
 		if(idents_ptr->size() > 0) {
@@ -81,9 +84,9 @@ IR_OperationNode* buildAssignNode( data_type dt, std::vector< std::string > * id
 				struct_processing->setArg2(ident);
 			}
 		}
+		
+		op_node->setNodeASTSubTree(struct_processing);
 	}
-	
-	op_node->setNodeASTSubTree(struct_processing);
 
 	return op_node;
 }
@@ -122,6 +125,8 @@ IR_OperationNode* buildDefineNode( std::vector< std::string > * def_vars, variab
 				var_decl = new VariableExpr((*iter),type_of_vars,true);
 				prev_node->setRHS_E(var_decl);
 			}
+			
+			op_node->setNodeASTSubTree(start_node);
 		}
 	}
 

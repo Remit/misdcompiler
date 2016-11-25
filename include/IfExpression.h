@@ -13,7 +13,7 @@ class IfExpression : public Base_AST
 {
 public:
 	IfExpression();
-	IfExpression(Base_AST* a_cond, Base_AST* a_then_expr, Base_AST* a_else_expr) : Condition(a_cond), ThenExpression(a_then_expr), ElseExpression(a_else_expr) {}
+	IfExpression(Base_AST* a_cond, Base_AST* a_then_expr, Base_AST* a_else_expr) : Condition(a_cond), ThenExpression(a_then_expr), ElseExpression(a_else_expr) { lbl = AST_IFEXPRESSION; }
 	~IfExpression();
 	
 	void setCondition(Base_AST* a_cond);
@@ -23,6 +23,10 @@ public:
 	Base_AST* getCondition();
 	Base_AST* getThenExpression();
 	Base_AST* getElseExpression();
+	
+	Base_AST * copyAST();
+	
+	void print();
 
 private:
 	Base_AST* Condition;

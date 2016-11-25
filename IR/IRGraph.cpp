@@ -500,6 +500,7 @@ void IR_Graph::copyGraph(IR_Graph* copiedGraph) {
 				addConnection(src,dst);
 		}
 		for(int i = 1; i < num_of_ops_appended_graph; i++) {
+			
 			IR_OperationNode* op_node = copiedGraph->getOperationCopy(i);
 			addOperationNode(op_node);
 		}
@@ -558,6 +559,8 @@ IR_OperationNode* IR_Graph::getOperationCopy(int index) {
 		return_node->setLastNodeID_forLoops(tmp_node->getLastNodeID_forLoops());
 		return_node->setOperationType(tmp_node->getOperationType());
 		return_node->setInstructionType(tmp_node->getInstructionType());
+		return_node->setThenID(tmp_node->getThenID());
+		return_node->setElseID(tmp_node->getElseID());
 	}
 
 	return return_node;
@@ -1156,7 +1159,7 @@ int IR_Graph::getStartTerminalNodeID() {
 	
 	while((iter != operations_index.end()) && !found) {
 		int id_op = iter->second;
-		int gid = iter->second;
+		int gid = iter->first;
 		IR_OperationNode * op_node = operations[id_op];
 		
 		if(op_node->getOperationType() == IR_OP_TERMINATOR) {

@@ -13,7 +13,7 @@ class ExpressionAST : public Base_AST
 {
 public:
 	ExpressionAST();
-	ExpressionAST(Base_AST* a_LHS_E, Base_AST* a_RHS_E) : LHS_E(a_LHS_E), RHS_E(a_RHS_E) {}
+	ExpressionAST(Base_AST* a_LHS_E, Base_AST* a_RHS_E) : LHS_E(a_LHS_E), RHS_E(a_RHS_E) { lbl = AST_EXPRESSION; }
 	~ExpressionAST();
 	
 	Base_AST* getLHS_E();
@@ -21,6 +21,10 @@ public:
 	
 	void setLHS_E(Base_AST* a_LHS_E);
 	void setRHS_E(Base_AST* a_RHS_E);
+	
+	Base_AST * copyAST();
+	
+	void print();
 
 private:
 	Base_AST* LHS_E;

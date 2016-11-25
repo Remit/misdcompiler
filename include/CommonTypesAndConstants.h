@@ -116,4 +116,20 @@ typedef enum {
 	VIS_NONE
 } visualisation_option; // Options to visualise the graph
 
+typedef enum {
+	AST_BASE,\
+	AST_BINARYEXPRESSION,\
+	AST_EXPRESSION,\
+	AST_FORLOOP,\
+	AST_IFEXPRESSION,\
+	AST_LOGICALEXPRESSION,\
+	AST_NUMBEREXPR,\
+	AST_SEQUENCEAST,\
+	AST_STRUCTUREEXPR,\
+	AST_STRUCTURESEXPRESSION,\
+	AST_UNARYEXPRESSION,\
+	AST_VARIABLEEXPR,\
+	AST_WHILELOOP
+} ast_label; // Labels to determine the exact type of AST tree
+
 #endif

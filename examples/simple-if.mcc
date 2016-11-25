@@ -1,9 +1,5 @@
 ﻿int x, y;
+if (x < y) then
 {
-	int x;
-	if (x < y) then
-	{
-		int y;
-		x = y;
-	}
+	x = y;
 }

@@ -4,6 +4,7 @@ WhileLoop::WhileLoop()
 {
 	Condition = NULL;
 	Body = NULL;
+	lbl = AST_WHILELOOP;
 }
 
 WhileLoop::~WhileLoop()
@@ -24,4 +25,26 @@ Base_AST* WhileLoop::getCondition() {
 
 Base_AST* WhileLoop::getBody() {
 	return Body;
+}
+
+Base_AST * WhileLoop::copyAST() {
+	WhileLoop * cpy = new WhileLoop();
+	if(Body != NULL)
+		cpy->setBody(Body->copyAST());
+	if(Condition != NULL)
+		cpy->setCondition(Condition->copyAST());
+		
+	return cpy;
+}
+
+void WhileLoop::print() {
+	std::cout << "\n - While-Loop - ";
+	if(Condition != NULL) {
+		std::cout << "\n - Condition: ";
+		Condition->print();
+	}
+	if(Body != NULL) {
+		std::cout << "\n - Body: ";
+		Body->print();
+	}
 }
