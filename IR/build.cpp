@@ -189,9 +189,7 @@ int buildDataNode(std::string identifier_name, data_type dt, int id, std::string
 	int ret;
 	std::string var_name_in_table = identifier_name + "-" + scope_name;
 	bool * ok = new bool();
-	std::vector <std::string > * scopes_ids_list = new std::vector <std::string >;
-	scopes_ids_list->push_back(scope_name);
-	int gid = var_table.getGIDbyName( var_name_in_table, ok, scopes_ids_list );
+	int gid = var_table.getGIDbyName( var_name_in_table, ok);
 	if( (* ok) != true) {
 		IR_DataNode* data_node = new IR_DataNode();
 		data_node->setID(id);
@@ -219,9 +217,9 @@ void addStructDataNodeToGraph(std::string identifier_name) {
 	struct_table.setAddedToGraph(identifier_name, ok);
 }
 
-void addVariableDataNodeToGraph(std::string identifier_name, int gid, std::vector <std::string > * scopes_ids_list ) {
+void addVariableDataNodeToGraph(std::string identifier_name, int gid) {
 	bool* ok  = new bool();
-	var_table.setAddedToGraph(identifier_name, gid, ok, scopes_ids_list);
+	var_table.setAddedToGraph(identifier_name, gid, ok);
 }
 
 IR_DataNode* getStructureNodeByName( std::string structure_name ) {
@@ -250,12 +248,12 @@ data_type getIdentType( std::string variable_name, std::vector <std::string > * 
 }
 
 // Getting to know whether variable/structure is added to a graph or not.
-bool isAddedToGraph(std::string identifier_name, bool * ok, std::vector <std::string > * scopes_ids_list) {
+bool isAddedToGraph(std::string identifier_name, bool * ok) {
 	bool ret = false;
 
 	bool added_as_var;
 	bool * ok_var = new bool();
-	added_as_var = var_table.getStatusAddedToGraph(identifier_name, ok_var, scopes_ids_list);
+	added_as_var = var_table.getStatusAddedToGraph(identifier_name, ok_var);
 
 	bool added_as_struct;
 	bool * ok_struct = new bool();
@@ -274,10 +272,10 @@ bool isAddedToGraph(std::string identifier_name, bool * ok, std::vector <std::st
 	return ret;
 }
 
-int identNameToGID(std::string identifier_name, std::vector <std::string > * scopes_ids_list) {
+int identNameToGID(std::string identifier_name) {
 	int ret;
 	bool* ok = new bool();
-	ret = var_table.getGIDbyName(identifier_name, ok, scopes_ids_list);
+	ret = var_table.getGIDbyName(identifier_name, ok);
 	return ret; // must add for structs too
 }
 

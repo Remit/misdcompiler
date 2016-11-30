@@ -12,45 +12,52 @@
 bool check_presence_str_node(std::vector< int > * op_nodes, IR_Graph * graph) {
 	bool ret_val = false;
 	int i = 0;
-	while( (i < op_nodes->size()) && !ret_val) {
-		int op_id = (*op_nodes)[i];
-		IR_OperationNode* op_node = ( IR_OperationNode* )graph->getNode(op_id);
-		if(op_node->getProcType() == IR_SPU)
-			ret_val = true;
-		i++;
-	}
+	if(op_nodes != NULL)
+		while( (i < op_nodes->size()) && !ret_val) {
+			int op_id = (*op_nodes)[i];
+			IR_OperationNode* op_node = ( IR_OperationNode* )graph->getNode(op_id);
+			if(op_node->getProcType() == IR_SPU)
+				ret_val = true;
+			i++;
+		}
 
 	return ret_val;
 }
 
 // Checking whether we have an enclosing condition node among specific nodes
-bool check_presence_enclosing_condition(std::vector< int > * op_nodes, int enclosing_guid) {
+bool check_presence_enclosing_condition(std::vector< int > * op_nodes, std::vector< int > * enclosing_guids) {
 	bool ret_val = false;
 	int i = 0;
-	while( (i < op_nodes->size()) && !ret_val) {
-		int op_id = (*op_nodes)[i];
-		if(op_id == enclosing_guid)
-			ret_val = true;
-		i++;
-	}
+	if(op_nodes != NULL)
+		while( (i < op_nodes->size()) && !ret_val) {
+			int op_id = (*op_nodes)[i];
+			
+			if(std::find(enclosing_guids->begin(),enclosing_guids->end(),op_id) != enclosing_guids->end())
+				ret_val = true;
+			i++;
+		}
 
 	return ret_val;
 }
 
 // Recursive check of presence of structure processing nodes among a chain of cond-dependent nodes
-bool check_presence_structure_nodes(std::vector< int > * dependent_op_nodes, IR_Graph * graph, int enclosing_guid) {
+bool check_presence_structure_nodes(std::vector< int > * dependent_op_nodes, IR_Graph * graph, std::vector< int > * enclosing_guids) {
 	bool ret_val = false;
 	if(check_presence_str_node(dependent_op_nodes,graph)) {
 		ret_val = true;
-	} else if(check_presence_enclosing_condition(dependent_op_nodes,enclosing_guid)) {
+	} else if(check_presence_enclosing_condition(dependent_op_nodes,enclosing_guids)) {
 		ret_val = false;
 	} else {
-		for(int i = 0; i < dependent_op_nodes->size(); i++) {
-			int op_id = (*dependent_op_nodes)[i];
-			std::vector< int > * dependent_op_nodes_next = graph->getDependentOperationNodes(op_id);
-			bool sub_ret = check_presence_structure_nodes(dependent_op_nodes_next,graph,enclosing_guid);
-			ret_val = ret_val || sub_ret;
-		}
+		if(dependent_op_nodes != NULL)
+			for(int i = 0; i < dependent_op_nodes->size(); i++) {
+				int op_id = (*dependent_op_nodes)[i];
+				IR_OperationNode* op_node = ( IR_OperationNode* )graph->getNode(op_id);
+				if(op_node->getOperationType() == IR_OP_BRANCH_COND_BEGIN)
+					enclosing_guids->push_back(op_node->getConnectedNodeID());
+				std::vector< int > * dependent_op_nodes_next = graph->getDependentOperationNodes(op_id);
+				bool sub_ret = check_presence_structure_nodes(dependent_op_nodes_next,graph,enclosing_guids);
+				ret_val = ret_val || sub_ret;
+			}
 	}
 
 	return ret_val;
@@ -101,7 +108,9 @@ IR_Graph* Graph_ArithmeticLogicProcessing( IR_Graph* src_graph ) {
 			// Checking whether the conditional branches require data transfer to SPU
 
 			int enclosing_condition_id = op_node->getConnectedNodeID();
-			if((enclosing_condition_id > 0) && check_presence_structure_nodes(dep_op_ids,alp_graph,enclosing_condition_id)) {
+			std::vector< int > * enclosing_condition_ids = new std::vector< int >;
+			enclosing_condition_ids->push_back(enclosing_condition_id);
+			if((enclosing_condition_id > 0) && check_presence_structure_nodes(dep_op_ids,alp_graph,enclosing_condition_ids)) {
 				// Adding tag variable (data node) to store the result of condition calculation
 				IR_DataNode *tag_node = new IR_DataNode();
 				tag_node->setProcType(IR_CPU);
@@ -295,7 +304,9 @@ IR_Graph* Graph_StructureProcessing( IR_Graph* src_graph ) {
 
 			// Checking whether the conditional branches require data transfer to SPU
 			int enclosing_condition_id = op_node->getConnectedNodeID();
-			if((enclosing_condition_id > 0) && check_presence_structure_nodes(dep_op_ids,sp_graph,enclosing_condition_id)) {
+			std::vector< int > * enclosing_condition_ids = new std::vector< int >;
+			enclosing_condition_ids->push_back(enclosing_condition_id);
+			if((enclosing_condition_id > 0) && check_presence_structure_nodes(dep_op_ids,sp_graph,enclosing_condition_ids)) {
 				IR_OperationNode* op_recv_node = new IR_OperationNode();
 				op_recv_node->setProcType(IR_SPU);
 				op_recv_node->setOperationType(IR_OP_RECEIVE);

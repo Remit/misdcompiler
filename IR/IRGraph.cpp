@@ -381,7 +381,7 @@ int IR_Graph::getLastDataID() {
 int IR_Graph::getFirstOperationID() {
 	std::vector< int > * op_ids = getOperationNodesIDs();
 	int op_cnt = op_ids->size();
-	bool found;
+	bool found = false;
 	int i = 0;
 	int ret = -1;
 

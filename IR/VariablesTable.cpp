@@ -170,20 +170,15 @@ void VariablesTable::setSimpleDataType( std::string variable_name, variable_type
 		*ok = false;
 }
 
-void VariablesTable::setAddedToGraph( std::string variable_name, int gid, bool* ok, std::vector <std::string > * scopes_ids_list ) {
+void VariablesTable::setAddedToGraph( std::string variable_name, int gid, bool* ok) {
 	std::map< std::string, int >::iterator it;
 	bool found = false;
 
-	while(!found && (scopes_ids_list->size() > 0)) {
-		std::string last_scope_id = scopes_ids_list->back();
-		std::string variable_name_with_scope_id = variable_name + "-" + last_scope_id;
-		scopes_ids_list->pop_back();
-		it = added_to_graph.find(variable_name_with_scope_id);
-		if(it != added_to_graph.end()) {
-			found = true;
-			added_to_graph[variable_name_with_scope_id] = gid;
-			*ok = true;
-		}
+	it = added_to_graph.find(variable_name);
+	if(it != added_to_graph.end()) {
+		found = true;
+		added_to_graph[variable_name] = gid;
+		*ok = true;
 	}
 
 	if( !found )
@@ -226,24 +221,19 @@ void VariablesTable::printAddedToGraph() {
 	}
 }
 
-bool VariablesTable::getStatusAddedToGraph( std::string variable_name, bool* ok, std::vector <std::string > * scopes_ids_list ) {
+bool VariablesTable::getStatusAddedToGraph( std::string variable_name, bool* ok ) {
 	std::map< std::string, int >::iterator it;
 	bool ret = false;
 	bool found = false;
-
-	while(!found && (scopes_ids_list->size() > 0)) {
-		std::string last_scope_id = scopes_ids_list->back();
-		std::string variable_name_with_scope_id = variable_name + "-" + last_scope_id;
-		scopes_ids_list->pop_back();
-		it = added_to_graph.find(variable_name_with_scope_id);
-		if(it != added_to_graph.end()) {
-			found = true;
-			if(added_to_graph[variable_name_with_scope_id] > 0)
-				ret = true;
-			else
-				ret = false;
-			*ok = true;
-		}
+	
+	it = added_to_graph.find(variable_name);
+	if(it != added_to_graph.end()) {
+		found = true;
+		if(added_to_graph[variable_name] > 0)
+			ret = true;
+		else
+			ret = false;
+		*ok = true;
 	}
 
 	if( !found )
@@ -252,21 +242,16 @@ bool VariablesTable::getStatusAddedToGraph( std::string variable_name, bool* ok,
 	return ret;
 }
 
-int VariablesTable::getGIDbyName( std::string variable_name, bool* ok, std::vector <std::string > * scopes_ids_list ) {
+int VariablesTable::getGIDbyName( std::string variable_name, bool* ok) {
 	std::map< std::string, int >::iterator it;
 	int ret = -1;
 	bool found = false;
 
-	while(!found && (scopes_ids_list->size() > 0)) {
-		std::string last_scope_id = scopes_ids_list->back();
-		std::string variable_name_with_scope_id = variable_name + "-" + last_scope_id;
-		scopes_ids_list->pop_back();
-		it = added_to_graph.find(variable_name_with_scope_id);
-		if(it != added_to_graph.end()) {
-			found = true;
-			ret = added_to_graph[variable_name_with_scope_id];
-			*ok = true;
-		}
+	it = added_to_graph.find(variable_name);
+	if(it != added_to_graph.end()) {
+		found = true;
+		ret = added_to_graph[variable_name];
+		*ok = true;
 	}
 
 	if( !found )

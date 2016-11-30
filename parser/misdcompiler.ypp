@@ -355,8 +355,8 @@ str_compare_expr:
 																		$$->addOperationNode(op_node);
 																		IR_DataNode* data_node_result = getStructureNodeByName(* $2);
 																		IR_DataNode* data_node_1 = getStructureNodeByName(* $4);
-																		std::vector< std::string > scopes_ids_list_cp = scopes_ids_list;
-																		std::vector< std::string > * scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
+																		scopes_ids_list_cp = scopes_ids_list;
+																		scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
 																		IR_DataNode* data_node_2 = getVariableNodeByName(* $6, scopes_ids_list_cp_ptr);
 																		$$->addDataNode(data_node_result);
 																		int data_node_result_id = $$->getLastDataID();
@@ -367,22 +367,16 @@ str_compare_expr:
 																			std::string data_node_2_name = data_node_2->getDataName();
 																			bool * check_existence = new bool();
 																			bool isAdded;
-																			scopes_ids_list_cp = scopes_ids_list;
-																			scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
-																			isAdded = isAddedToGraph(data_node_2_name, check_existence, scopes_ids_list_cp_ptr);
+																			isAdded = isAddedToGraph(data_node_2_name, check_existence);
 																			if( (* check_existence) == true ) {
 																				if( !isAdded ) {
 																					$$->addDataNode(data_node_2);
 																					int data_node_2_id = $$->getLastDataID();
-																					scopes_ids_list_cp = scopes_ids_list;
-																					scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
-																					addVariableDataNodeToGraph(data_node_2_name,data_node_2_id,scopes_ids_list_cp_ptr);
+																					addVariableDataNodeToGraph(data_node_2_name,data_node_2_id);
 																				}
 																			}
 																		
-																			scopes_ids_list_cp = scopes_ids_list;
-																			scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
-																			int node_2_id = identNameToGID(data_node_2_name,scopes_ids_list_cp_ptr);
+																			int node_2_id = identNameToGID(data_node_2_name);
 																			int op_node_id = $$->getLastOperationID();
 																			if((data_node_result_id > 0) && (op_node_id > 0) && (data_node_1_id > 0) && (node_2_id > 0)) {
 																				$$->addConnection(op_node_id,data_node_result_id);
@@ -437,41 +431,29 @@ str_insert_to_str:
 																			std::string data_node_1_name = data_node_1->getDataName();
 																			bool * check_existence = new bool();
 																			bool isAdded;
-																			scopes_ids_list_cp = scopes_ids_list;
-																			scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
-																			isAdded = isAddedToGraph(data_node_1_name, check_existence,scopes_ids_list_cp_ptr);
+																			isAdded = isAddedToGraph(data_node_1_name, check_existence);
 																			if( (* check_existence) == true ) {
 																				if( !isAdded ) {
 																					$$->addDataNode(data_node_1);
 																					int data_node_1_id = $$->getLastDataID();
-																					scopes_ids_list_cp = scopes_ids_list;
-																					scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
-																					addVariableDataNodeToGraph(data_node_1_name,data_node_1_id,scopes_ids_list_cp_ptr);
+																					addVariableDataNodeToGraph(data_node_1_name,data_node_1_id);
 																				}
 																			}
 																			
-																			scopes_ids_list_cp = scopes_ids_list;
-																			scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
-																			int node_1_id = identNameToGID(data_node_1_name,scopes_ids_list_cp_ptr);
+																			int node_1_id = identNameToGID(data_node_1_name);
 																			if(data_node_2 != NULL) {
 																				std::string data_node_2_name = data_node_1->getDataName();
-																				scopes_ids_list_cp = scopes_ids_list;
-																				scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
-																				isAdded = isAddedToGraph(data_node_2_name, check_existence, scopes_ids_list_cp_ptr);
+																				isAdded = isAddedToGraph(data_node_2_name, check_existence);
 																			
 																				if( (* check_existence) == true ) {
 																					if( !isAdded ) {
 																						$$->addDataNode(data_node_2);
 																						int data_node_2_id = $$->getLastDataID();
-																						scopes_ids_list_cp = scopes_ids_list;
-																						scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
-																						addVariableDataNodeToGraph(data_node_2_name,data_node_2_id,scopes_ids_list_cp_ptr);
+																						addVariableDataNodeToGraph(data_node_2_name,data_node_2_id);
 																					}
 																				}
 																			
-																				scopes_ids_list_cp = scopes_ids_list;
-																				scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
-																				int node_2_id = identNameToGID(data_node_2_name,scopes_ids_list_cp_ptr);
+																				int node_2_id = identNameToGID(data_node_2_name);
 																				int op_node_id = $$->getLastOperationID();
 																			
 																				if((data_node_result_id > 0) && (op_node_id > 0) && (node_1_id > 0) && (node_2_id > 0)) {
@@ -524,22 +506,16 @@ str_delete_from_str:
 																			std::string data_node_1_name = data_node_1->getDataName();
 																			bool * check_existence = new bool();
 																			bool isAdded;
-																			scopes_ids_list_cp = scopes_ids_list;
-																			scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
-																			isAdded = isAddedToGraph(data_node_1_name, check_existence,scopes_ids_list_cp_ptr);
+																			isAdded = isAddedToGraph(data_node_1_name, check_existence);
 																			if( (* check_existence) == true ) {
 																				if( !isAdded ) {
 																					$$->addDataNode(data_node_1);
 																					int data_node_1_id = $$->getLastDataID();
-																					scopes_ids_list_cp = scopes_ids_list;
-																					scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
-																					addVariableDataNodeToGraph(data_node_1_name,data_node_1_id,scopes_ids_list_cp_ptr);
+																					addVariableDataNodeToGraph(data_node_1_name,data_node_1_id);
 																				}
 																			}
 																		
-																			scopes_ids_list_cp = scopes_ids_list;
-																			scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
-																			int node_1_id = identNameToGID(data_node_1_name,scopes_ids_list_cp_ptr);
+																			int node_1_id = identNameToGID(data_node_1_name);
 																			int op_node_id = $$->getLastOperationID();
 																			if((data_node_result_id > 0) && (op_node_id > 0) && (node_1_id > 0)) {
 																				$$->addConnection(op_node_id,data_node_result_id);
@@ -588,41 +564,29 @@ str_search_in_str:
 																			std::string data_node_result_name = data_node_result->getDataName();
 																			bool * check_existence = new bool();
 																			bool isAdded;
-																			scopes_ids_list_cp = scopes_ids_list;
-																			scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
-																			isAdded = isAddedToGraph(data_node_result_name, check_existence,scopes_ids_list_cp_ptr);
+																			isAdded = isAddedToGraph(data_node_result_name, check_existence);
 																			if( (* check_existence) == true ) {
 																				if( !isAdded ) {
 																					$$->addDataNode(data_node_result);
 																					int data_node_result_id = $$->getLastDataID();
-																					scopes_ids_list_cp = scopes_ids_list;
-																					scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
-																					addVariableDataNodeToGraph(data_node_result_name,data_node_result_id,scopes_ids_list_cp_ptr);
+																					addVariableDataNodeToGraph(data_node_result_name,data_node_result_id);
 																				}
 																			}
 																			
-																			scopes_ids_list_cp = scopes_ids_list;
-																			scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
-																			int res_id = identNameToGID(data_node_result_name,scopes_ids_list_cp_ptr);
+																			int res_id = identNameToGID(data_node_result_name);
 																			if(data_node_2 != NULL) {
 																				std::string data_node_2_name = data_node_1->getDataName();
-																				scopes_ids_list_cp = scopes_ids_list;
-																				scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
-																				isAdded = isAddedToGraph(data_node_2_name, check_existence,  scopes_ids_list_cp_ptr);
+																				isAdded = isAddedToGraph(data_node_2_name, check_existence);
 																			
 																				if( (* check_existence) == true ) {
 																					if( !isAdded ) {
 																						$$->addDataNode(data_node_2);
 																						int data_node_2_id = $$->getLastDataID();
-																						scopes_ids_list_cp = scopes_ids_list;
-																						scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
-																						addVariableDataNodeToGraph(data_node_2_name,data_node_2_id,scopes_ids_list_cp_ptr);
+																						addVariableDataNodeToGraph(data_node_2_name,data_node_2_id);
 																					}
 																				}
 																			
-																				scopes_ids_list_cp = scopes_ids_list;
-																				scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
-																				int node_2_id = identNameToGID(data_node_2_name,scopes_ids_list_cp_ptr);
+																				int node_2_id = identNameToGID(data_node_2_name);
 																			
 																				if((res_id > 0) && (op_node_id > 0) && (data_node_1_id > 0) && (node_2_id > 0)) {
 																					$$->addConnection(op_node_id,res_id);
@@ -680,22 +644,16 @@ assign_stmt:
 																			std::string data_node_result_name = data_node_result->getDataName();
 																			bool * check_existence = new bool();
 																			bool isAdded;
-																			scopes_ids_list_cp = scopes_ids_list;
-																			scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
-																			isAdded = isAddedToGraph(data_node_result_name, check_existence, scopes_ids_list_cp_ptr);
+																			isAdded = isAddedToGraph(data_node_result_name, check_existence);
 																			if( (* check_existence) == true ) {
 																				if( !isAdded ) {
 																					$$->addDataNode(data_node_result);
 																					int data_node_result_id = $$->getLastDataID();
-																					scopes_ids_list_cp = scopes_ids_list;
-																					scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
-																					addVariableDataNodeToGraph(data_node_result_name,data_node_result_id,scopes_ids_list_cp_ptr);
+																					addVariableDataNodeToGraph(data_node_result_name,data_node_result_id);
 																				}
 																			}
 																		
-																			scopes_ids_list_cp = scopes_ids_list;
-																			scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
-																			int res_id = identNameToGID(data_node_result_name,scopes_ids_list_cp_ptr);
+																			int res_id = identNameToGID(data_node_result_name);
 																			if((res_id > 0) && (op_node_id > 0)) {
 																				$$->addConnection(op_node_id,res_id);
 																			}
@@ -715,27 +673,21 @@ assign_stmt:
 																			scopes_ids_list_cp = scopes_ids_list;
 																			scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
 																			IR_DataNode* data_node_i = getVariableNodeByName(variable_name, scopes_ids_list_cp_ptr);
-																			
+																																						
 																			if(data_node_i != NULL) {
 																				std::string data_node_i_name = data_node_i->getDataName();
 																				bool * check_existence = new bool();
 																				bool isAdded;
-																				scopes_ids_list_cp = scopes_ids_list;
-																				scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
-																				isAdded = isAddedToGraph(data_node_i_name, check_existence, scopes_ids_list_cp_ptr);
+																				isAdded = isAddedToGraph(data_node_i_name, check_existence);
 																				if( (* check_existence) == true ) {
 																					if( !isAdded ) {
 																						$$->addDataNode(data_node_i);
 																						int data_node_i_id = $$->getLastDataID();
-																						scopes_ids_list_cp = scopes_ids_list;
-																						scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
-																						addVariableDataNodeToGraph(data_node_i_name,data_node_i_id,scopes_ids_list_cp_ptr);
+																						addVariableDataNodeToGraph(data_node_i_name,data_node_i_id);
 																					}
 																				}
 																		
-																				scopes_ids_list_cp = scopes_ids_list;
-																				scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
-																				int i_id = identNameToGID(data_node_i_name,scopes_ids_list_cp_ptr);
+																				int i_id = identNameToGID(data_node_i_name);
 																				if((i_id > 0) && (op_node_id > 0)) {
 																					$$->addConnection(i_id,op_node_id);
 																				}
@@ -771,6 +723,7 @@ num:
    NUMLITERAL														{
 																		std::string* num_str = new std::string(yylval.pch, 0, 1024);
 																		double num = std::stod(*num_str);
+																		$$ = num;
 																	}
 ;
 
@@ -819,7 +772,7 @@ if_stmt:
 																		int num_of_vars = exp_bool_vars_list.size();
 																		bool * check_existence = new bool();
 																		bool isAdded;
-																		
+
 																		for(int i = 0; i < num_of_vars; i++ ) {
 																			std::string variable_name = exp_bool_vars_list[i];
 																			std::vector< std::string > scopes_ids_list_cp = scopes_ids_list;
@@ -830,22 +783,16 @@ if_stmt:
 																				std::string data_node_i_name = data_node_i->getDataName();
 																				bool * check_existence = new bool();
 																				bool isAdded;
-																				scopes_ids_list_cp = scopes_ids_list;
-																				scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
-																				isAdded = isAddedToGraph(data_node_i_name, check_existence,scopes_ids_list_cp_ptr);
+																				isAdded = isAddedToGraph(data_node_i_name, check_existence);
 																				if( (* check_existence) == true ) {
 																					if( !isAdded ) {
 																						$$->addDataNode(data_node_i);
 																						int data_node_i_id = $$->getLastDataID();
-																						scopes_ids_list_cp = scopes_ids_list;
-																						scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
-																						addVariableDataNodeToGraph(data_node_i_name,data_node_i_id,scopes_ids_list_cp_ptr);
+																						addVariableDataNodeToGraph(data_node_i_name,data_node_i_id);
 																					}
 																				}
 																		
-																				scopes_ids_list_cp = scopes_ids_list;
-																				scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
-																				int i_id = identNameToGID(data_node_i_name,scopes_ids_list_cp_ptr);
+																				int i_id = identNameToGID(data_node_i_name);
 																				if((i_id > 0) && (op_node_id > 0)) {
 																					$$->addConnection(i_id,op_node_id);
 																				}
@@ -901,22 +848,16 @@ if_stmt:
 																				std::string data_node_i_name = data_node_i->getDataName();
 																				bool * check_existence = new bool();
 																				bool isAdded;
-																				scopes_ids_list_cp = scopes_ids_list;
-																				scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
-																				isAdded = isAddedToGraph(data_node_i_name, check_existence,scopes_ids_list_cp_ptr);
+																				isAdded = isAddedToGraph(data_node_i_name, check_existence);
 																				if( (* check_existence) == true ) {
 																					if( !isAdded ) {
 																						$$->addDataNode(data_node_i);
 																						int data_node_i_id = $$->getLastDataID();
-																						scopes_ids_list_cp = scopes_ids_list;
-																						scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
-																						addVariableDataNodeToGraph(data_node_i_name,data_node_i_id,scopes_ids_list_cp_ptr);
+																						addVariableDataNodeToGraph(data_node_i_name,data_node_i_id);
 																					}
 																				}
 																		
-																				scopes_ids_list_cp = scopes_ids_list;
-																				scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
-																				int i_id = identNameToGID(data_node_i_name,scopes_ids_list_cp_ptr);
+																				int i_id = identNameToGID(data_node_i_name);
 																				if((i_id > 0) && (op_node_id > 0)) {
 																					$$->addConnection(i_id,op_node_id);
 																				}
@@ -937,7 +878,7 @@ if_stmt:
 bool_expr:
    expr log_op expr													{
 																		int num_of_vars = exp_vars_list.size();
-																		
+
 																		for(int i = 0; i < num_of_vars; i++ ) {
 																			exp_bool_vars_list.push_back(exp_vars_list[i]);
 																		}
@@ -984,22 +925,16 @@ count_loop:
 																				std::string data_node_i_name = data_node_i->getDataName();
 																				bool * check_existence = new bool();
 																				bool isAdded;
-																				scopes_ids_list_cp = scopes_ids_list;
-																				scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
-																				isAdded = isAddedToGraph(data_node_i_name, check_existence,scopes_ids_list_cp_ptr);
+																				isAdded = isAddedToGraph(data_node_i_name, check_existence);
 																				if( (* check_existence) == true ) {
 																					if( !isAdded ) {
 																						$$->addDataNode(data_node_i);
 																						int data_node_i_id = $$->getLastDataID();
-																						scopes_ids_list_cp = scopes_ids_list;
-																						scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
-																						addVariableDataNodeToGraph(data_node_i_name,data_node_i_id,scopes_ids_list_cp_ptr);
+																						addVariableDataNodeToGraph(data_node_i_name,data_node_i_id);
 																					}
 																				}
 																				
-																				scopes_ids_list_cp = scopes_ids_list;
-																				scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
-																				int i_id = identNameToGID(data_node_i_name, scopes_ids_list_cp_ptr);
+																				int i_id = identNameToGID(data_node_i_name);
 																				if((i_id > 0) && (op_node_id > 0)) {
 																					$$->addConnection(i_id,op_node_id);
 																				}
@@ -1057,22 +992,16 @@ while_loop:
 																				std::string data_node_i_name = data_node_i->getDataName();
 																				bool * check_existence = new bool();
 																				bool isAdded;
-																				scopes_ids_list_cp = scopes_ids_list;
-																				scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
-																				isAdded = isAddedToGraph(data_node_i_name, check_existence,scopes_ids_list_cp_ptr);
+																				isAdded = isAddedToGraph(data_node_i_name, check_existence);
 																				if( (* check_existence) == true ) {
 																					if( !isAdded ) {
 																						$$->addDataNode(data_node_i);
 																						int data_node_i_id = $$->getLastDataID();
-																						scopes_ids_list_cp = scopes_ids_list;
-																						scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
-																						addVariableDataNodeToGraph(data_node_i_name,data_node_i_id,scopes_ids_list_cp_ptr);
+																						addVariableDataNodeToGraph(data_node_i_name,data_node_i_id);
 																					}
 																				}
 																				
-																				scopes_ids_list_cp = scopes_ids_list;
-																				scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
-																				int i_id = identNameToGID(data_node_i_name, scopes_ids_list_cp_ptr);
+																				int i_id = identNameToGID(data_node_i_name);
 																				if((i_id > 0) && (op_node_id > 0)) {
 																					$$->addConnection(i_id,op_node_id);
 																				}

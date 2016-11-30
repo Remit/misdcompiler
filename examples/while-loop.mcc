@@ -1,6 +1,8 @@
-int x, y, a;
-while (x < y) do
+﻿int x, y, a;
+if(a < y) then
 {
-x = x + a;
+	while(a < x) do
+	{
+		a = a + 1;
+	}
 }
-y = x / a;

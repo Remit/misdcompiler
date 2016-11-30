@@ -82,9 +82,9 @@ LogicalExpression * buildLogicalExpr(Base_AST * left, Base_AST * right, cond_op_
 int buildDataNode(std::string identifier_name, data_type dt, int id, std::string scope_name);
 void updateDataNode_SimpleDataType(std::string identifier_name, variable_type dt, std::vector <std::string > * scopes_ids_list);
 void addStructDataNodeToGraph(std::string identifier_name);
-void addVariableDataNodeToGraph(std::string identifier_name, int gid, std::vector <std::string > * scopes_ids_list);
-bool isAddedToGraph(std::string identifier_name, bool * ok, std::vector <std::string > * scopes_ids_list);
-int identNameToGID(std::string identifier_name, std::vector <std::string > * scopes_ids_list);
+void addVariableDataNodeToGraph(std::string identifier_name, int gid);
+bool isAddedToGraph(std::string identifier_name, bool * ok);
+int identNameToGID(std::string identifier_name);
 void updateAddedToGraph(std::map<int,int> updateBlock);
 void printAddedToGraph();
 
