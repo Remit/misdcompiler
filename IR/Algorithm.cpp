@@ -59,7 +59,6 @@ bool check_presence_structure_nodes(std::vector< int > * dependent_op_nodes, IR_
 				ret_val = ret_val || sub_ret;
 			}
 	}
-
 	return ret_val;
 }
 

@@ -6,6 +6,15 @@ LogicalExpression::LogicalExpression()
 	BinExpr_LHS = NULL;
 	BinExpr_RHS = NULL;
 	lbl = AST_LOGICALEXPRESSION;
+	exp_bool_vars_list = NULL;
+}
+
+LogicalExpression::LogicalExpression(cond_op_types a_op, Base_AST* LHS_AST, Base_AST* RHS_AST, std::vector< std::string > * a_exp_bool_vars_list) {
+	op = a_op;
+	BinExpr_LHS = LHS_AST;
+	BinExpr_RHS = RHS_AST;
+	lbl = AST_LOGICALEXPRESSION;
+	exp_bool_vars_list = a_exp_bool_vars_list;
 }
 
 LogicalExpression::~LogicalExpression()
@@ -34,6 +43,10 @@ Base_AST* LogicalExpression::getLHS() {
 
 Base_AST* LogicalExpression::getRHS() {
 	return BinExpr_RHS;
+}
+
+std::vector< std::string > * LogicalExpression::getBoolVarsList_ptr() {
+	return exp_bool_vars_list;
 }
 
 Base_AST * LogicalExpression::copyAST() {

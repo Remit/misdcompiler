@@ -69,7 +69,7 @@ IR_OperationNode* buildDefineNode( std::vector< std::string > * def_vars, variab
 IR_OperationNode* buildTerminalNode();
 IR_OperationNode* buildBeginBranchNode();
 IR_OperationNode* buildEndBranchNode( low_level_instruction_type llit );
-IR_OperationNode* buildConditionalBeginBranchNode( LogicalExpression * le, low_level_instruction_type llit );
+IR_OperationNode* buildConditionalBeginBranchNode( LogicalExpression * le, low_level_instruction_type llit);
 IR_DataNode* getStructureNodeByName( std::string structure_name );
 IR_DataNode* getVariableNodeByName( std::string variable_name, std::vector <std::string > * scopes_ids_list );
 data_type getIdentType( std::string variable_name, std::vector <std::string > * scopes_ids_list );
@@ -77,7 +77,7 @@ Base_AST * buildBinaryExpression(Base_AST * left, Base_AST * right, bin_op_types
 Base_AST * buildUnaryExpression(Base_AST * ast, unary_op_types type_of_op);
 VariableExpr * buildVariableExpr(std::string var_name, std::vector <std::string > * scopes_ids_list);
 NumberExpr * buildNumberExpr( double value );
-LogicalExpression * buildLogicalExpr(Base_AST * left, Base_AST * right, cond_op_types type_of_op);
+LogicalExpression * buildLogicalExpr(Base_AST * left, Base_AST * right, cond_op_types type_of_op, std::vector< std::string > * exp_bool_vars_list );
 
 int buildDataNode(std::string identifier_name, data_type dt, int id, std::string scope_name);
 void updateDataNode_SimpleDataType(std::string identifier_name, variable_type dt, std::vector <std::string > * scopes_ids_list);

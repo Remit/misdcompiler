@@ -51,7 +51,6 @@
  std::vector< std::string > idents; 
  std::vector< std::string > scopes_ids_list {"0"};
  std::vector< std::string > exp_vars_list;
- std::vector< std::string > exp_bool_vars_list;
  std::vector< std::string > exp_nums_list;
  
  unsigned int scope_id = 0;//Identifier of a current scope
@@ -769,12 +768,15 @@ if_stmt:
 																		end_node->setConnectedNodeID(op_node_id);
 																		$$->addConnection(op_node_id,op_end_node_id);
 																		$$->addConnection(op_last_appended,op_end_node_id);
-																		int num_of_vars = exp_bool_vars_list.size();
+																		std::vector< std::string > * exp_bool_vars_list = $3->getBoolVarsList_ptr();
+																		int num_of_vars = 0;
+																		if(exp_bool_vars_list != NULL)
+																			num_of_vars = exp_bool_vars_list->size();
 																		bool * check_existence = new bool();
 																		bool isAdded;
 
 																		for(int i = 0; i < num_of_vars; i++ ) {
-																			std::string variable_name = exp_bool_vars_list[i];
+																			std::string variable_name = (*exp_bool_vars_list)[i];
 																			std::vector< std::string > scopes_ids_list_cp = scopes_ids_list;
 																			std::vector< std::string > * scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
 																			IR_DataNode* data_node_i = getVariableNodeByName(variable_name, scopes_ids_list_cp_ptr);
@@ -805,8 +807,6 @@ if_stmt:
 																				yyerror(0, *$$, err);
 																			}
 																		}
-																		
-																		exp_bool_vars_list.clear();
 																	}
 |  TIF TLP bool_expr TRP TTHEN stmt TELSE stmt						{
 																		$$ = new IR_Graph();
@@ -834,12 +834,15 @@ if_stmt:
 																		end_node->setConnectedNodeID(op_node_id);
 																		$$->addConnection(op_last_appended_1,op_end_node_id);
 																		$$->addConnection(op_last_appended_2,op_end_node_id);
-																		int num_of_vars = exp_bool_vars_list.size();
+																		std::vector< std::string > * exp_bool_vars_list = $3->getBoolVarsList_ptr();
+																		int num_of_vars = 0;
+																		if(exp_bool_vars_list != NULL)
+																			num_of_vars = exp_bool_vars_list->size();
 																		bool * check_existence = new bool();
 																		bool isAdded;
 																		
 																		for(int i = 0; i < num_of_vars; i++ ) {
-																			std::string variable_name = exp_bool_vars_list[i];
+																			std::string variable_name = (*exp_bool_vars_list)[i];
 																			std::vector< std::string > scopes_ids_list_cp = scopes_ids_list;
 																			std::vector< std::string > * scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
 																			IR_DataNode* data_node_i = getVariableNodeByName(variable_name, scopes_ids_list_cp_ptr);
@@ -870,8 +873,6 @@ if_stmt:
 																				yyerror(0, *$$, err);
 																			}
 																		}
-																		
-																		exp_bool_vars_list.clear();
 																	}
 ;
 
@@ -879,12 +880,13 @@ bool_expr:
    expr log_op expr													{
 																		int num_of_vars = exp_vars_list.size();
 
+																		std::vector< std::string > * exp_bool_vars_list = new std::vector< std::string >;
 																		for(int i = 0; i < num_of_vars; i++ ) {
-																			exp_bool_vars_list.push_back(exp_vars_list[i]);
+																			exp_bool_vars_list->push_back(exp_vars_list[i]);
 																		}
 																		
 																		exp_vars_list.clear();
-																		$$ = buildLogicalExpr($1,$3,$2);
+																		$$ = buildLogicalExpr($1,$3,$2,exp_bool_vars_list);
 																	}
 ;
 
@@ -913,10 +915,13 @@ count_loop:
 																		cond_node->setThenID(first_then);
 																		$$->addOperationNode( cond_node );
 																		int op_node_id = $$->getLastOperationID();
-																		int num_of_vars = exp_bool_vars_list.size();
+																		std::vector< std::string > * exp_bool_vars_list = $5->getBoolVarsList_ptr();
+																		int num_of_vars = 0;
+																		if(exp_bool_vars_list != NULL)
+																			num_of_vars = exp_bool_vars_list->size();
 																		
 																		for(int i = 0; i < num_of_vars; i++ ) {
-																			std::string variable_name = exp_bool_vars_list[i];
+																			std::string variable_name = (*exp_bool_vars_list)[i];
 																			std::vector< std::string > scopes_ids_list_cp = scopes_ids_list;
 																			std::vector< std::string > * scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
 																			IR_DataNode* data_node_i = getVariableNodeByName(variable_name, scopes_ids_list_cp_ptr);
@@ -948,10 +953,10 @@ count_loop:
 																			}
 																		}
 																		
-																		exp_bool_vars_list.clear();
 																		int op_cnt_assign_id = $3->getLastOperationID();
 																		$$->addConnection(op_cnt_assign_id,op_node_id);
 																		$$->appendGraph($9);
+																		// TODO: give additional scope ID of loop body to assignment of neww iter val
 																		$$->appendGraph($7);//Placing assignment of a new iteration index value at the end of current iteration
 																		int op_last_appended = $$->getLastOperationID();
 																		last_node++;
@@ -980,10 +985,13 @@ while_loop:
 																	   cond_node->setThenID(first_then);
 																	   $$->addOperationNode( cond_node );
 																	   int op_node_id = $$->getLastOperationID();
-																	   int num_of_vars = exp_bool_vars_list.size();
+																		std::vector< std::string > * exp_bool_vars_list = $3->getBoolVarsList_ptr();
+																		int num_of_vars = 0;
+																		if(exp_bool_vars_list != NULL)
+																			num_of_vars = exp_bool_vars_list->size();
 																	   
 																	   for(int i = 0; i < num_of_vars; i++ ) {
-																		   std::string variable_name = exp_bool_vars_list[i];
+																		   std::string variable_name = (*exp_bool_vars_list)[i];
 																		   std::vector< std::string > scopes_ids_list_cp = scopes_ids_list;
 																			std::vector< std::string > * scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
 																			IR_DataNode* data_node_i = getVariableNodeByName(variable_name, scopes_ids_list_cp_ptr);
@@ -1014,8 +1022,7 @@ while_loop:
 																				yyerror(0, *$$, err);
 																			}
 																		}
-																		
-																		exp_bool_vars_list.clear();
+
 																		$$->appendGraph($6);
 																		int op_last_appended = $$->getLastOperationID();
 																		last_node++;

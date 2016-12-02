@@ -114,7 +114,7 @@ int main(int argc, char *argv[]) {
 	if(al_AST != NULL) {
 		al_AST->print();
 	}
-	//Base_AST* sp_AST = convertIRtoAST(sp_graph);
+	Base_AST* sp_AST = convertIRtoAST(sp_graph);
 	
 	std::string i_gr_path;
 	std::string al_gr_path;
@@ -133,8 +133,8 @@ int main(int argc, char *argv[]) {
 			create_index(alp);
 			create_index(sp);
 			result_graph.visualise(i_gr_path);
-			al_graph->visualise(al_gr_path);
-			sp_graph->visualise(sp_gr_path);
+			//al_graph->visualise(al_gr_path);
+			//sp_graph->visualise(sp_gr_path);
 			break;
 		case VIS_INITIAL:
 			i_gr_path = base_path + initial;

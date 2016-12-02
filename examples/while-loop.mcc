@@ -1,8 +1,12 @@
 ﻿int x, y, a;
-if(a < y) then
-{
-	while(a < x) do
+
+while(x < y) do
+{ 
+	if(x < y) then
 	{
-		a = a + 1;
+		y = y + 1;
+	} else {
+		a = y;
 	}
 }
+

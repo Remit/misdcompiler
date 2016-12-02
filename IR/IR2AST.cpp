@@ -16,31 +16,51 @@ SequenceAST * convertIRtoAST(IR_Graph * graph) {
 			considered_op_node_id = (*dep_op_ids)[0]; //We do not consider terminal nodes
 		
 		dep_op_ids = graph->getDependentOperationNodes(considered_op_node_id);
-		
+				
 		if(dep_op_ids != NULL) {
 			// Main sequential processing loop (loops and if-constructions are processed as elements of sequence
 			while(dep_op_ids->size() > 0) {
+				
 				IR_OperationNode* op_node = ( IR_OperationNode* )graph->getNode(considered_op_node_id);
 		
 				if(op_node != NULL) {
 					//Check whether the following op node is conditional node for for-loop
 					int i = 0;
+					int cond_id = -1;
 					bool found = false;
 					while(!found && (i < dep_op_ids->size())) {
 						IR_OperationNode* op_node_cur = ( IR_OperationNode* )graph->getNode((*dep_op_ids)[i]);
-						if(op_node_cur->getInstructionType() == I_FOR_LOOP)
+						if(op_node_cur->getInstructionType() == I_FOR_LOOP) {
 							found = true;
+							cond_id = (*dep_op_ids)[i];
+						}
 						i++;
 					}
 					
 					if((op_node->getOperationType() == IR_OP_PROCESSING) && found) {
 						//Checking the case of for-loop
+						
 						ForLoop * st_for = AST_st_forloop(considered_op_node_id, graph);
 						cur_ptr->setLHS_E(st_for);
 						SequenceAST * new_seq = new SequenceAST();
 						cur_ptr->setRHS_E(new_seq);
 						cur_ptr = new_seq;
-						considered_op_node_id = op_node->getConnectedNodeID();
+						
+						
+						std::vector< int > * dep_op_ids_loop = graph->getDependentOperationNodes(cond_id);
+						bool found_end = false;
+						if(dep_op_ids_loop->size() > 0) {
+							int j = 0;
+							while( (j < dep_op_ids_loop->size()) && !found_end) {
+								IR_OperationNode* op_node_cur_loop = ( IR_OperationNode* )graph->getNode((*dep_op_ids_loop)[j]);
+								if(op_node_cur_loop != NULL)
+									if(op_node_cur_loop->getOperationType() == IR_OP_BRANCH_END) {
+										considered_op_node_id = (*dep_op_ids_loop)[j];
+										found_end = true;
+									}
+								j++;
+							}
+						}
 					} else if((op_node->getOperationType() == IR_OP_BRANCH_COND_BEGIN) || (op_node->getOperationType() == IR_OP_BRANCH_BEGIN)) {
 						//Checking the case of while-loop, if-then and if-then-else constructs
 						if(op_node->getInstructionType() == I_WHILE_LOOP) {
@@ -107,39 +127,57 @@ IfExpression * AST_st_if(int node_id, IR_Graph * graph) {
 		int first_else_id = op_node_cond->getElseID();
 		ast_if = (IfExpression *)op_node_cond->getNodeASTSubTree();
 		//Then-branch
-		
 		if(first_then_id > 0) {
 			int cur_op_id;
 			SequenceAST * ast = new SequenceAST();
 			SequenceAST * cur_ptr = ast;
 			cur_op_id = first_then_id;
-			
 			std::vector< int > * dep_op_ids = graph->getDependentOperationNodes(cur_op_id);
 		
 			if(dep_op_ids != NULL) {
 				// Main sequential processing loop (loops and if-constructions are processed as elements of sequence
 				while((dep_op_ids->size() > 0) && (cur_op_id != end_id)) {
+					
 					IR_OperationNode* op_node = ( IR_OperationNode* )graph->getNode(cur_op_id);
 		
 					if(op_node != NULL) {
 						//Check whether the following op node is conditional node for for-loop
 						int i = 0;
+						int cond_id = -1;
 						bool found = false;
 						while(!found && (i < dep_op_ids->size())) {
 							IR_OperationNode* op_node_cur = ( IR_OperationNode* )graph->getNode((*dep_op_ids)[i]);
-							if(op_node_cur->getInstructionType() == I_FOR_LOOP)
+							if(op_node_cur->getInstructionType() == I_FOR_LOOP) {
 								found = true;
+								cond_id = (*dep_op_ids)[i];
+							}
 							i++;
 						}
 					
 						if((op_node->getOperationType() == IR_OP_PROCESSING) && found) {
+							
 							//Checking the case of for-loop
 							ForLoop * st_for = AST_st_forloop(cur_op_id, graph);
 							cur_ptr->setLHS_E(st_for);
 							SequenceAST * new_seq = new SequenceAST();
 							cur_ptr->setRHS_E(new_seq);
 							cur_ptr = new_seq;
-							cur_op_id = op_node->getConnectedNodeID();
+							
+							//Searching for end branch node for loop
+							std::vector< int > * dep_op_ids_loop = graph->getDependentOperationNodes(cond_id);
+							bool found_end = false;
+							if(dep_op_ids_loop->size() > 0) {
+								int j = 0;
+								while( (j < dep_op_ids_loop->size()) && !found_end) {
+									IR_OperationNode* op_node_cur_loop = ( IR_OperationNode* )graph->getNode((*dep_op_ids_loop)[j]);
+									if(op_node_cur_loop != NULL)
+										if(op_node_cur_loop->getOperationType() == IR_OP_BRANCH_END) {
+											cur_op_id = (*dep_op_ids_loop)[j];
+											found_end = true;
+										}
+									j++;
+								}
+							}
 						} else if((op_node->getOperationType() == IR_OP_BRANCH_COND_BEGIN) || (op_node->getOperationType() == IR_OP_BRANCH_BEGIN)) {
 							//Checking the case of while-loop, if-then and if-then-else constructs
 							if(op_node->getInstructionType() == I_WHILE_LOOP) {
@@ -210,11 +248,14 @@ IfExpression * AST_st_if(int node_id, IR_Graph * graph) {
 					if(op_node != NULL) {
 						//Check whether the following op node is conditional node for for-loop
 						int i = 0;
+						int cond_id = -1;
 						bool found = false;
 						while(!found && (i < dep_op_ids->size())) {
 							IR_OperationNode* op_node_cur = ( IR_OperationNode* )graph->getNode((*dep_op_ids)[i]);
-							if(op_node_cur->getInstructionType() == I_FOR_LOOP)
+							if(op_node_cur->getInstructionType() == I_FOR_LOOP) {
 								found = true;
+								cond_id = (*dep_op_ids)[i];
+							}
 							i++;
 						}
 					
@@ -225,7 +266,22 @@ IfExpression * AST_st_if(int node_id, IR_Graph * graph) {
 							SequenceAST * new_seq = new SequenceAST();
 							cur_ptr->setRHS_E(new_seq);
 							cur_ptr = new_seq;
-							cur_op_id = op_node->getConnectedNodeID();
+							
+							//Searching for end branch node for loop
+							std::vector< int > * dep_op_ids_loop = graph->getDependentOperationNodes(cond_id);
+							bool found_end = false;
+							if(dep_op_ids_loop->size() > 0) {
+								int j = 0;
+								while( (j < dep_op_ids_loop->size()) && !found_end) {
+									IR_OperationNode* op_node_cur_loop = ( IR_OperationNode* )graph->getNode((*dep_op_ids_loop)[j]);
+									if(op_node_cur_loop != NULL)
+										if(op_node_cur_loop->getOperationType() == IR_OP_BRANCH_END) {
+											cur_op_id = (*dep_op_ids_loop)[j];
+											found_end = true;
+										}
+									j++;
+								}
+							}
 						} else if((op_node->getOperationType() == IR_OP_BRANCH_COND_BEGIN) || (op_node->getOperationType() == IR_OP_BRANCH_BEGIN)) {
 							//Checking the case of while-loop, if-then and if-then-else constructs
 							if(op_node->getInstructionType() == I_WHILE_LOOP) {
@@ -323,11 +379,14 @@ WhileLoop * AST_st_whileloop(int node_id, IR_Graph * graph) {
 					if(op_node != NULL) {
 						//Check whether the following op node is conditional node for for-loop
 						int i = 0;
+						int cond_id = -1;
 						bool found = false;
 						while(!found && (i < dep_op_ids->size())) {
 							IR_OperationNode* op_node_cur = ( IR_OperationNode* )graph->getNode((*dep_op_ids)[i]);
-							if(op_node_cur->getInstructionType() == I_FOR_LOOP)
+							if(op_node_cur->getInstructionType() == I_FOR_LOOP) {
 								found = true;
+								cond_id = (*dep_op_ids)[i];
+							}
 							i++;
 						}
 						if((op_node->getOperationType() == IR_OP_PROCESSING) && found) {
@@ -337,7 +396,22 @@ WhileLoop * AST_st_whileloop(int node_id, IR_Graph * graph) {
 							SequenceAST * new_seq = new SequenceAST();
 							cur_ptr->setRHS_E(new_seq);
 							cur_ptr = new_seq;
-							cur_op_id = op_node->getConnectedNodeID();
+
+							//Searching for end branch node for loop
+							std::vector< int > * dep_op_ids_loop = graph->getDependentOperationNodes(cond_id);
+							bool found_end = false;
+							if(dep_op_ids_loop->size() > 0) {
+								int j = 0;
+								while( (j < dep_op_ids_loop->size()) && !found_end) {
+									IR_OperationNode* op_node_cur_loop = ( IR_OperationNode* )graph->getNode((*dep_op_ids_loop)[j]);
+									if(op_node_cur_loop != NULL)
+										if(op_node_cur_loop->getOperationType() == IR_OP_BRANCH_END) {
+											cur_op_id = (*dep_op_ids_loop)[j];
+											found_end = true;
+										}
+									j++;
+								}
+							}
 						} else if((op_node->getOperationType() == IR_OP_BRANCH_COND_BEGIN) || (op_node->getOperationType() == IR_OP_BRANCH_BEGIN)) {
 							//Checking the case of while-loop, if-then and if-then-else constructs
 							if(op_node->getInstructionType() == I_WHILE_LOOP) {
@@ -417,11 +491,18 @@ ForLoop * AST_st_forloop(int node_id, IR_Graph * graph) {
 		
 		dep_op_ids = graph->getDependentOperationNodes(cond_node_id);
 		int cur_op_id;
-		//Getting the first body-of-loop node
+		//Getting the first body-of-loop node		
+		bool found_body = false;
 		if(dep_op_ids->size() > 0) {
-			for(int i = 0; i < dep_op_ids->size(); i++) {
-				if(end_id != (*dep_op_ids)[i])
-					cur_op_id = (*dep_op_ids)[i];
+			int j = 0;
+			while( (j < dep_op_ids->size()) && !found_body) {
+				IR_OperationNode* op_node_cur_loop = ( IR_OperationNode* )graph->getNode((*dep_op_ids)[j]);
+				if(op_node_cur_loop != NULL)
+					if(op_node_cur_loop->getOperationType() != IR_OP_BRANCH_END) {
+						cur_op_id = (*dep_op_ids)[j];
+						found_body = true;
+					}
+				j++;
 			}
 		}
 
@@ -434,7 +515,6 @@ ForLoop * AST_st_forloop(int node_id, IR_Graph * graph) {
 			
 			if(dep_op_ids != NULL) {
 				// Main sequential processing loop (loops and if-constructions are processed as elements of sequence
-				
 				while((dep_op_ids->size() > 0) && (cur_op_id != end_id) && (cur_op_id != node_id)) {					
 					IR_OperationNode* op_node = ( IR_OperationNode* )graph->getNode(cur_op_id);
 		
@@ -447,20 +527,25 @@ ForLoop * AST_st_forloop(int node_id, IR_Graph * graph) {
 								int id_lookahead = (*dep_op_ids)[j];
 								if(id_lookahead == cond_node_id)
 									found_end = true;
+								j++;
 							}
 						}
 						
 						if(found_end) {
 							BinaryExpression * stepAST = (BinaryExpression *)op_node->getNodeASTSubTree();
 							ast_for->setStep(stepAST);
+							cur_op_id = (*dep_op_ids)[0];
 						} else {
 							//Check whether the following op node is conditional node for for-loop
 							int i = 0;
+							int cond_id = -1;
 							bool found = false;
 							while(!found && (i < dep_op_ids->size())) {
 								IR_OperationNode* op_node_cur = ( IR_OperationNode* )graph->getNode((*dep_op_ids)[i]);
-								if(op_node_cur->getInstructionType() == I_FOR_LOOP)
+								if(op_node_cur->getInstructionType() == I_FOR_LOOP) {
 									found = true;
+									cond_id = (*dep_op_ids)[i];
+								}
 								i++;
 							}
 					
@@ -471,7 +556,22 @@ ForLoop * AST_st_forloop(int node_id, IR_Graph * graph) {
 								SequenceAST * new_seq = new SequenceAST();
 								cur_ptr->setRHS_E(new_seq);
 								cur_ptr = new_seq;
-								cur_op_id = op_node->getConnectedNodeID();
+								
+								//Searching for end branch node for loop
+								std::vector< int > * dep_op_ids_loop = graph->getDependentOperationNodes(cond_id);
+								bool found_end = false;
+								if(dep_op_ids_loop->size() > 0) {
+									int j = 0;
+									while( (j < dep_op_ids_loop->size()) && !found_end) {
+										IR_OperationNode* op_node_cur_loop = ( IR_OperationNode* )graph->getNode((*dep_op_ids_loop)[j]);
+										if(op_node_cur_loop != NULL)
+											if(op_node_cur_loop->getOperationType() == IR_OP_BRANCH_END) {
+												cur_op_id = (*dep_op_ids_loop)[j];
+												found_end = true;
+											}
+										j++;
+									}
+								}
 							} else if((op_node->getOperationType() == IR_OP_BRANCH_COND_BEGIN) || (op_node->getOperationType() == IR_OP_BRANCH_BEGIN)) {
 								//Checking the case of while-loop, if-then and if-then-else constructs
 								if(op_node->getInstructionType() == I_WHILE_LOOP) {

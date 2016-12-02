@@ -6,6 +6,7 @@
  */
 
 #include "../include/IRGraph.h"
+#include <algorithm>
 
 IR_Graph::IR_Graph() {
 	operations.reserve(initial_size);
@@ -390,7 +391,13 @@ int IR_Graph::getFirstOperationID() {
 		IR_OperationNode* op_node = ( IR_OperationNode* )getNode(op_id);
 		if(op_node != NULL) {
 			std::vector< int > * inc_op_ids = getIncomingOperationNodes(op_id);
+			// Removing last last body of loop node for cycles
 			if(inc_op_ids != NULL) {
+				int last_loop_node_id = op_node->getLastNodeID_forLoops();
+				if(last_loop_node_id > 0) {
+					std::vector< int >::iterator last_loop_node_iter = std::find(inc_op_ids->begin(),inc_op_ids->end(),last_loop_node_id);
+					inc_op_ids->erase(last_loop_node_iter);
+				}
 				if(inc_op_ids->size() == 0) {
 					found = true;
 					ret = op_id;
@@ -660,7 +667,7 @@ void IR_Graph::printNodes() {
 
 void IR_Graph::visualise(std::string full_filename) {
 	// This method outputs a js file with a graph description
-	std::ofstream vis_file;// = std::ofstream(full_filename);
+	std::ofstream vis_file;
 	vis_file.open(full_filename.c_str());
 	calculate_coords();
 
@@ -694,7 +701,7 @@ void IR_Graph::visualise(std::string full_filename) {
 	std::map< int, int >::iterator iter_nodes;
 	int gid;
 	std::string gid_str;
-
+	
 	if(operations_index.size() > 0) {
 		std::map< int, int >::iterator iter_nodes_end = --operations_index.end();
 		for(iter_nodes = operations_index.begin(); iter_nodes != iter_nodes_end; iter_nodes++) {
@@ -1046,6 +1053,8 @@ void IR_Graph::range_nodes_by_x(int dep_node, int cur_level) {
 			considered_branch_nodes.erase(iter_cons_br_node);
 		else {
 			considered_branch_nodes.push_back(dep_node);
+			if (op_node->getInstructionType() == I_WHILE_LOOP)
+				considered_branch_nodes.push_back(dep_node);
 			x_levels[dep_node] = cur_level;
 			std::vector< int > * dep_op_ids = getDependentOperationNodes(dep_node);
 			if(dep_op_ids->size() > 1) {
@@ -1054,8 +1063,8 @@ void IR_Graph::range_nodes_by_x(int dep_node, int cur_level) {
 				if((dep_op_node->getOperationType() != IR_OP_BRANCH_END) && (dep_op_node_alt->getOperationType() != IR_OP_BRANCH_END) ) {
 					range_nodes_by_x((*dep_op_ids)[0], cur_level);
 					branch_nodes_search_stack.push_back(dep_node);
-					int num_of_branch_nodes = calculate_num_of_branch_nodes((*dep_op_ids)[0], dep_node);
-					range_nodes_by_x((*dep_op_ids)[1], cur_level + num_of_branch_nodes + 1);
+					//int num_of_branch_nodes = calculate_num_of_branch_nodes((*dep_op_ids)[0], dep_node);
+					range_nodes_by_x((*dep_op_ids)[1], cur_level + 0 + 1);
 				} else if(dep_op_node_alt->getOperationType() != IR_OP_BRANCH_END) {
 					range_nodes_by_x((*dep_op_ids)[1], cur_level);
 				} else {
@@ -1090,10 +1099,13 @@ void IR_Graph::range_nodes_by_x(int dep_node, int cur_level) {
 }
 
 int IR_Graph::calculate_num_of_branch_nodes(int node_id, int br_id) {
+	
 	IR_OperationNode * op_node = ( IR_OperationNode* )getNode(node_id);
 	int ret = 0;
 	if(op_node->getOperationType() == IR_OP_BRANCH_END) {
+		
 		int connected_branch_id = op_node->getConnectedNodeID();
+		
 		bool found_cond = false;
 
 		std::vector< int >::iterator iter_cons_br_node = branch_nodes_search_stack.begin();
@@ -1106,8 +1118,10 @@ int IR_Graph::calculate_num_of_branch_nodes(int node_id, int br_id) {
 		if(found_cond) {
 			branch_nodes_search_stack.erase(iter_cons_br_node);
 			std::vector< int > * dep_op_ids = getDependentOperationNodes(node_id);
-			if(dep_op_ids->size() > 0)
+			if(dep_op_ids->size() > 0) {
+				//std::cout << "Node ID: " << (*dep_op_ids)[0] << "Br ID: " << br_id << "Connected node: " << connected_branch_id << std::endl;
 				ret = calculate_num_of_branch_nodes((*dep_op_ids)[0], br_id);
+			}
 		} else {
 			if(connected_branch_id == br_id)
 				ret = 0;

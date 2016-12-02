@@ -13,7 +13,7 @@ class LogicalExpression : public Base_AST
 {
 public:
 	LogicalExpression();
-	LogicalExpression(cond_op_types a_op, Base_AST* LHS_AST, Base_AST* RHS_AST) : op(a_op), BinExpr_LHS(LHS_AST), BinExpr_RHS(RHS_AST) { lbl = AST_LOGICALEXPRESSION; }
+	LogicalExpression(cond_op_types a_op, Base_AST* LHS_AST, Base_AST* RHS_AST, std::vector< std::string > * a_exp_bool_vars_list);
 	~LogicalExpression();
 	void setOperation(cond_op_types a_op);
 	void setLHS(Base_AST* LHS_AST);
@@ -22,6 +22,7 @@ public:
 	cond_op_types getOperation();
 	Base_AST* getLHS();
 	Base_AST* getRHS();
+	std::vector< std::string > * getBoolVarsList_ptr();
 	
 	Base_AST * copyAST();
 	
@@ -31,6 +32,7 @@ private:
 	cond_op_types op;
 	Base_AST* BinExpr_LHS;
 	Base_AST* BinExpr_RHS;
+	std::vector< std::string > * exp_bool_vars_list;
 
 };
 

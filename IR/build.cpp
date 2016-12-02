@@ -321,7 +321,7 @@ NumberExpr * buildNumberExpr( double value ) {
 }
 
 // Build logical expression for conditions
-LogicalExpression * buildLogicalExpr(Base_AST * left, Base_AST * right, cond_op_types type_of_op) {
-	LogicalExpression * logical_ast = new LogicalExpression(type_of_op,left,right);
+LogicalExpression * buildLogicalExpr(Base_AST * left, Base_AST * right, cond_op_types type_of_op, std::vector< std::string > * exp_bool_vars_list) {
+	LogicalExpression * logical_ast = new LogicalExpression(type_of_op,left,right,exp_bool_vars_list);
 	return logical_ast;
 }
