@@ -47,15 +47,19 @@ Base_AST* ForLoop::getBody() {
 
 Base_AST * ForLoop::copyAST() {
 	ForLoop * cpy = new ForLoop();
-	if(Body != NULL)
+	if(Body != NULL) {
 		cpy->setBody(Body->copyAST());
-	if(End != NULL)
+	}
+	if(End != NULL) {
 		cpy->setEnd(End->copyAST());
-	if(Step != NULL)
+	}
+	if(Step != NULL) {
 		cpy->setStep(Step->copyAST());
-	if(Start != NULL)
+	}
+	if(Start != NULL) {
 		cpy->setStart(Start->copyAST());
-		
+	}
+
 	return cpy;
 }
 

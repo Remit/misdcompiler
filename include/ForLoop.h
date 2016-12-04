@@ -13,7 +13,7 @@ class ForLoop : public Base_AST
 {
 public:
 	ForLoop();
-	ForLoop(Base_AST* a_start, Base_AST* a_end, Base_AST* a_step, Base_AST* a_body) : Start(a_start), End(a_end), Body(a_body) { lbl = AST_FORLOOP; }
+	ForLoop(Base_AST* a_start, Base_AST* a_end, Base_AST* a_step, Base_AST* a_body) : Start(a_start), End(a_end), Step(a_step), Body(a_body) { lbl = AST_FORLOOP; }
 	~ForLoop();
 	
 	void setStart(Base_AST* a_start);

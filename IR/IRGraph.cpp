@@ -507,7 +507,6 @@ void IR_Graph::copyGraph(IR_Graph* copiedGraph) {
 				addConnection(src,dst);
 		}
 		for(int i = 1; i < num_of_ops_appended_graph; i++) {
-			
 			IR_OperationNode* op_node = copiedGraph->getOperationCopy(i);
 			addOperationNode(op_node);
 		}
@@ -556,7 +555,9 @@ IR_OperationNode* IR_Graph::getOperationCopy(int index) {
 		return_node = NULL;
 	else {
 		//ATTENTION: When adding a field to a node, do not forget to add here in order to copy!
+
 		return_node = new IR_OperationNode();
+
 		IR_OperationNode* tmp_node = operations[index];
 		return_node->setID(tmp_node->getID());
 		return_node->setNodeASTSubTree(tmp_node->getNodeASTSubTreeCopy());
@@ -1033,73 +1034,126 @@ void IR_Graph::range_nodes_by_y(int dep_node, int cur_level) {
 
 void IR_Graph::range_nodes_by_x(int dep_node, int cur_level) {
 	IR_OperationNode * op_node = ( IR_OperationNode* )getNode(dep_node);
-	if(op_node->getOperationType() == IR_OP_TERMINATOR) {
-		x_levels[dep_node] = 0;
-		std::vector< int > * dep_op_ids = getDependentOperationNodes(dep_node);
-		if(dep_op_ids->size() > 0)
-			range_nodes_by_x((*dep_op_ids)[0],0);
-	} else if((op_node->getOperationType() == IR_OP_BRANCH_COND_BEGIN) || (op_node->getOperationType() == IR_OP_BRANCH_BEGIN)) {
-		int connected_branch_id = op_node->getConnectedNodeID();
-		bool found_cond = false;
-
-		std::vector< int >::iterator iter_cons_br_node = considered_branch_nodes.begin();
-		while(!found_cond && (iter_cons_br_node != considered_branch_nodes.end())) {
-			if((*iter_cons_br_node) == connected_branch_id)
-				found_cond = true;
-			else
-				iter_cons_br_node++;
-		}
-		if(found_cond)
-			considered_branch_nodes.erase(iter_cons_br_node);
-		else {
-			considered_branch_nodes.push_back(dep_node);
-			if (op_node->getInstructionType() == I_WHILE_LOOP)
-				considered_branch_nodes.push_back(dep_node);
-			x_levels[dep_node] = cur_level;
+	if(op_node != NULL) {
+		if(op_node->getOperationType() == IR_OP_TERMINATOR) {
+			x_levels[dep_node] = 0;
 			std::vector< int > * dep_op_ids = getDependentOperationNodes(dep_node);
-			if(dep_op_ids->size() > 1) {
-				IR_OperationNode * dep_op_node = ( IR_OperationNode* )getNode((*dep_op_ids)[0]);
-				IR_OperationNode * dep_op_node_alt = ( IR_OperationNode* )getNode((*dep_op_ids)[1]);
-				if((dep_op_node->getOperationType() != IR_OP_BRANCH_END) && (dep_op_node_alt->getOperationType() != IR_OP_BRANCH_END) ) {
-					range_nodes_by_x((*dep_op_ids)[0], cur_level);
-					branch_nodes_search_stack.push_back(dep_node);
-					//int num_of_branch_nodes = calculate_num_of_branch_nodes((*dep_op_ids)[0], dep_node);
-					range_nodes_by_x((*dep_op_ids)[1], cur_level + 0 + 1);
-				} else if(dep_op_node_alt->getOperationType() != IR_OP_BRANCH_END) {
-					range_nodes_by_x((*dep_op_ids)[1], cur_level);
+			if(dep_op_ids->size() > 0)
+				range_nodes_by_x((*dep_op_ids)[0],0);
+		} else if((op_node->getOperationType() == IR_OP_BRANCH_COND_BEGIN) || (op_node->getOperationType() == IR_OP_BRANCH_BEGIN)) {
+			if((op_node->getInstructionType() == I_FOR_LOOP) || (op_node->getInstructionType() == I_WHILE_LOOP)) {
+				std::vector< int >::iterator iter_cons_br_node = std::find(considered_branch_nodes.begin(),considered_branch_nodes.end(),dep_node);
+				if(iter_cons_br_node != considered_branch_nodes.end()) {// We have processed the loop body
+					considered_branch_nodes.erase(iter_cons_br_node);
+
+					// Searching for end-branch node
+					std::vector< int > * dep_op_ids = getDependentOperationNodes(dep_node);
+					if(dep_op_ids->size() > 0) {
+						int id_srch = 0;
+						int cont_node = (*dep_op_ids)[id_srch];
+						bool found_non_end_branch = false;
+						while(!found_non_end_branch && (id_srch < dep_op_ids->size())) {
+							IR_OperationNode * op_node_srch = ( IR_OperationNode* )getNode((*dep_op_ids)[id_srch]);
+							if((op_node_srch != NULL) && (op_node_srch->getOperationType() == IR_OP_BRANCH_END)) {
+								found_non_end_branch = true;
+								cont_node = (*dep_op_ids)[id_srch];
+							}
+							id_srch++;
+						}
+
+						range_nodes_by_x(cont_node, cur_level); // Continuing with end branch node for the loop
+					}
 				} else {
-					range_nodes_by_x((*dep_op_ids)[0], cur_level);
+					considered_branch_nodes.push_back(dep_node);
+					x_levels[dep_node] = cur_level;
+					std::vector< int > * dep_op_ids = getDependentOperationNodes(dep_node);
+					if(dep_op_ids->size() > 0) {
+						// Searching for non-end-branch node
+						int id_srch = 0;
+						int cont_node = (*dep_op_ids)[id_srch];
+						bool found_non_end_branch = false;
+						while(!found_non_end_branch && (id_srch < dep_op_ids->size())) {
+							IR_OperationNode * op_node_srch = ( IR_OperationNode* )getNode((*dep_op_ids)[id_srch]);
+							if((op_node_srch != NULL) && (op_node_srch->getOperationType() != IR_OP_BRANCH_END)) {
+								found_non_end_branch = true;
+								cont_node = (*dep_op_ids)[id_srch];
+							}
+							id_srch++;
+						}
+
+						range_nodes_by_x(cont_node, cur_level);// Continuing with loop-body
+					}
+				}
+			} else if(op_node->getInstructionType() == I_IF) {
+				x_levels[dep_node] = cur_level;
+				std::vector< int > * dep_op_ids = getDependentOperationNodes(dep_node);
+				if(dep_op_ids->size() > 0) {
+					// Searching for non-end-branch node
+					int id_srch = 0;
+					int cont_node = (*dep_op_ids)[id_srch];
+					bool found_non_end_branch = false;
+					while(!found_non_end_branch && (id_srch < dep_op_ids->size())) {
+						IR_OperationNode * op_node_srch = ( IR_OperationNode* )getNode((*dep_op_ids)[id_srch]);
+						if((op_node_srch != NULL) && (op_node_srch->getOperationType() != IR_OP_BRANCH_END)) {
+							found_non_end_branch = true;
+							cont_node = (*dep_op_ids)[id_srch];
+						}
+						id_srch++;
+					}
+
+					range_nodes_by_x(cont_node, cur_level);// Continuing with then-sequence
+				}
+			} else if(op_node->getInstructionType() == I_IF_ELSE) {
+				x_levels[dep_node] = cur_level;
+				std::vector< int > * dep_op_ids = getDependentOperationNodes(dep_node);
+
+				if(dep_op_ids->size() > 1) {
+					IR_OperationNode * dep_op_node = ( IR_OperationNode* )getNode((*dep_op_ids)[0]);
+					IR_OperationNode * dep_op_node_alt = ( IR_OperationNode* )getNode((*dep_op_ids)[1]);
+					if((dep_op_node->getOperationType() != IR_OP_BRANCH_END) && (dep_op_node_alt->getOperationType() != IR_OP_BRANCH_END) ) {
+						considered_branch_nodes.push_back(dep_node);
+						range_nodes_by_x((*dep_op_ids)[0], cur_level);
+						branch_nodes_search_stack.push_back(dep_node);
+						int num_of_branch_nodes = calculate_num_of_branch_nodes((*dep_op_ids)[0]);
+						range_nodes_by_x((*dep_op_ids)[1], cur_level + num_of_branch_nodes + 1);
+					} else if(dep_op_node_alt->getOperationType() != IR_OP_BRANCH_END) {
+						range_nodes_by_x((*dep_op_ids)[1], cur_level);
+					} else {
+						range_nodes_by_x((*dep_op_ids)[0], cur_level);
+					}
 				}
 			}
-		}
-	} else if(op_node->getOperationType() == IR_OP_BRANCH_END) {
-		std::vector< int > * inc_op_ids = getIncomingOperationNodes(dep_node);
-		int new_level = cur_level;
-		if(inc_op_ids->size() > 1) {
-			int level_1 = x_levels[(*inc_op_ids)[0]];
-			int level_2 = x_levels[(*inc_op_ids)[2]];
+		} else if(op_node->getOperationType() == IR_OP_BRANCH_END) {
+			std::vector< int >::iterator iter_cons_br_node = std::find(considered_branch_nodes.begin(),considered_branch_nodes.end(),op_node->getConnectedNodeID());
+			if(iter_cons_br_node == considered_branch_nodes.end()) { // Can safely continue, all branches were considered
+				std::vector< int > * inc_op_ids = getIncomingOperationNodes(dep_node);
+				int new_level = cur_level;
+				if(inc_op_ids->size() > 1) {
+					int level_1 = x_levels[(*inc_op_ids)[0]];
+					int level_2 = x_levels[(*inc_op_ids)[1]];
 
-			if(level_1 < level_2)
-				new_level = level_1;
-			else
-				new_level = level_2;
-			x_levels[dep_node] = new_level;
+					if(level_1 < level_2)
+						new_level = level_1;
+					else
+						new_level = level_2;
+					x_levels[dep_node] = new_level;
+				}
+				std::vector< int > * dep_op_ids = getDependentOperationNodes(dep_node);
+				if(dep_op_ids->size() > 0)
+					range_nodes_by_x((*dep_op_ids)[0],new_level);
+			} else { // Continuing with other branch
+				considered_branch_nodes.erase(iter_cons_br_node);
+			}
+		} else {
+			x_levels[dep_node] = cur_level;
+			std::vector< int > * dep_op_ids = getDependentOperationNodes(dep_node);
+			if(dep_op_ids->size() > 0) // Simple control flow (from previous node to next node)
+				range_nodes_by_x((*dep_op_ids)[0],cur_level);
 		}
-		std::vector< int > * dep_op_ids = getDependentOperationNodes(dep_node);
-		if(dep_op_ids->size() > 0)
-			range_nodes_by_x((*dep_op_ids)[0],new_level);
-	} else {
-		x_levels[dep_node] = cur_level;
-		std::vector< int > * dep_op_ids = getDependentOperationNodes(dep_node);
-		if(dep_op_ids->size() > 0)
-			range_nodes_by_x((*dep_op_ids)[0],cur_level);
 	}
-
-	return;
 }
 
-int IR_Graph::calculate_num_of_branch_nodes(int node_id, int br_id) {
-	
+int IR_Graph::calculate_num_of_branch_nodes(int node_id) {
 	IR_OperationNode * op_node = ( IR_OperationNode* )getNode(node_id);
 	int ret = 0;
 	if(op_node->getOperationType() == IR_OP_BRANCH_END) {
@@ -1108,58 +1162,99 @@ int IR_Graph::calculate_num_of_branch_nodes(int node_id, int br_id) {
 		
 		bool found_cond = false;
 
-		std::vector< int >::iterator iter_cons_br_node = branch_nodes_search_stack.begin();
-		while(!found_cond && (iter_cons_br_node != branch_nodes_search_stack.end())) {
-			if((*iter_cons_br_node) == connected_branch_id)
-				found_cond = true;
-			else
-				iter_cons_br_node++;
-		}
+		std::vector< int >::iterator iter_cons_br_node = std::find(branch_nodes_search_stack.begin(),branch_nodes_search_stack.end(),connected_branch_id);
+		if(iter_cons_br_node != branch_nodes_search_stack.end())
+			found_cond = true;
+
 		if(found_cond) {
 			branch_nodes_search_stack.erase(iter_cons_br_node);
+			std::vector< int >::iterator iter_cons_br_node = std::find(branch_nodes_search_stack.begin(),branch_nodes_search_stack.end(),connected_branch_id);
+			if(iter_cons_br_node == branch_nodes_search_stack.end()) // Continuing only if there is no other path for if-else to achieve this node
+				if(branch_nodes_search_stack.size() > 0) {
+					std::vector< int > * dep_op_ids = getDependentOperationNodes(node_id);
+					if((dep_op_ids != NULL) && (dep_op_ids->size() > 0))
+						ret = calculate_num_of_branch_nodes((*dep_op_ids)[0]);
+				}
+		}
+	} else if((op_node->getOperationType() == IR_OP_BRANCH_COND_BEGIN) || (op_node->getOperationType() == IR_OP_BRANCH_BEGIN)) {
+		if((op_node->getInstructionType() == I_IF)) {
+			branch_nodes_search_stack.push_back(node_id);
 			std::vector< int > * dep_op_ids = getDependentOperationNodes(node_id);
 			if(dep_op_ids->size() > 0) {
-				//std::cout << "Node ID: " << (*dep_op_ids)[0] << "Br ID: " << br_id << "Connected node: " << connected_branch_id << std::endl;
-				ret = calculate_num_of_branch_nodes((*dep_op_ids)[0], br_id);
-			}
-		} else {
-			if(connected_branch_id == br_id)
-				ret = 0;
-		}
-	} else if(((op_node->getOperationType() == IR_OP_BRANCH_COND_BEGIN) || (op_node->getOperationType() == IR_OP_BRANCH_BEGIN)) && (op_node->getInstructionType() != I_FOR_LOOP) && (op_node->getInstructionType() != I_WHILE_LOOP)) {
-		bool found_cond = false;
+				// Searching for non-end-branch node
+				int id_srch = 0;
+				int cont_node = (*dep_op_ids)[id_srch];
+				bool found_non_end_branch = false;
+				while(!found_non_end_branch && (id_srch < dep_op_ids->size())) {
+					IR_OperationNode * op_node_srch = ( IR_OperationNode* )getNode((*dep_op_ids)[id_srch]);
+					if((op_node_srch != NULL) && (op_node_srch->getOperationType() != IR_OP_BRANCH_END)) {
+						found_non_end_branch = true;
+						cont_node = (*dep_op_ids)[id_srch];
+					}
+					id_srch++;
+				}
 
-		std::vector< int >::iterator iter_cons_br_node = branch_nodes_search_stack.begin();
-		while(!found_cond && (iter_cons_br_node != branch_nodes_search_stack.end())) {
-			if((*iter_cons_br_node) == node_id)
-				found_cond = true;
-			else
-				iter_cons_br_node++;
-		}
-		if(!found_cond) {
+				ret = calculate_num_of_branch_nodes(cont_node); // Continuing with loop-body
+			}
+		} else if(op_node->getInstructionType() == I_IF_ELSE) {
+			branch_nodes_search_stack.push_back(node_id);
 			branch_nodes_search_stack.push_back(node_id);
 			std::vector< int > * dep_op_ids = getDependentOperationNodes(node_id);
 			int r1 = 0, r2 = 0;
-			if(dep_op_ids->size() > 1) {
-				r1 = calculate_num_of_branch_nodes((*dep_op_ids)[0],br_id);
-				r2 = calculate_num_of_branch_nodes((*dep_op_ids)[1],br_id);
+
+			if((dep_op_ids != NULL) && (dep_op_ids->size() > 1)) {
+				r1 = calculate_num_of_branch_nodes((*dep_op_ids)[0]);
+				r2 = calculate_num_of_branch_nodes((*dep_op_ids)[1]);
 			}
+
 			ret = 1 + r1 + r2;
-		} else {
-			std::vector< int > * dep_op_ids = getDependentOperationNodes(node_id);
-			if(dep_op_ids->size() > 1) {
-				IR_OperationNode * dep_op_node = ( IR_OperationNode* )getNode((*dep_op_ids)[0]);
-				if(dep_op_node->getOperationType() != IR_OP_BRANCH_END) {
-					ret = calculate_num_of_branch_nodes((*dep_op_ids)[0],br_id);
-				} else {
-					ret = calculate_num_of_branch_nodes((*dep_op_ids)[1],br_id);
+		} else if((op_node->getInstructionType() == I_FOR_LOOP) || (op_node->getInstructionType() == I_WHILE_LOOP)) {
+			std::vector< int >::iterator iter_cons_loop_node = std::find(branch_nodes_search_stack.begin(),branch_nodes_search_stack.end(),node_id);
+			if(iter_cons_loop_node != branch_nodes_search_stack.end()) { // We have calculated for the x coords for loop body, continuing with end branch
+				branch_nodes_search_stack.erase(iter_cons_loop_node);
+
+				// Searching for end-branch node
+				std::vector< int > * dep_op_ids = getDependentOperationNodes(node_id);
+				if((dep_op_ids != NULL) && (dep_op_ids->size() > 0)) {
+					int id_srch = 0;
+					int cont_node = (*dep_op_ids)[id_srch];
+					bool found_non_end_branch = false;
+					while(!found_non_end_branch && (id_srch < dep_op_ids->size())) {
+						IR_OperationNode * op_node_srch = ( IR_OperationNode* )getNode((*dep_op_ids)[id_srch]);
+						if((op_node_srch != NULL) && (op_node_srch->getOperationType() == IR_OP_BRANCH_END)) {
+							found_non_end_branch = true;
+							cont_node = (*dep_op_ids)[id_srch];
+						}
+						id_srch++;
+					}
+
+					ret = calculate_num_of_branch_nodes(cont_node); // Continuing with end branch node for the loop
+				}
+			} else { // Continuing with loop body
+				branch_nodes_search_stack.push_back(node_id);
+				std::vector< int > * dep_op_ids = getDependentOperationNodes(node_id);
+				if(dep_op_ids->size() > 0) {
+					// Searching for non-end-branch node
+					int id_srch = 0;
+					int cont_node = (*dep_op_ids)[id_srch];
+					bool found_non_end_branch = false;
+					while(!found_non_end_branch && (id_srch < dep_op_ids->size())) {
+						IR_OperationNode * op_node_srch = ( IR_OperationNode* )getNode((*dep_op_ids)[id_srch]);
+						if((op_node_srch != NULL) && (op_node_srch->getOperationType() != IR_OP_BRANCH_END)) {
+							found_non_end_branch = true;
+							cont_node = (*dep_op_ids)[id_srch];
+						}
+						id_srch++;
+					}
+
+					ret = calculate_num_of_branch_nodes(cont_node); // Continuing with loop-body
 				}
 			}
 		}
 	} else {
 		std::vector< int > * dep_op_ids = getDependentOperationNodes(node_id);
 		if(dep_op_ids->size() > 0)
-			ret = calculate_num_of_branch_nodes((*dep_op_ids)[0], br_id);
+			ret = calculate_num_of_branch_nodes((*dep_op_ids)[0]);
 	}
 
 	return ret;

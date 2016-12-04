@@ -8,57 +8,130 @@
 #include "../include/Algorithm.h"
 #include <algorithm>
 
-// Check of presence of structure node among specific nodes of graph
-bool check_presence_str_node(std::vector< int > * op_nodes, IR_Graph * graph) {
-	bool ret_val = false;
-	int i = 0;
-	if(op_nodes != NULL)
-		while( (i < op_nodes->size()) && !ret_val) {
-			int op_id = (*op_nodes)[i];
-			IR_OperationNode* op_node = ( IR_OperationNode* )graph->getNode(op_id);
-			if(op_node->getProcType() == IR_SPU)
-				ret_val = true;
-			i++;
-		}
-
-	return ret_val;
-}
-
-// Checking whether we have an enclosing condition node among specific nodes
-bool check_presence_enclosing_condition(std::vector< int > * op_nodes, std::vector< int > * enclosing_guids) {
-	bool ret_val = false;
-	int i = 0;
-	if(op_nodes != NULL)
-		while( (i < op_nodes->size()) && !ret_val) {
-			int op_id = (*op_nodes)[i];
-			
-			if(std::find(enclosing_guids->begin(),enclosing_guids->end(),op_id) != enclosing_guids->end())
-				ret_val = true;
-			i++;
-		}
-
-	return ret_val;
-}
-
 // Recursive check of presence of structure processing nodes among a chain of cond-dependent nodes
-bool check_presence_structure_nodes(std::vector< int > * dependent_op_nodes, IR_Graph * graph, std::vector< int > * enclosing_guids) {
+bool check_presence_structure_nodes(int op_id, IR_Graph * graph, std::vector< int > * enclosing_guids, int initial_cond_node_id) {
 	bool ret_val = false;
-	if(check_presence_str_node(dependent_op_nodes,graph)) {
-		ret_val = true;
-	} else if(check_presence_enclosing_condition(dependent_op_nodes,enclosing_guids)) {
-		ret_val = false;
-	} else {
-		if(dependent_op_nodes != NULL)
-			for(int i = 0; i < dependent_op_nodes->size(); i++) {
-				int op_id = (*dependent_op_nodes)[i];
-				IR_OperationNode* op_node = ( IR_OperationNode* )graph->getNode(op_id);
-				if(op_node->getOperationType() == IR_OP_BRANCH_COND_BEGIN)
-					enclosing_guids->push_back(op_node->getConnectedNodeID());
-				std::vector< int > * dependent_op_nodes_next = graph->getDependentOperationNodes(op_id);
-				bool sub_ret = check_presence_structure_nodes(dependent_op_nodes_next,graph,enclosing_guids);
-				ret_val = ret_val || sub_ret;
+	std::vector< int > * dep_op_ids = graph->getDependentOperationNodes(op_id);
+	IR_OperationNode* op_node = ( IR_OperationNode* )graph->getNode(op_id);
+	if(op_node->getOperationType() == IR_OP_BRANCH_COND_BEGIN) {
+		if(op_node->getInstructionType() == I_IF) {
+			enclosing_guids->push_back(op_id);
+			if((dep_op_ids != NULL) && (dep_op_ids->size() > 0)) {
+				// Searching for non-end-branch node
+				int id_srch = 0;
+				int cont_node = (*dep_op_ids)[id_srch];
+				bool found_non_end_branch = false;
+				while(!found_non_end_branch && (id_srch < dep_op_ids->size())) {
+					IR_OperationNode * op_node_srch = ( IR_OperationNode* )graph->getNode((*dep_op_ids)[id_srch]);
+					if((op_node_srch != NULL) && (op_node_srch->getOperationType() != IR_OP_BRANCH_END)) {
+						found_non_end_branch = true;
+						cont_node = (*dep_op_ids)[id_srch];
+					}
+					id_srch++;
+				}
+
+				ret_val = ret_val || check_presence_structure_nodes(cont_node, graph, enclosing_guids, initial_cond_node_id);// Continuing with then-sequence
 			}
+		} else if(op_node->getInstructionType() == I_IF_ELSE) {
+			if((dep_op_ids != NULL) && (dep_op_ids->size() > 1)) {
+				enclosing_guids->push_back(op_id);
+				IR_OperationNode * dep_op_node = ( IR_OperationNode* )graph->getNode((*dep_op_ids)[0]);
+				IR_OperationNode * dep_op_node_alt = ( IR_OperationNode* )graph->getNode((*dep_op_ids)[1]);
+				if((dep_op_node->getOperationType() != IR_OP_BRANCH_END) && (dep_op_node_alt->getOperationType() != IR_OP_BRANCH_END) ) {
+					ret_val = ret_val || check_presence_structure_nodes((*dep_op_ids)[0], graph, enclosing_guids, initial_cond_node_id);
+					if(!ret_val) {
+						enclosing_guids->push_back(op_id);
+						ret_val = ret_val || check_presence_structure_nodes((*dep_op_ids)[1], graph, enclosing_guids, initial_cond_node_id);
+					}
+				} else if(dep_op_node_alt->getOperationType() != IR_OP_BRANCH_END) {
+					ret_val = ret_val || check_presence_structure_nodes((*dep_op_ids)[1], graph, enclosing_guids, initial_cond_node_id);
+				} else {
+					ret_val = ret_val || check_presence_structure_nodes((*dep_op_ids)[0], graph, enclosing_guids, initial_cond_node_id);
+				}
+			}
+		} else if((op_node->getInstructionType() == I_FOR_LOOP) || (op_node->getInstructionType() == I_WHILE_LOOP)) {
+			std::vector< int >::iterator iter_cons_br_node = std::find(enclosing_guids->begin(),enclosing_guids->end(),op_id);
+			if(iter_cons_br_node != enclosing_guids->end()) {// We have processed the loop body
+				//enclosing_guids->erase(iter_cons_br_node);
+				// Searching for end-branch node
+				std::vector< int > * dep_op_ids = graph->getDependentOperationNodes(op_id);
+				if(dep_op_ids->size() > 0) {
+					int id_srch = 0;
+					int cont_node = (*dep_op_ids)[id_srch];
+					bool found_non_end_branch = false;
+					while(!found_non_end_branch && (id_srch < dep_op_ids->size())) {
+						IR_OperationNode * op_node_srch = ( IR_OperationNode* )graph->getNode((*dep_op_ids)[id_srch]);
+						if((op_node_srch != NULL) && (op_node_srch->getOperationType() == IR_OP_BRANCH_END)) {
+							found_non_end_branch = true;
+							cont_node = (*dep_op_ids)[id_srch];
+						}
+						id_srch++;
+					}
+
+					std::cout << "Loop type of node (body finished): " << op_id << "Next considered node is: " << cont_node <<std::endl;
+					ret_val = ret_val || check_presence_structure_nodes(cont_node, graph, enclosing_guids, initial_cond_node_id); // Continuing with end branch node for the loop
+				}
+			} else {
+				enclosing_guids->push_back(op_id);
+				std::vector< int > * dep_op_ids = graph->getDependentOperationNodes(op_id);
+				if(dep_op_ids->size() > 0) {
+					// Searching for non-end-branch node
+					int id_srch = 0;
+					int cont_node = (*dep_op_ids)[id_srch];
+					bool found_non_end_branch = false;
+					while(!found_non_end_branch && (id_srch < dep_op_ids->size())) {
+						IR_OperationNode * op_node_srch = ( IR_OperationNode* )graph->getNode((*dep_op_ids)[id_srch]);
+						if((op_node_srch != NULL) && (op_node_srch->getOperationType() != IR_OP_BRANCH_END)) {
+							found_non_end_branch = true;
+							cont_node = (*dep_op_ids)[id_srch];
+						}
+						id_srch++;
+					}
+
+					std::cout << "Loop type of node: " << op_id << "Next considered node is: " << cont_node <<std::endl;
+					ret_val = ret_val || check_presence_structure_nodes(cont_node, graph, enclosing_guids, initial_cond_node_id); // Continuing with loop-body
+				}
+			}
+		}
+	} else if (op_node->getOperationType() == IR_OP_BRANCH_END) {
+		int connected_branch_id = op_node->getConnectedNodeID();
+
+		//if(initial_cond_node_id != connected_branch_id) {
+			bool found_cond = false;
+
+			std::vector< int >::iterator iter_cons_br_node = std::find(enclosing_guids->begin(),enclosing_guids->end(),connected_branch_id);
+			if(iter_cons_br_node != enclosing_guids->end())
+				found_cond = true;
+
+			if(found_cond) {
+				enclosing_guids->erase(iter_cons_br_node);
+				std::vector< int >::iterator iter_cons_br_node = std::find(enclosing_guids->begin(),enclosing_guids->end(),connected_branch_id);
+				if(enclosing_guids->size() > 0)
+					if(iter_cons_br_node == enclosing_guids->end()) // Continuing only if there is no other path for if-else to achieve this node
+						if(enclosing_guids->size() > 0) {
+							std::vector< int > * dep_op_ids_next = graph->getDependentOperationNodes(op_id);
+							if((dep_op_ids_next != NULL) && (dep_op_ids_next->size() > 0)) {
+								ret_val = ret_val || check_presence_structure_nodes((*dep_op_ids_next)[0], graph, enclosing_guids, initial_cond_node_id);
+								std::cout << "End branch type of node: " << op_id << "Next considered node is: " << (*dep_op_ids_next)[0] <<std::endl;
+							}
+						}
+			} else {
+				std::cout << "End branch type of node: " << op_id << "No condition in the list. Stopping..." <<std::endl;
+			}
+		//}
+	} else {
+		if((op_node->getOperationType() == IR_OP_PROCESSING) && (op_node->getProcType() == IR_SPU)) {
+			ret_val = true;
+			std::cout << "Found structure node: " << op_id << "Next considered node is: " << "No node" <<std::endl;
+		} else {
+			//std::cout << "Other type of node: " << op_id << "Next considered node is: " << (*dep_op_ids)[0] <<std::endl;
+
+			if((dep_op_ids != NULL) && (dep_op_ids->size() > 0)) {
+				ret_val = ret_val || check_presence_structure_nodes((*dep_op_ids)[0], graph, enclosing_guids, initial_cond_node_id);
+			}
+		}
 	}
+
 	return ret_val;
 }
 
@@ -71,7 +144,9 @@ bool check_presence_cpu_data_nodes(std::vector< int > * data_nodes, IR_Graph * g
 			int data_id = (*data_nodes)[j];
 			IR_DataNode* data_node = ( IR_DataNode* )graph->getNode(data_id);
 			if(data_node != NULL) {
+				std::cout << "HEREEEE!!!  " << data_id <<std::endl;
 				if(data_node->getProcType() == IR_CPU) {
+
 					check = true;
 				}
 			}
@@ -108,8 +183,7 @@ IR_Graph* Graph_ArithmeticLogicProcessing( IR_Graph* src_graph ) {
 
 			int enclosing_condition_id = op_node->getConnectedNodeID();
 			std::vector< int > * enclosing_condition_ids = new std::vector< int >;
-			enclosing_condition_ids->push_back(enclosing_condition_id);
-			if((enclosing_condition_id > 0) && check_presence_structure_nodes(dep_op_ids,alp_graph,enclosing_condition_ids)) {
+			if((enclosing_condition_id > 0) && check_presence_structure_nodes(op_id,alp_graph,enclosing_condition_ids,op_id)) {
 				// Adding tag variable (data node) to store the result of condition calculation
 				IR_DataNode *tag_node = new IR_DataNode();
 				tag_node->setProcType(IR_CPU);
@@ -280,7 +354,6 @@ IR_Graph* Graph_StructureProcessing( IR_Graph* src_graph ) {
 	// Copying program graph to transform it to SP-form
 	IR_Graph* sp_graph = new IR_Graph();
 	sp_graph->copyGraph(src_graph);
-
 	std::vector< int > branch_ids_for_deletion;
 
 	// Deleting every CPU-related operation node from graph
@@ -296,22 +369,20 @@ IR_Graph* Graph_StructureProcessing( IR_Graph* src_graph ) {
 		if(op_node->getOperationType() == IR_OP_BRANCH_COND_BEGIN) {
 			// Transforming conditional branch node into system of simple
 			// branch node, receive node, and tag node.
+
 			std::vector< int > * inc_op_ids = sp_graph->getIncomingOperationNodes(op_id);
 			std::vector< int > * inc_data_ids = sp_graph->getIncomingDataNodes(op_id);
 			std::vector< int > * dep_op_ids = sp_graph->getDependentOperationNodes(op_id);
 			std::vector< int > * dep_data_ids = sp_graph->getDependentDataNodes(op_id);
-
 			// Checking whether the conditional branches require data transfer to SPU
 			int enclosing_condition_id = op_node->getConnectedNodeID();
 			std::vector< int > * enclosing_condition_ids = new std::vector< int >;
-			enclosing_condition_ids->push_back(enclosing_condition_id);
-			if((enclosing_condition_id > 0) && check_presence_structure_nodes(dep_op_ids,sp_graph,enclosing_condition_ids)) {
+			if((enclosing_condition_id > 0) && check_presence_structure_nodes(op_id,sp_graph,enclosing_condition_ids,op_id)) {
 				IR_OperationNode* op_recv_node = new IR_OperationNode();
 				op_recv_node->setProcType(IR_SPU);
 				op_recv_node->setOperationType(IR_OP_RECEIVE);
 				sp_graph->addOperationNode(op_recv_node);
 				int op_recv_node_id = sp_graph->getLastOperationID();
-
 
 				op_node->setOperationType(IR_OP_BRANCH_BEGIN);
 				op_node->setProcType(IR_SPU);
@@ -364,18 +435,72 @@ IR_Graph* Graph_StructureProcessing( IR_Graph* src_graph ) {
 			} else {
 				// If there are no structure nodes among
 				// branches of checked conditional node
+				if((op_node->getInstructionType() == I_FOR_LOOP) || (op_node->getInstructionType() == I_WHILE_LOOP)) {
+					if(dep_op_ids->size() > 0) {
+						int last_body_id = op_node->getLastNodeID_forLoops();
+						int k = 0;
+						bool found_dep_non_end = false;
+						int first_body_id = (*dep_op_ids)[k];
+						while(!found_dep_non_end && (k < dep_op_ids->size())) {
+							int dep_id = (*dep_op_ids)[k];
+							IR_OperationNode* op_node_dep = ( IR_OperationNode* )sp_graph->getNode(dep_id);
+							if(op_node_dep->getOperationType() != IR_OP_BRANCH_END) {
+								found_dep_non_end = true;
+								first_body_id = (*dep_op_ids)[k];
+							}
 
-				for(int j = 0; j < inc_op_ids->size(); j++)
-					for(int k = 0; k < dep_op_ids->size(); k++) {
-						int inc_id = (*inc_op_ids)[j];
-						int dep_id = (*dep_op_ids)[k];
-						sp_graph->addConnection(inc_id,dep_id);
+							k++;
+						}
+
+						k = 0;
+						bool found_dep_end = false;
+						int end_loop_id = (*dep_op_ids)[k];
+						while(!found_dep_end && (k < dep_op_ids->size())) {
+							int dep_id = (*dep_op_ids)[k];
+							IR_OperationNode* op_node_dep = ( IR_OperationNode* )sp_graph->getNode(dep_id);
+							if(op_node_dep->getOperationType() == IR_OP_BRANCH_END) {
+								found_dep_end = true;
+								end_loop_id = (*dep_op_ids)[k];
+							}
+
+							k++;
+						}
+
+						if(found_dep_non_end) {
+							if(inc_op_ids != NULL)
+								for(int j = 0; j < inc_op_ids->size(); j++) {
+									if((*inc_op_ids)[j] != last_body_id) {
+										sp_graph->addConnection((*inc_op_ids)[j],first_body_id);
+									}
+								}
+						}
+
+						if(found_dep_end) {
+							sp_graph->addConnection(last_body_id,end_loop_id);
+						}
 					}
+				} else { // Other cases (not loops)
+					for(int j = 0; j < inc_op_ids->size(); j++)
+						for(int k = 0; k < dep_op_ids->size(); k++) {
+							int inc_id = (*inc_op_ids)[j];
+							int dep_id = (*dep_op_ids)[k];
+							sp_graph->addConnection(inc_id,dep_id);
+						}
+				}
 
 				branch_ids_for_deletion.push_back(op_id);
 				sp_graph->removeNode(op_id);
 			}
-		} else if (op_node->getOperationType() == IR_OP_BRANCH_END) {
+		}
+	}
+
+	op_ids = sp_graph->getOperationNodesIDs();
+	op_cnt = op_ids->size();
+	for( int i = 0; i < op_cnt; i++) {
+		int op_id = (*op_ids)[i];
+
+		IR_OperationNode* op_node = ( IR_OperationNode* )sp_graph->getNode(op_id);
+		if (op_node->getOperationType() == IR_OP_BRANCH_END) {
 			// Checking whether end branch node should be deleted with begin condition node.
 			// If yes, deleting the current end branch node and
 			// knitting remaining parts of graph together.
@@ -384,9 +509,9 @@ IR_Graph* Graph_StructureProcessing( IR_Graph* src_graph ) {
 			std::vector< int > * dep_op_ids = sp_graph->getDependentOperationNodes(op_id);
 			std::vector< int > * dep_data_ids = sp_graph->getDependentDataNodes(op_id);
 			op_node->setProcType(IR_SPU);
-			
+
 			int beginning_condition_id = op_node->getConnectedNodeID();
-			std::vector<int>::iterator iter_search = std::find(branch_ids_for_deletion.begin(), branch_ids_for_deletion.end(), beginning_condition_id); 
+			std::vector<int>::iterator iter_search = std::find(branch_ids_for_deletion.begin(), branch_ids_for_deletion.end(), beginning_condition_id);
 			if(iter_search != branch_ids_for_deletion.end()) {
 				IR_Node* op_node = sp_graph->getNode(beginning_condition_id);
 				if(op_node == NULL) {
@@ -430,7 +555,16 @@ IR_Graph* Graph_StructureProcessing( IR_Graph* src_graph ) {
 
 				sp_graph->removeNode(op_id);
 			}
-		} else if((op_node->getProcType() == IR_SPU) && (op_node->getOperationType() == IR_OP_PROCESSING)) {
+		}
+	}
+
+	op_ids = sp_graph->getOperationNodesIDs();
+	op_cnt = op_ids->size();
+	for( int i = 0; i < op_cnt; i++) {
+		int op_id = (*op_ids)[i];
+
+		IR_OperationNode* op_node = ( IR_OperationNode* )sp_graph->getNode(op_id);
+		if((op_node->getProcType() == IR_SPU) && (op_node->getOperationType() == IR_OP_PROCESSING)) {
 			// Considering connection possibilities for current node
 			std::vector< int > * inc_op_ids = sp_graph->getIncomingOperationNodes(op_id);
 			std::vector< int > * inc_data_ids = sp_graph->getIncomingDataNodes(op_id);
@@ -455,7 +589,6 @@ IR_Graph* Graph_StructureProcessing( IR_Graph* src_graph ) {
 						if(data_node->getProcType() == IR_CPU) {
 							// Setting temporary type
 							data_node->setDataType(IR_DATA_SIMPLE_TMP);
-							data_node->setProcType(IR_SPU);
 
 							// Removing connections with begin branch operation nodes
 							std::vector< int > * dep_op_ids_for_dn = sp_graph->getDependentOperationNodes(data_id);
@@ -515,7 +648,6 @@ IR_Graph* Graph_StructureProcessing( IR_Graph* src_graph ) {
 					if(data_node != NULL) {
 						if(data_node->getProcType() == IR_CPU) {
 							// Setting temporary type
-							data_node->setProcType(IR_SPU);
 							data_node->setDataType(IR_DATA_SIMPLE_TMP);
 
 							// Creating and adding new send from SPU node to S-graph
@@ -564,6 +696,7 @@ IR_Graph* Graph_StructureProcessing( IR_Graph* src_graph ) {
 
 			// If no receive and/or send nodes were introduced, adding simple connection
 			if( (last_recv_added_id == 0) && (last_send_added_id == 0) ) {
+				std::cout << "Problem with " << op_id;
 				for(int k = 0; k < inc_op_ids->size(); k++)
 					for(int j = 0; j < dep_op_ids->size(); j++)
 						sp_graph->addConnection((*inc_op_ids)[k],(*dep_op_ids)[j]);

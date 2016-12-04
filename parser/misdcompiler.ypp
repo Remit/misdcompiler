@@ -906,6 +906,7 @@ loop_stmt:
 count_loop:
    TFOR TLP assign_stmt TSEMI bool_expr TSEMI assign_stmt TRP stmt	{
 																		$$ = new IR_Graph();
+																		int op_cnt_assign_id = $3->getLastOperationID();
 																		$$->appendGraph($3);
 																		last_node++;
 																		int first_then = $9->getFirstOperationID();
@@ -953,7 +954,6 @@ count_loop:
 																			}
 																		}
 																		
-																		int op_cnt_assign_id = $3->getLastOperationID();
 																		$$->addConnection(op_cnt_assign_id,op_node_id);
 																		$$->appendGraph($9);
 																		// TODO: give additional scope ID of loop body to assignment of neww iter val

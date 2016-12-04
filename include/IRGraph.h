@@ -88,9 +88,10 @@ private:
 
 	void range_nodes_by_y(int dep_node, int cur_level);
 	void range_nodes_by_x(int dep_node, int cur_level);
-	int calculate_num_of_branch_nodes(int node_id, int br_id);
+	int calculate_num_of_branch_nodes(int node_id);
 	std::vector< int > considered_branch_nodes;
 	std::vector< int > branch_nodes_search_stack;
+	std::vector< int > loop_nodes_search_stack;
 
 	// Methods needed to append graphs
 	IR_OperationNode* getOperation(int index);

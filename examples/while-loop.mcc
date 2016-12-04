@@ -1,12 +1,16 @@
 ﻿int x, y, a;
 
-while(x < y) do
-{ 
-	if(x < y) then
-	{
-		y = y + 1;
-	} else {
-		a = y;
-	}
+while(x < y) do {
+if(x < y) then {
+for(x = 1; x < y; x = x + 1) {
+_misdop_LT_STR STRUCT1, STRUCT2, x;
+}
+_misdop_LT_STR STRUCT1, STRUCT2, a;
+} else {
+_misdop_LT_STR STRUCT1, STRUCT2, x;
+}
+for(x = 1; x < y; x = x + 1) {
+_misdop_LT_STR STRUCT1, STRUCT2, x;
+}
 }
 

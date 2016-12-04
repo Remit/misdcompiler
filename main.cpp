@@ -107,22 +107,24 @@ int main(int argc, char *argv[]) {
 	IR_Graph result_graph;
 	int status = yyparse(result_graph);
 
-	IR_Graph* al_graph = Graph_ArithmeticLogicProcessing(&result_graph);
+	IR_Graph* al_graph = NULL;//Graph_ArithmeticLogicProcessing(&result_graph);
 	IR_Graph* sp_graph = Graph_StructureProcessing(&result_graph);
-	
-	SequenceAST* al_AST = convertIRtoAST(al_graph);
-	if(al_AST != NULL) {
-		al_AST->print();
-	}
-	Base_AST* sp_AST = convertIRtoAST(sp_graph);
-	
+	sp_graph->printNodes();
+	sp_graph->printConnections();
+
+//	SequenceAST* al_AST = convertIRtoAST(al_graph);
+//	if(al_AST != NULL) {
+//		al_AST->print();
+//	}
+	//Base_AST* sp_AST = convertIRtoAST(sp_graph);
+
 	std::string i_gr_path;
 	std::string al_gr_path;
 	std::string sp_gr_path;
 	std::string initial = "initial.js";
 	std::string alp = "arithmetic-logic.js";
 	std::string sp = "structure.js";
-	
+
 	std::string base_path = "Visualisation/";
 	switch(option_vis) {
 		case VIS_ALL:
@@ -133,8 +135,8 @@ int main(int argc, char *argv[]) {
 			create_index(alp);
 			create_index(sp);
 			result_graph.visualise(i_gr_path);
-			//al_graph->visualise(al_gr_path);
-			//sp_graph->visualise(sp_gr_path);
+			al_graph->visualise(al_gr_path);
+			sp_graph->visualise(sp_gr_path);
 			break;
 		case VIS_INITIAL:
 			i_gr_path = base_path + initial;
