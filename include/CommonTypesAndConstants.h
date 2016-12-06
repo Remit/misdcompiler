@@ -129,7 +129,14 @@ typedef enum {
 	AST_STRUCTURESEXPRESSION,\
 	AST_UNARYEXPRESSION,\
 	AST_VARIABLEEXPR,\
-	AST_WHILELOOP
+	AST_WHILELOOP,\
+	AST_TRANSFER
 } ast_label; // Labels to determine the exact type of AST tree
+
+typedef enum {
+	TR_SEND,\
+	TR_RECEIVE,\
+	TR_UNDEFINED
+} transfer_direction; // Direction for transfer AST nodes
 
 #endif

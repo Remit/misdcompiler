@@ -107,16 +107,18 @@ int main(int argc, char *argv[]) {
 	IR_Graph result_graph;
 	int status = yyparse(result_graph);
 
-	IR_Graph* al_graph = NULL;//Graph_ArithmeticLogicProcessing(&result_graph);
+	IR_Graph* al_graph = Graph_ArithmeticLogicProcessing(&result_graph);
 	IR_Graph* sp_graph = Graph_StructureProcessing(&result_graph);
-	sp_graph->printNodes();
-	sp_graph->printConnections();
 
-//	SequenceAST* al_AST = convertIRtoAST(al_graph);
-//	if(al_AST != NULL) {
-//		al_AST->print();
-//	}
-	//Base_AST* sp_AST = convertIRtoAST(sp_graph);
+	SequenceAST* al_AST = convertIRtoAST(al_graph);
+	if(al_AST != NULL) {
+		al_AST->print();
+	}
+	
+	SequenceAST* sp_AST = convertIRtoAST(sp_graph);
+	if(sp_AST != NULL) {
+		sp_AST->print();
+	}
 
 	std::string i_gr_path;
 	std::string al_gr_path;

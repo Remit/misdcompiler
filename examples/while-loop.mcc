@@ -1,16 +1,17 @@
 ﻿int x, y, a;
 
 while(x < y) do {
-if(x < y) then {
-for(x = 1; x < y; x = x + 1) {
-_misdop_LT_STR STRUCT1, STRUCT2, x;
-}
-_misdop_LT_STR STRUCT1, STRUCT2, a;
-} else {
-_misdop_LT_STR STRUCT1, STRUCT2, x;
-}
-for(x = 1; x < y; x = x + 1) {
-_misdop_LT_STR STRUCT1, STRUCT2, x;
-}
+	x = x + y - 3;
+	_misdop_LT_STR STRUCT1, STRUCT2, x;
+	if(x < 4) then {
+		x = y;
+		_misdop_LT_STR STRUCT1, STRUCT2, x;
+	} else {
+		_misdop_LT_STR STRUCT1, STRUCT2, x;
+		x = 4;
+	}
+	for(a = 0; a < x; a = a + 1) {
+		_misdop_LT_STR STRUCT1, STRUCT2, a;
+	}
 }
 
