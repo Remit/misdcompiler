@@ -90,10 +90,6 @@ typedef enum {
     OP_LT_STR,\
     OP_LTE_STR,\
     OP_GTE_STR,\
-    OP_SEND_TO_SPU,\
-    OP_SEND_TO_CPU,\
-    OP_RECEIVE_FROM_SPU,\
-    OP_RECEIVE_FROM_CPU,\
 	OP_STRUCT_UNDEFINED
 } structures_proc_op_types; // Types of structures processing operations
 

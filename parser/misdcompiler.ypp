@@ -80,6 +80,7 @@
  Base_AST * ast;
  LogicalExpression * logic;
  cond_op_types cond;
+ structures_proc_op_types struct_op;
 }
 
 %start program
@@ -132,6 +133,7 @@
 %type <numerical> num
 %type <logic> bool_expr
 %type <cond> log_op
+%type <struct_op> str_bin_op str_comp_op struct_op_acq_elem
 
 %%
 program:
@@ -277,7 +279,7 @@ str_delete:
 																		idents_ptr->push_back(* $2);
 																		std::vector< std::string > scopes_ids_list_cp = scopes_ids_list;
 																		std::vector< std::string > * scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
-																		IR_OperationNode* op_node = buildAssignNode(IR_DATA_STRUCTURE, idents_ptr, NULL, scopes_ids_list_cp_ptr);
+																		IR_OperationNode* op_node = buildAssignNode(IR_DATA_STRUCTURE, idents_ptr, NULL, scopes_ids_list_cp_ptr,OP_DELETE_STR);
 																		op_node->setInstructionType(I_STRUCTURE);
 																		op_node->setID(last_node);
 																		op_node->setScopesIDs(scopes_ids_list);
@@ -304,7 +306,7 @@ str_bin_expr:
 																		idents_ptr->push_back(* $6);
 																		std::vector< std::string > scopes_ids_list_cp = scopes_ids_list;
 																		std::vector< std::string > * scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
-																		IR_OperationNode* op_node = buildAssignNode(IR_DATA_STRUCTURE,idents_ptr, NULL, scopes_ids_list_cp_ptr);
+																		IR_OperationNode* op_node = buildAssignNode(IR_DATA_STRUCTURE,idents_ptr, NULL, scopes_ids_list_cp_ptr, $1);
 																		op_node->setInstructionType(I_STRUCTURE);
 																		op_node->setID(last_node);
 																		op_node->setScopesIDs(scopes_ids_list);
@@ -330,9 +332,9 @@ str_bin_expr:
 ;
 
 str_bin_op:
-   TMISDOPUNIONSTR
-|  TMISDOPINTERSECTSTR
-|  TMISDOPNOTSTR
+   TMISDOPUNIONSTR													{	$$ = OP_UNION_STR; }
+|  TMISDOPINTERSECTSTR												{	$$ = OP_INTERSECT_STR; }
+|  TMISDOPNOTSTR													{	$$ = OP_NOT_STR; }
 ;
 
 str_compare_expr:
@@ -346,7 +348,7 @@ str_compare_expr:
 																		idents_ptr->push_back(* $6);
 																		std::vector< std::string > scopes_ids_list_cp = scopes_ids_list;
 																		std::vector< std::string > * scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
-																		IR_OperationNode* op_node = buildAssignNode(IR_DATA_STRUCTURE,idents_ptr, NULL, scopes_ids_list_cp_ptr);
+																		IR_OperationNode* op_node = buildAssignNode(IR_DATA_STRUCTURE,idents_ptr, NULL, scopes_ids_list_cp_ptr, $1);
 																		op_node->setInstructionType(I_STRUCTURE);
 																		op_node->setID(last_node);
 																		op_node->setScopesIDs(scopes_ids_list);
@@ -394,10 +396,10 @@ str_compare_expr:
 ;
 
 str_comp_op:
-   TMISDOPGTSTR
-|  TMISDOPLTSTR
-|  TMISDOPLTESTR
-|  TMISDOPGTESTR
+   TMISDOPGTSTR														{	$$ = OP_GT_STR; }
+|  TMISDOPLTSTR														{	$$ = OP_LT_STR; }
+|  TMISDOPLTESTR													{	$$ = OP_GTE_STR; }
+|  TMISDOPGTESTR													{	$$ = OP_LTE_STR; }
 ;
 
 str_insert_to_str:
@@ -410,7 +412,7 @@ str_insert_to_str:
 																		idents_ptr->push_back(* $6);
 																		std::vector< std::string > scopes_ids_list_cp = scopes_ids_list;
 																		std::vector< std::string > * scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
-																		IR_OperationNode* op_node = buildAssignNode(IR_DATA_STRUCTURE,idents_ptr, NULL, scopes_ids_list_cp_ptr);
+																		IR_OperationNode* op_node = buildAssignNode(IR_DATA_STRUCTURE,idents_ptr, NULL, scopes_ids_list_cp_ptr, OP_INSERT_STR);
 																		op_node->setInstructionType(I_STRUCTURE);
 																		op_node->setID(last_node);
 																		op_node->setScopesIDs(scopes_ids_list);
@@ -488,7 +490,7 @@ str_delete_from_str:
 																		idents_ptr->push_back(* $4);
 																		std::vector< std::string > scopes_ids_list_cp = scopes_ids_list;
 																		std::vector< std::string > * scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
-																		IR_OperationNode* op_node = buildAssignNode(IR_DATA_STRUCTURE,idents_ptr, NULL, scopes_ids_list_cp_ptr);
+																		IR_OperationNode* op_node = buildAssignNode(IR_DATA_STRUCTURE,idents_ptr, NULL, scopes_ids_list_cp_ptr, OP_DELETE_FROM_STR);
 																		op_node->setInstructionType(I_STRUCTURE);
 																		op_node->setID(last_node);
 																		op_node->setScopesIDs(scopes_ids_list);
@@ -541,7 +543,7 @@ str_search_in_str:
 																		idents_ptr->push_back(* $6);
 																		std::vector< std::string > scopes_ids_list_cp = scopes_ids_list;
 																		std::vector< std::string > * scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
-																		IR_OperationNode* op_node = buildAssignNode(IR_DATA_STRUCTURE,idents_ptr, NULL, scopes_ids_list_cp_ptr);
+																		IR_OperationNode* op_node = buildAssignNode(IR_DATA_STRUCTURE,idents_ptr, NULL, scopes_ids_list_cp_ptr, $1);
 																		op_node->setInstructionType(I_STRUCTURE);
 																		op_node->setID(last_node);
 																		op_node->setScopesIDs(scopes_ids_list);
@@ -612,10 +614,10 @@ str_search_in_str:
 ;	
 
 struct_op_acq_elem:
-   TMISDOPSEARCHSTR
-|  TMISDOPSEARCHSMLSTR
-|  TMISDOPSEARCHGRTSTR
-|  TMISDOPNEXTSTR
+   TMISDOPSEARCHSTR													{	$$ = OP_SEARCH_STR; }
+|  TMISDOPSEARCHSMLSTR												{	$$ = OP_SEARCH_SML_STR; }
+|  TMISDOPSEARCHGRTSTR												{	$$ = OP_SEARCH_GRT_STR; }
+|  TMISDOPNEXTSTR													{	$$ = OP_NEXT_STR; }
 ;
 
 assign_stmt:
@@ -628,7 +630,7 @@ assign_stmt:
 																		idents_ptr->push_back(* $1);
 																		scopes_ids_list_cp = scopes_ids_list;
 																		scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
-																		IR_OperationNode* op_node = buildAssignNode(ident_type, idents_ptr, $3, scopes_ids_list_cp_ptr);
+																		IR_OperationNode* op_node = buildAssignNode(ident_type, idents_ptr, $3, scopes_ids_list_cp_ptr, OP_STRUCT_UNDEFINED);
 																		op_node->setInstructionType(I_ASSIGN);
 																		op_node->setID(last_node);
 																		op_node->setScopesIDs(scopes_ids_list);

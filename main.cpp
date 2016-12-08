@@ -110,11 +110,14 @@ int main(int argc, char *argv[]) {
 	IR_Graph* al_graph = Graph_ArithmeticLogicProcessing(&result_graph);
 	IR_Graph* sp_graph = Graph_StructureProcessing(&result_graph);
 
+	std::cout << " ----- AST OF ARITHMETIC-LOGIC GRAPH ----- " << std::endl;
 	SequenceAST* al_AST = convertIRtoAST(al_graph);
 	if(al_AST != NULL) {
 		al_AST->print();
 	}
 	
+	std::cout << std::endl << std::endl;
+	std::cout << " ----- AST OF STRUCTURE PROCESSING GRAPH ----- " << std::endl;
 	SequenceAST* sp_AST = convertIRtoAST(sp_graph);
 	if(sp_AST != NULL) {
 		sp_AST->print();

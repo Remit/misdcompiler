@@ -149,6 +149,8 @@ IR_Graph* Graph_ArithmeticLogicProcessing( IR_Graph* src_graph ) {
 	// Copying program graph to transform it to AL-form
 	IR_Graph* alp_graph = new IR_Graph();
 	alp_graph->copyGraph(src_graph);
+	
+	int tag_id = 0;
 
 	// Deleting every SPU-related operation node from graph
 	// and providing send/receive instructions to
@@ -194,10 +196,24 @@ IR_Graph* Graph_ArithmeticLogicProcessing( IR_Graph* src_graph ) {
 					IR_OperationNode* send_tag_node = new IR_OperationNode();
 					send_tag_node->setOperationType(IR_OP_SEND);
 					send_tag_node->setProcType(IR_CPU);
+					std::string tag_name = "al_tag_" + std::to_string(tag_id);
+					TransferExpr * te = new TransferExpr(tag_name,TR_SEND);
+					send_tag_node->setNodeASTSubTree(te);
 					alp_graph->addOperationNode(send_tag_node);
 					int send_tag_node_id = alp_graph->getLastOperationID();
 
 					alp_graph->addConnection(tag_node_id,send_tag_node_id);
+					
+					if((op_node->getInstructionType() == I_IF) || (op_node->getInstructionType() == I_WHILE_LOOP) || (op_node->getInstructionType() == I_FOR_LOOP)) {
+						if(cur_dep_id == op_node->getThenID())
+							op_node->setThenID(send_tag_node_id);
+					} else if(op_node->getInstructionType() == I_IF_ELSE) {
+						if(cur_dep_id == op_node->getThenID()) {
+							op_node->setThenID(send_tag_node_id);
+						} else if(cur_dep_id == op_node->getElseID()) {
+							op_node->setElseID(send_tag_node_id);
+						}
+					}
 					
 					if(dep_node->getOperationType() != IR_OP_BRANCH_END) {
 						alp_graph->addConnection(op_id,send_tag_node_id);
@@ -215,6 +231,8 @@ IR_Graph* Graph_ArithmeticLogicProcessing( IR_Graph* src_graph ) {
 						alp_graph->addConnection(cur_dep_id,send_tag_node_id);
 					}
 				}
+				
+				tag_id++;
 			}
 		}
 	}
@@ -232,6 +250,7 @@ IR_Graph* Graph_ArithmeticLogicProcessing( IR_Graph* src_graph ) {
 			// Considering data nodes that are used as inputs
 			// to the current SPU node. Discovering whether some of
 			// them are stored in CPU memory and processed by CPU.
+			int first_transfer_added_id = 0;
 			int last_send_added_id = 0;
 			for( int j = 0; j < inc_data_ids->size(); j++) {
 
@@ -244,16 +263,21 @@ IR_Graph* Graph_ArithmeticLogicProcessing( IR_Graph* src_graph ) {
 						IR_OperationNode* op_trans_node = new IR_OperationNode();
 						op_trans_node->setProcType(IR_CPU);
 						op_trans_node->setOperationType(IR_OP_SEND);
+						TransferExpr * te = new TransferExpr(data_node->getDataName(),TR_SEND);
+						op_trans_node->setNodeASTSubTree(te);
 						alp_graph->addOperationNode(op_trans_node);
 						int op_send_id = alp_graph->getLastOperationID();
+						if(first_transfer_added_id == 0)
+							first_transfer_added_id = op_send_id;
 
 						// Adding to graph a connection between encountered CPU
 						// processed data node and newly created send to SPU node
 						alp_graph->addConnection(data_id,op_send_id);
 
 						// Adding connections for predecessors
-						for(int k = 0; k < inc_op_ids->size(); k++)
+						for(int k = 0; k < inc_op_ids->size(); k++) {
 							alp_graph->addConnection((*inc_op_ids)[k],op_send_id);
+						}
 
 						// Send node is now a sole predecessor for other
 						// possible send nodes
@@ -283,16 +307,21 @@ IR_Graph* Graph_ArithmeticLogicProcessing( IR_Graph* src_graph ) {
 						IR_OperationNode* op_trans_node = new IR_OperationNode();
 						op_trans_node->setProcType(IR_CPU);
 						op_trans_node->setOperationType(IR_OP_RECEIVE);
+						TransferExpr * te = new TransferExpr(data_node->getDataName(),TR_RECEIVE);
+						op_trans_node->setNodeASTSubTree(te);
 						alp_graph->addOperationNode(op_trans_node);
 						int op_recv_id = alp_graph->getLastOperationID();
+						if(first_transfer_added_id == 0)
+							first_transfer_added_id = op_recv_id;
 
 						// Adding to graph a connection between encountered CPU
 						// processed result data node and newly created receive from SPU node
 						alp_graph->addConnection(op_recv_id,data_id);
 
 						// Adding connections for predecessors
-						for(int k = 0; k < inc_op_ids->size(); k++)
+						for(int k = 0; k < inc_op_ids->size(); k++) {
 							alp_graph->addConnection((*inc_op_ids)[k],op_recv_id);
+						}
 
 						// Receive node is now a sole predecessor for other
 						// possible receive nodes
@@ -307,6 +336,21 @@ IR_Graph* Graph_ArithmeticLogicProcessing( IR_Graph* src_graph ) {
 				}
 			}
 
+			if(first_transfer_added_id > 0) {
+				for(int k = 0; k < inc_op_ids->size(); k++) {
+					IR_OperationNode* inc_op_node = ( IR_OperationNode* )alp_graph->getNode((*inc_op_ids)[k]);
+					if((inc_op_node->getInstructionType() == I_IF) || (inc_op_node->getInstructionType() == I_WHILE_LOOP) || (inc_op_node->getInstructionType() == I_FOR_LOOP)) {
+						if(op_id == inc_op_node->getThenID())
+							inc_op_node->setThenID(first_transfer_added_id);
+					} else if(inc_op_node->getInstructionType() == I_IF_ELSE) {
+						if(op_id == op_node->getThenID()) {
+							inc_op_node->setThenID(first_transfer_added_id);
+						} else if(op_id == inc_op_node->getElseID()) {
+							inc_op_node->setElseID(first_transfer_added_id);
+						}
+					}
+				}
+			}
 			if( (last_send_added_id != 0) && (last_recv_added_id != 0) ) {
 				for(int j = 0; j < dep_op_ids->size(); j++)
 					alp_graph->addConnection(last_recv_added_id,(*dep_op_ids)[j]);
@@ -320,13 +364,25 @@ IR_Graph* Graph_ArithmeticLogicProcessing( IR_Graph* src_graph ) {
 				// nodes for SPU node.
 				for(int j = 0; j < dep_op_ids->size(); j++)
 					alp_graph->addConnection(last_recv_added_id,(*dep_op_ids)[j]);
-			}
-
-			// If no receive and/or send nodes were introduced, adding simple connection
-			if( (last_recv_added_id == 0) && (last_send_added_id == 0) ) {
-				for(int k = 0; k < inc_op_ids->size(); k++)
+			} else if( (last_recv_added_id == 0) && (last_send_added_id == 0) ) {
+				// If no receive and/or send nodes were introduced, adding simple connection
+				for(int k = 0; k < inc_op_ids->size(); k++) {
 					for(int j = 0; j < dep_op_ids->size(); j++)
 						alp_graph->addConnection((*inc_op_ids)[k],(*dep_op_ids)[j]);
+						
+					IR_OperationNode* inc_op_node = ( IR_OperationNode* )alp_graph->getNode((*inc_op_ids)[k]);
+					
+					if((inc_op_node->getInstructionType() == I_IF) || (inc_op_node->getInstructionType() == I_WHILE_LOOP) || (inc_op_node->getInstructionType() == I_FOR_LOOP)) {
+						if(op_id == inc_op_node->getThenID())
+							inc_op_node->setThenID((*dep_op_ids)[0]);
+					} else if(inc_op_node->getInstructionType() == I_IF_ELSE) {
+						if(op_id == inc_op_node->getThenID()) {
+							inc_op_node->setThenID((*dep_op_ids)[0]);
+						} else if(op_id == inc_op_node->getElseID()) {
+							inc_op_node->setElseID((*dep_op_ids)[0]);
+						}
+					}
+				}
 			}
 
 			// Removing SPU node and connections from graph
@@ -359,6 +415,8 @@ IR_Graph* Graph_StructureProcessing( IR_Graph* src_graph ) {
 	sp_graph->copyGraph(src_graph);
 	std::vector< int > branch_ids_for_deletion;
 
+	int tag_id = 0;
+
 	// Deleting every CPU-related operation node from graph
 	// and providing send/receive instructions to
 	// transfer data to and from CPU
@@ -385,6 +443,9 @@ IR_Graph* Graph_StructureProcessing( IR_Graph* src_graph ) {
 				IR_OperationNode* op_recv_node = new IR_OperationNode();
 				op_recv_node->setProcType(IR_SPU);
 				op_recv_node->setOperationType(IR_OP_RECEIVE);
+				std::string tag_name = "sp_tag_" + std::to_string(tag_id);
+				TransferExpr * te = new TransferExpr(tag_name,TR_RECEIVE);
+				op_recv_node->setNodeASTSubTree(te);
 				sp_graph->addOperationNode(op_recv_node);
 				int op_recv_node_id = sp_graph->getLastOperationID();
 
@@ -421,6 +482,10 @@ IR_Graph* Graph_StructureProcessing( IR_Graph* src_graph ) {
 					IR_OperationNode* op_recv_node_in_body = new IR_OperationNode();
 					op_recv_node_in_body->setProcType(IR_SPU);
 					op_recv_node_in_body->setOperationType(IR_OP_RECEIVE);
+					std::string tag_name = "sp_tag_" + std::to_string(tag_id);
+					TransferExpr * te_in_b = new TransferExpr(tag_name,TR_RECEIVE);
+					op_recv_node_in_body->setNodeASTSubTree(te_in_b);
+					tag_id++;
 					sp_graph->addOperationNode(op_recv_node_in_body);
 					int op_recv_node_in_body_id = sp_graph->getLastOperationID();
 
@@ -430,6 +495,8 @@ IR_Graph* Graph_StructureProcessing( IR_Graph* src_graph ) {
 					sp_graph->removeConnection(last_loop_body_id,op_id);
 					op_node->setLastNodeID_forLoops(op_recv_node_in_body_id);
 				}
+				
+				tag_id++;
 			} else {
 				// If there are no structure nodes among
 				// branches of checked conditional node
@@ -469,6 +536,18 @@ IR_Graph* Graph_StructureProcessing( IR_Graph* src_graph ) {
 								for(int j = 0; j < inc_op_ids->size(); j++) {
 									if((*inc_op_ids)[j] != last_body_id) {
 										sp_graph->addConnection((*inc_op_ids)[j],first_body_id);
+										IR_OperationNode* inc_op_node = ( IR_OperationNode* )sp_graph->getNode((*inc_op_ids)[j]);
+					
+										if((inc_op_node->getInstructionType() == I_IF) || (inc_op_node->getInstructionType() == I_WHILE_LOOP) || (inc_op_node->getInstructionType() == I_FOR_LOOP)) {
+											if(op_id == inc_op_node->getThenID())
+												inc_op_node->setThenID(first_body_id);
+										} else if(inc_op_node->getInstructionType() == I_IF_ELSE) {
+											if(op_id == inc_op_node->getThenID()) {
+												inc_op_node->setThenID(first_body_id);
+											} else if(op_id == inc_op_node->getElseID()) {
+												inc_op_node->setElseID(first_body_id);
+											}
+										}
 									}
 								}
 						}
@@ -544,12 +623,26 @@ IR_Graph* Graph_StructureProcessing( IR_Graph* src_graph ) {
 				// In reality, both sets of operations should consist of one operation node,
 				// so it is correct to connect each of input operation nodes with each of
 				// dependent operation nodes.
-				for(int j = 0; j < inc_op_ids->size(); j++)
+				for(int j = 0; j < inc_op_ids->size(); j++) {
 					for(int k = 0; k < dep_op_ids->size(); k++) {
 						int inc_id = (*inc_op_ids)[j];
 						int dep_id = (*dep_op_ids)[k];
 						sp_graph->addConnection(inc_id,dep_id);
 					}
+					
+					IR_OperationNode* inc_op_node = ( IR_OperationNode* )sp_graph->getNode((*inc_op_ids)[j]);
+					
+					if((inc_op_node->getInstructionType() == I_IF) || (inc_op_node->getInstructionType() == I_WHILE_LOOP) || (inc_op_node->getInstructionType() == I_FOR_LOOP)) {
+						if(op_id == inc_op_node->getThenID())
+							inc_op_node->setThenID((*dep_op_ids)[0]);
+					} else if(inc_op_node->getInstructionType() == I_IF_ELSE) {
+						if(op_id == inc_op_node->getThenID()) {
+							inc_op_node->setThenID((*dep_op_ids)[0]);
+						} else if(op_id == inc_op_node->getElseID()) {
+							inc_op_node->setElseID((*dep_op_ids)[0]);
+						}
+					}
+				}
 
 				sp_graph->removeNode(op_id);
 			}
@@ -568,10 +661,12 @@ IR_Graph* Graph_StructureProcessing( IR_Graph* src_graph ) {
 			std::vector< int > * inc_data_ids = sp_graph->getIncomingDataNodes(op_id);
 			std::vector< int > * dep_op_ids = sp_graph->getDependentOperationNodes(op_id);
 			std::vector< int > * dep_data_ids = sp_graph->getDependentDataNodes(op_id);
+			std::vector< int > inc_op_ids_cp = (*inc_op_ids);
 
 			// Considering data nodes that are used as inputs
 			// to the current SPU node. Discovering whether some of
 			// them are stored in CPU memory and processed by CPU.
+			int first_transfer_added_id = 0;
 			int last_recv_added_id = 0;
 
 			bool check_cpu_data_presence = check_presence_cpu_data_nodes(inc_data_ids,sp_graph);
@@ -602,8 +697,12 @@ IR_Graph* Graph_StructureProcessing( IR_Graph* src_graph ) {
 							IR_OperationNode* op_trans_node = new IR_OperationNode();
 							op_trans_node->setProcType(IR_SPU);
 							op_trans_node->setOperationType(IR_OP_RECEIVE);
+							TransferExpr * te = new TransferExpr(data_node->getDataName(),TR_RECEIVE);
+							op_trans_node->setNodeASTSubTree(te);
 							sp_graph->addOperationNode(op_trans_node);
 							int op_recv_id = sp_graph->getLastOperationID();
+							if(first_transfer_added_id == 0)
+								first_transfer_added_id = op_recv_id;
 
 							// Adding to graph a connection between encountered CPU
 							// processed data node and newly created receive from CPU node
@@ -652,8 +751,12 @@ IR_Graph* Graph_StructureProcessing( IR_Graph* src_graph ) {
 							IR_OperationNode* op_trans_node = new IR_OperationNode();
 							op_trans_node->setProcType(IR_SPU);
 							op_trans_node->setOperationType(IR_OP_SEND);
+							TransferExpr * te = new TransferExpr(data_node->getDataName(),TR_SEND);
+							op_trans_node->setNodeASTSubTree(te);
 							sp_graph->addOperationNode(op_trans_node);
 							int op_send_id = sp_graph->getLastOperationID();
+							if(first_transfer_added_id == 0)
+								first_transfer_added_id = op_send_id;
 
 							// Adding to graph a connection between encountered CPU
 							// processed result data node and newly created send to CPU node
@@ -676,7 +779,22 @@ IR_Graph* Graph_StructureProcessing( IR_Graph* src_graph ) {
 				}
 			}
 
-
+			if(first_transfer_added_id > 0) {
+				for(int k = 0; k < inc_op_ids_cp.size(); k++) {
+					IR_OperationNode* inc_op_node = ( IR_OperationNode* )sp_graph->getNode(inc_op_ids_cp[k]);
+					
+					if((inc_op_node->getInstructionType() == I_IF) || (inc_op_node->getInstructionType() == I_WHILE_LOOP) || (inc_op_node->getInstructionType() == I_FOR_LOOP)) {
+						if(op_id == inc_op_node->getThenID())
+							inc_op_node->setThenID(first_transfer_added_id);
+					} else if(inc_op_node->getInstructionType() == I_IF_ELSE) {
+						if(op_id == inc_op_node->getThenID()) {
+							inc_op_node->setThenID(first_transfer_added_id);
+						} else if(op_id == inc_op_node->getElseID()) {
+							inc_op_node->setElseID(first_transfer_added_id);
+						}
+					}
+				}
+			}
 			if( (last_send_added_id != 0) && (last_recv_added_id != 0) ) {
 				sp_graph->addConnection(last_recv_added_id,op_id);
 				for(int j = 0; j < dep_op_ids->size(); j++)

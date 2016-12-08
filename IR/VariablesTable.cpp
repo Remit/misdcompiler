@@ -112,16 +112,18 @@ IR_DataNode* VariablesTable::getDataNodeByVariableName( std::string variable_nam
 	std::map< std::string, IR_DataNode* >::iterator it;
 	bool found = false;
 
-	while(!found && (scopes_ids_list->size() > 0)) {
-		std::string last_scope_id = scopes_ids_list->back();
+	int i = scopes_ids_list->size() - 1;
+	while(!found && (i >= 0)) {
+		std::string last_scope_id = (*scopes_ids_list)[i];
 		std::string variable_name_with_scope_id = variable_name + "-" + last_scope_id;
-		scopes_ids_list->pop_back();
 		it = data_nodes.find(variable_name_with_scope_id);
 		if(it != data_nodes.end()) {
 			found = true;
 			ret = it->second;
 			*ok = true;
 		}
+		
+		--i;
 	}
 
 	if( !found )

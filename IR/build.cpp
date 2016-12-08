@@ -11,9 +11,9 @@ VariablesTable var_table;
 StructuresTable struct_table;
 
 //Building assignment node
-IR_OperationNode* buildAssignNode( data_type dt, std::vector< std::string > * idents_ptr, Base_AST * expr, std::vector <std::string > * scopes_ids_list ) {
+IR_OperationNode* buildAssignNode( data_type dt, std::vector< std::string > * idents_ptr, Base_AST * expr, std::vector <std::string > * scopes_ids_list, structures_proc_op_types struct_op ) {
 	IR_OperationNode* op_node = NULL;
-	
+	std::cout << "HERE!!!" << scopes_ids_list->size() << std::endl;
 	op_node = new IR_OperationNode();
 	op_node->setOperationType(IR_OP_PROCESSING);
 
@@ -33,12 +33,14 @@ IR_OperationNode* buildAssignNode( data_type dt, std::vector< std::string > * id
 	} else if(dt == IR_DATA_STRUCTURE) {
 		StructuresExpression * struct_processing = new StructuresExpression();
 		op_node->setProcType(IR_SPU);
+		struct_processing->setOperation(struct_op);
 		
 		if(idents_ptr->size() > 0) {
 			bool * ok = new bool();
 			IR_DataNode * dn = var_table.getDataNodeByVariableName((*idents_ptr)[0],ok,scopes_ids_list);
 			
 			if(dn == NULL) {
+				
 				dn = struct_table.getDataNodeByVariableName((*idents_ptr)[0],ok);
 				if(dn != NULL) {
 					StructureExpr * ident = NULL;
@@ -60,7 +62,7 @@ IR_OperationNode* buildAssignNode( data_type dt, std::vector< std::string > * id
 				if(dn != NULL) {
 					StructureExpr * ident = NULL;
 					ident = new StructureExpr((*idents_ptr)[1]);
-					struct_processing->setArg1(ident);
+					struct_processing->setArg2(ident);
 				}
 			} else {
 				VariableExpr * ident = NULL;
@@ -77,12 +79,12 @@ IR_OperationNode* buildAssignNode( data_type dt, std::vector< std::string > * id
 				if(dn != NULL) {
 					StructureExpr * ident = NULL;
 					ident = new StructureExpr((*idents_ptr)[2]);
-					struct_processing->setArg1(ident);
+					struct_processing->setArg3(ident);
 				}
 			} else {
 				VariableExpr * ident = NULL;
 				ident = new VariableExpr((*idents_ptr)[2],dn->getSimpleType(),false);
-				struct_processing->setArg2(ident);
+				struct_processing->setArg3(ident);
 			}
 		}
 		

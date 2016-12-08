@@ -113,18 +113,6 @@ void StructuresExpression::print() {
 	case OP_GTE_STR:
 		op_str = " SECTION>= ";
 		break;
-	case OP_SEND_TO_SPU:
-		op_str = " SEND => SPU ";
-		break;
-	case OP_SEND_TO_CPU:
-		op_str = " SEND => CPU ";
-		break;
-	case OP_RECEIVE_FROM_SPU:
-		op_str = " RECV <= SPU ";
-		break;
-	case OP_RECEIVE_FROM_CPU:
-		op_str = " RECV <= CPU ";
-		break;
 	case OP_STRUCT_UNDEFINED:
 		op_str = " ? ";
 		break;
