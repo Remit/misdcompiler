@@ -139,6 +139,7 @@
 program:
    stmts_ls															{
 																		$$ = new IR_Graph();
+																		$$->setGraphType(GR_INIT);
 																		last_node++;
 																		IR_OperationNode * terminalNode = buildTerminalNode( );
 																		terminalNode->setID(last_node);

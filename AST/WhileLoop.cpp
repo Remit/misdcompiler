@@ -48,3 +48,8 @@ void WhileLoop::print() {
 		Body->print();
 	}
 }
+
+Value * WhileLoop::generateCode() {
+	Value * ret = NULL;
+	return ret;
+}

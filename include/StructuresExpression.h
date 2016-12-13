@@ -28,6 +28,8 @@ public:
 	Base_AST * copyAST();
 	
 	void print();
+	
+	virtual Value *generateCode();
 
 private:
 	structures_proc_op_types struct_op;

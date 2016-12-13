@@ -22,6 +22,8 @@ public:
 	Base_AST * copyAST();
 	
 	void print();
+	
+	virtual Value *generateCode();
 
 private:
 	double value;

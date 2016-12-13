@@ -89,3 +89,50 @@ void BinaryExpression::print() {
 		BinExpr_RHS->print();
 	}
 }
+
+Value * BinaryExpression::generateCode() {
+	Value * ret;
+	Value * LHS_code = NULL;
+	Value * RHS_code = NULL;
+	
+	if(BinExpr_LHS != NULL)
+		LHS_code = BinExpr_LHS->generateCode();
+	if(BinExpr_RHS != NULL)
+		RHS_code = BinExpr_RHS->generateCode();
+		
+	if((BinExpr_LHS == NULL) || (BinExpr_RHS == NULL))
+		ret = NULL;
+	else {
+		switch(op) {
+			case OP_PLUS:
+				ret = Builder.CreateFAdd(LHS_code, RHS_code, "addtmp");
+				break;
+			case OP_MINUS:
+				ret = Builder.CreateFSub(LHS_code, RHS_code, "subtmp");
+				break;
+			case OP_DIV:
+				ret = Builder.CreateFDiv(LHS_code, RHS_code, "divtmp");
+				break;
+			case OP_MUL:
+				ret = Builder.CreateFMul(LHS_code, RHS_code, "multmp");
+				break;
+			case OP_MOD:
+				op_str = " % ";
+				break;
+			case OP_AND:
+				ret = Builder.CreateAnd(LHS_code, RHS_code, "andtmp");
+				break;
+			case OP_OR:
+				ret = Builder.CreateOr(LHS_code, RHS_code, "ortmp");
+				break;
+			case OP_ASSIGN:
+				op_str = " = ";
+				break;
+			case OP_BINARY_UNDEFINED:
+				ret = NULL;
+				break;
+		}
+	}
+	
+	return ret;
+}

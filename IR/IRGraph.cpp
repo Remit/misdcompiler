@@ -1284,3 +1284,11 @@ int IR_Graph::getStartTerminalNodeID() {
 	
 	return ret;
 }
+
+void IR_Graph::setGraphType( type_of_graph a_graph_type ) {
+	graph_type = a_graph_type;
+}
+
+type_of_graph IR_Graph::getGraphType() {
+	return graph_type;
+}

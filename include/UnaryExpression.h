@@ -24,6 +24,8 @@ public:
 	Base_AST * copyAST();
 	
 	void print();
+	
+	virtual Value *generateCode();
 
 private:
 	unary_op_types op;

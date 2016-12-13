@@ -26,6 +26,8 @@ public:
 	
 	void print();
 	
+	virtual Value *generateCode();
+	
 private:
 	std::string name_of_var;
 	transfer_direction direction;

@@ -27,6 +27,8 @@ public:
 	Base_AST * copyAST();
 	
 	void print();
+	
+	virtual Value *generateCode();
 
 private:
 	cond_op_types op;

@@ -48,3 +48,8 @@ Base_AST * SequenceAST::copyAST() {
 		
 	return cpy;
 }
+
+Value * SequenceAST::generateCode() {
+	Value * ret = NULL;
+	return ret;
+}

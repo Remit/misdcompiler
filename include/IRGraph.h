@@ -32,6 +32,7 @@ public:
 	void appendGraph( IR_Graph* appendedGraph );
 	void appendGraph( IR_Graph* appendedGraph, int src_node );
 	void setClean( bool full_clean );
+	void setGraphType( type_of_graph a_graph_type );
 
 	void removeNode( int id );
 	void removeConnection( int id_src, int id_dst );
@@ -42,6 +43,7 @@ public:
 	int getLastDataID();
 	int getFirstOperationID();
 	int getStartTerminalNodeID();
+	type_of_graph getGraphType();
 
 	std::vector< int > * getDependentOperationNodes(int id);
 	std::vector< int > * getDependentDataNodes(int id);
@@ -79,6 +81,7 @@ private:
 	int last_operation_id;
 	int last_data_id;
 	bool full_clean;// Controlling the destructor's behavior; true - destroy nodes too (normal state); false - destroy everything except for nodes
+	type_of_graph graph_type;
 
 	std::map< int, int > x_coords;// X coordinates of all graph nodes (gid - key)
 	std::map< int, int > y_coords;// Y coordinates of all graph nodes (gid - key)

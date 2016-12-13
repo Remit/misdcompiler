@@ -135,4 +135,10 @@ typedef enum {
 	TR_UNDEFINED
 } transfer_direction; // Direction for transfer AST nodes
 
+typedef enum {
+	GR_SP,\
+	GR_AL,\
+	GR_INIT
+} type_of_graph;
+
 #endif

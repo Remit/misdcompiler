@@ -94,3 +94,8 @@ void LogicalExpression::print() {
 		BinExpr_RHS->print();
 	}
 }
+
+Value * LogicalExpression::generateCode() {
+	Value * ret = NULL;
+	return ret;
+}

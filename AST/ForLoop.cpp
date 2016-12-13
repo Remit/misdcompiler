@@ -81,3 +81,8 @@ void ForLoop::print() {
 	if(Body != NULL)
 		Body->print();
 }
+
+Value * ForLoop::generateCode() {
+	Value * ret = NULL;
+	return ret;
+}

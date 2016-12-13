@@ -25,6 +25,8 @@ public:
 	Base_AST * copyAST();
 	
 	void print();
+	
+	virtual Value *generateCode();
 
 private:
 	Base_AST* Condition;

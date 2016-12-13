@@ -63,3 +63,8 @@ Base_AST * IfExpression::copyAST() {
 	
 	return cpy;
 }
+
+Value * IfExpression::generateCode() {
+	Value * ret = NULL;
+	return ret;
+}

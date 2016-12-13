@@ -30,6 +30,8 @@ public:
 	
 	void print();
 	
+	virtual Value *generateCode();
+	
 private:
 	Base_AST* Start;
 	Base_AST* End;

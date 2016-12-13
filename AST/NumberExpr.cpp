@@ -25,3 +25,7 @@ Base_AST * NumberExpr::copyAST() {
 void NumberExpr::print() {
 	std::cout << "\n - Number (constant): " <<  value;
 }
+
+Value * NumberExpr::generateCode() {
+	return ConstantFP::get(getGlobalContext(), APFloat(value));
+}

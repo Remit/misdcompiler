@@ -49,3 +49,8 @@ void ExpressionAST::print() {
 		RHS_E->print();
 	}
 }
+
+Value * ExpressionAST::generateCode() {
+	Value * ret = NULL;
+	return ret;
+}

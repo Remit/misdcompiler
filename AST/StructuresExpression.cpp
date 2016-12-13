@@ -132,3 +132,8 @@ void StructuresExpression::print() {
 		arg3->print();
 	}
 }
+
+Value * StructuresExpression::generateCode() {
+	Value * ret = NULL;
+	return ret;
+}

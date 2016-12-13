@@ -149,6 +149,7 @@ IR_Graph* Graph_ArithmeticLogicProcessing( IR_Graph* src_graph ) {
 	// Copying program graph to transform it to AL-form
 	IR_Graph* alp_graph = new IR_Graph();
 	alp_graph->copyGraph(src_graph);
+	alp_graph->setGraphType(GR_AL);
 	
 	int tag_id = 0;
 
@@ -413,6 +414,7 @@ IR_Graph* Graph_StructureProcessing( IR_Graph* src_graph ) {
 	// Copying program graph to transform it to SP-form
 	IR_Graph* sp_graph = new IR_Graph();
 	sp_graph->copyGraph(src_graph);
+	sp_graph->setGraphType(GR_SP);
 	std::vector< int > branch_ids_for_deletion;
 
 	int tag_id = 0;

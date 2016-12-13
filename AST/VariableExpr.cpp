@@ -72,3 +72,8 @@ void VariableExpr::print() {
 	if(isDeclaration)
 		std::cout << " (declaration) ";
 }
+
+Value * VariableExpr::generateCode() {
+	Value * ret = NULL;
+	return ret;
+}

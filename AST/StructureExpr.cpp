@@ -31,3 +31,8 @@ Base_AST * StructureExpr::copyAST() {
 void StructureExpr::print() {
 	std::cout << "\n - Structure: " << name;
 }
+
+Value * StructureExpr::generateCode() {
+	Value * ret = NULL;
+	return ret;
+}

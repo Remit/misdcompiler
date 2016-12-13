@@ -56,3 +56,8 @@ void UnaryExpression::print() {
 		UnaryExpr_RHS->print();
 	}
 }
+
+Value * UnaryExpression::generateCode() {
+	Value * ret = NULL;
+	return ret;
+}

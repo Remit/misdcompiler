@@ -42,3 +42,8 @@ void TransferExpr::print() {
 	
 	std::cout << " variable " << name_of_var;
 }
+
+Value * TransferExpr::generateCode() {
+	Value * ret = NULL;
+	return ret;
+}
