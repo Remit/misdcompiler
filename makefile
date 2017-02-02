@@ -12,13 +12,16 @@ TMP_FILES_PARSER := $(wildcard parser/*~)
 TMP_FILES_AST := $(wildcard AST/*~)
 TMP_FILES_EXAMPLES := $(wildcard examples/*~)
 
+LLVMLIBS = `/bin/llvm-config --libs`
+LDFLAGS += `/bin/llvm-config --ldflags`
+
 all: misdcompiler.exe
 
 misdcompiler.exe: main.o
 	cd AST && make
 	cd IR && make
 	cd parser && make
-	g++ -g -o misdcompiler main.o $(OBJ_FILES_IR) $(OBJ_FILES_PARSER) $(OBJ_FILES_AST) -std=c++11
+	g++ $(LDFLAGS) -g -o misdcompiler main.o $(OBJ_FILES_IR) $(OBJ_FILES_PARSER) $(OBJ_FILES_AST) $(LLVMLIBS) -std=c++11
 
 main.o:
 	g++ -c -g main.cpp

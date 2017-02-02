@@ -96,6 +96,44 @@ void LogicalExpression::print() {
 }
 
 Value * LogicalExpression::generateCode() {
-	Value * ret = NULL;
+	Value * ret;
+	Value * LHS_code = NULL;
+	Value * RHS_code = NULL;
+	
+	if(BinExpr_LHS != NULL)
+		LHS_code = BinExpr_LHS->generateCode();
+	if(BinExpr_RHS != NULL)
+		RHS_code = BinExpr_RHS->generateCode();
+		
+	if((BinExpr_LHS == NULL) || (BinExpr_RHS == NULL))
+		ret = NULL;
+	else {
+		switch(op) {
+			case OP_LT:
+				ret = Builder.CreateFCmpULT(LHS_code, RHS_code, "cmplttmp");
+				ret = Builder.CreateUIToFP(L, Type::getDoubleTy(GlobalContext), "boollttmp");
+				break;
+			case OP_GT:
+				ret = Builder.CreateFCmpUGT(LHS_code, RHS_code, "cmpgttmp");
+				ret = Builder.CreateUIToFP(L, Type::getDoubleTy(GlobalContext), "boollttmp");
+				break;
+			case OP_LTE:
+				ret = Builder.CreateFCmpULE(LHS_code, RHS_code, "cmpltetmp");
+				ret = Builder.CreateUIToFP(L, Type::getDoubleTy(GlobalContext), "boollttmp");
+				break;
+			case OP_GTE:
+				ret = Builder.CreateFCmpUGE(LHS_code, RHS_code, "cmpgtetmp");
+				ret = Builder.CreateUIToFP(L, Type::getDoubleTy(GlobalContext), "boollttmp");
+				break;
+			case OP_EQ:
+				ret = Builder.CreateFCmpEQ(LHS_code, RHS_code, "cmpeqtmp");
+				ret = Builder.CreateUIToFP(L, Type::getDoubleTy(GlobalContext), "boollttmp");
+				break;
+			case OP_LOGICAL_UNDEFINED:
+				ret = NULL;
+				break;
+		}
+	}
+	
 	return ret;
 }

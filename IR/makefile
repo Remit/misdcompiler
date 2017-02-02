@@ -1,10 +1,11 @@
 CPP_FILES := $(wildcard *.cpp)
 OBJ_FILES := $(notdir $(CPP_FILES:.cpp=.o))
+CXXFLAGS := `/bin/llvm-config --cxxflags`
 
 all: $(OBJ_FILES)
 
 %.o: %.cpp ../include/%.h
-	g++ -c -o $@ $< -std=c++11
+	g++ $(CXXFLAGS) -c -o $@ $< -std=c++11
 
 .SILENT : clean
 .PHONY : clean	

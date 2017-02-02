@@ -117,7 +117,7 @@ Value * BinaryExpression::generateCode() {
 				ret = Builder.CreateFMul(LHS_code, RHS_code, "multmp");
 				break;
 			case OP_MOD:
-				op_str = " % ";
+				ret = Builder.CreateFRem(LHS_code, RHS_code, "remtmp");
 				break;
 			case OP_AND:
 				ret = Builder.CreateAnd(LHS_code, RHS_code, "andtmp");
@@ -126,7 +126,7 @@ Value * BinaryExpression::generateCode() {
 				ret = Builder.CreateOr(LHS_code, RHS_code, "ortmp");
 				break;
 			case OP_ASSIGN:
-				op_str = " = ";
+				ret = RHS_code;
 				break;
 			case OP_BINARY_UNDEFINED:
 				ret = NULL;

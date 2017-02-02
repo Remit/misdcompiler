@@ -23,6 +23,11 @@ using namespace llvm;
 #include "CommonTypesAndConstants.h"
 #endif
 
+static LLVMContext GlobalContext;
+static IRBuilder<> Builder(GlobalContext);
+static std::unique_ptr<Module> GlobalModule;
+static std::map<std::string, Value *> NamedValues;
+
 class Base_AST {
 public:
 	Base_AST();
