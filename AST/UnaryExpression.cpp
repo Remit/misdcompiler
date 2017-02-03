@@ -58,6 +58,27 @@ void UnaryExpression::print() {
 }
 
 Value * UnaryExpression::generateCode() {
-	Value * ret = NULL;
+	Value * ret;
+	Value * RHS_code = NULL;
+	
+	if(UnaryExpr_RHS != NULL)
+		RHS_code = UnaryExpr_RHS->generateCode();
+		
+	if(UnaryExpr_RHS == NULL)
+		ret = NULL;
+	else {
+		switch(op) {
+			case OP_NOT:
+				ret = Builder.CreateNot(RHS_code, "nottmp");
+				break;
+			case OP_UMINUS:
+				ret = Builder.CreateNeg(RHS_code, "negtmp");
+				break;
+			case OP_UNARY_UNDEFINED:
+				ret = NULL;
+				break;
+		}
+	}
+	
 	return ret;
 }

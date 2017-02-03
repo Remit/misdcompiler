@@ -20,11 +20,13 @@ public:
 	void setEnd(Base_AST* a_end);
 	void setStep(Base_AST* a_step);
 	void setBody(Base_AST* a_body);
+	void setCounterName(std::string a_counter_name);
 	
 	Base_AST* getStart();
 	Base_AST* getEnd();
 	Base_AST* getStep();
 	Base_AST* getBody();
+	std::string getCounterName();
 	
 	Base_AST * copyAST();
 	
@@ -37,6 +39,7 @@ private:
 	Base_AST* End;
 	Base_AST* Step;
 	Base_AST* Body;
+	std::string counter_name;
 };
 
 #endif // FORLOOP_H

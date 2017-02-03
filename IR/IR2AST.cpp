@@ -475,6 +475,7 @@ ForLoop * AST_st_forloop(int node_id, IR_Graph * graph) {
 	if(graph != NULL) {
 		//Start - assignment of start iteration value
 		IR_OperationNode* op_node_start = ( IR_OperationNode* )graph->getNode(node_id);
+		std::vector< int > * dep_data_ids = graph->getDependentDataNodes(node_id);
 		BinaryExpression * startAST = (BinaryExpression *)op_node_start->getNodeASTSubTree();
 		
 		std::vector< int > * dep_op_ids = graph->getDependentOperationNodes(node_id);
@@ -487,6 +488,13 @@ ForLoop * AST_st_forloop(int node_id, IR_Graph * graph) {
 		IR_OperationNode* op_node_cond = ( IR_OperationNode* )graph->getNode(cond_node_id);
 		int end_id = op_node_cond->getConnectedNodeID();
 		ast_for = (ForLoop *)op_node_cond->getNodeASTSubTree();
+		// Setting the name of the counter for the purposes of code generation
+		if((dep_data_ids != NULL) && (dep_data_ids->size() > 0)) {
+			int counter_node_id = (*dep_data_ids)[0];
+			IR_DataNode * cnt_data_node = ( IR_DataNode* )graph->getNode(counter_node_id);
+			if(cnt_data_node != NULL)
+				ast_for->setCounterName(cnt_data_node->getDataName());
+		}
 		ast_for->setStart(startAST);
 		
 		dep_op_ids = graph->getDependentOperationNodes(cond_node_id);

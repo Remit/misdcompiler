@@ -51,5 +51,15 @@ Base_AST * SequenceAST::copyAST() {
 
 Value * SequenceAST::generateCode() {
 	Value * ret = NULL;
+	Value * LHS_code = NULL;
+	Value * RHS_code = NULL;
+	
+	if(LHS_E != NULL)
+		LHS_code = LHS_E->generateCode();
+	if(RHS_E != NULL)
+		RHS_code = RHS_E->generateCode();
+		
+	ret = LHS_code;
+	
 	return ret;
 }

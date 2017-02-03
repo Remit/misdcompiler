@@ -111,23 +111,23 @@ Value * LogicalExpression::generateCode() {
 		switch(op) {
 			case OP_LT:
 				ret = Builder.CreateFCmpULT(LHS_code, RHS_code, "cmplttmp");
-				ret = Builder.CreateUIToFP(L, Type::getDoubleTy(GlobalContext), "boollttmp");
+				ret = Builder.CreateUIToFP(ret, Type::getDoubleTy(GlobalContext), "boollttmp");
 				break;
 			case OP_GT:
 				ret = Builder.CreateFCmpUGT(LHS_code, RHS_code, "cmpgttmp");
-				ret = Builder.CreateUIToFP(L, Type::getDoubleTy(GlobalContext), "boollttmp");
+				ret = Builder.CreateUIToFP(ret, Type::getDoubleTy(GlobalContext), "boolgttmp");
 				break;
 			case OP_LTE:
 				ret = Builder.CreateFCmpULE(LHS_code, RHS_code, "cmpltetmp");
-				ret = Builder.CreateUIToFP(L, Type::getDoubleTy(GlobalContext), "boollttmp");
+				ret = Builder.CreateUIToFP(ret, Type::getDoubleTy(GlobalContext), "boolltetmp");
 				break;
 			case OP_GTE:
 				ret = Builder.CreateFCmpUGE(LHS_code, RHS_code, "cmpgtetmp");
-				ret = Builder.CreateUIToFP(L, Type::getDoubleTy(GlobalContext), "boollttmp");
+				ret = Builder.CreateUIToFP(ret, Type::getDoubleTy(GlobalContext), "boolgtetmp");
 				break;
 			case OP_EQ:
-				ret = Builder.CreateFCmpEQ(LHS_code, RHS_code, "cmpeqtmp");
-				ret = Builder.CreateUIToFP(L, Type::getDoubleTy(GlobalContext), "boollttmp");
+				ret = Builder.CreateICmpEQ(LHS_code, RHS_code, "cmpeqtmp");
+				ret = Builder.CreateUIToFP(ret, Type::getDoubleTy(GlobalContext), "booleqtmp");
 				break;
 			case OP_LOGICAL_UNDEFINED:
 				ret = NULL;

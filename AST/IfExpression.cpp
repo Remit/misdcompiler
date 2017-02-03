@@ -66,5 +66,48 @@ Base_AST * IfExpression::copyAST() {
 
 Value * IfExpression::generateCode() {
 	Value * ret = NULL;
+	Value * cond = NULL;
+	
+	if(Condition != NULL)
+		cond = Condition->generateCode();
+	if(cond != NULL) {
+		Builder.CreateFCmpONE(cond,ConstantFP::get(GlobalContext, APFloat(0.0)),"ifcond");
+		Function * func = Builder.GetInsertBlock()->getParent();
+		BasicBlock * thenBB = BasicBlock::Create(GlobalContext, "then", func);
+		BasicBlock * elseBB = BasicBlock::Create(GlobalContext, "else");
+		BasicBlock * mergeBB = BasicBlock::Create(GlobalContext, "ifcont");
+		Builder.CreateCondBr(cond, thenBB, elseBB);
+		Builder.SetInsertPoint(thenBB);
+		
+		Value * then_val = NULL;
+		if(ThenExpression != NULL) {
+			then_val = ThenExpression->generateCode();
+			if(then_val != NULL) {
+				Builder.CreateBr(mergeBB);
+				thenBB = Builder.GetInsertBlock();
+			}
+		}
+		
+		func->getBasicBlockList().push_back(elseBB);
+		Builder.SetInsertPoint(elseBB);
+		Value * else_val = NULL;
+		if(ElseExpression != NULL) {
+			else_val = ElseExpression->generateCode();
+			if (else_val != NULL) {
+				Builder.CreateBr(mergeBB);
+				elseBB = Builder.GetInsertBlock();
+			}
+		}
+		
+		func->getBasicBlockList().push_back(mergeBB);
+		Builder.SetInsertPoint(mergeBB);
+		PHINode * PN = Builder.CreatePHI(Type::getDoubleTy(GlobalContext), 2, "iftmp");
+		if(then_val != NULL)
+			PN->addIncoming(then_val, thenBB);
+			
+		if(else_val != NULL)
+			PN->addIncoming(else_val, elseBB);
+		ret = PN;
+	}
 	return ret;
 }

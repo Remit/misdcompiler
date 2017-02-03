@@ -75,5 +75,12 @@ void VariableExpr::print() {
 
 Value * VariableExpr::generateCode() {
 	Value * ret = NULL;
+	ret = NamedValues[name];
+	if (ret == NULL) {
+		std::cout << "Unknown variable name:\n" << name;
+	} else {
+		ret = Builder.CreateLoad(ret, name.c_str());
+	}
+
 	return ret;
 }
