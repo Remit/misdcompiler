@@ -107,8 +107,8 @@ Value * ForLoop::generateCode() {
 		PHINode * counter = Builder.CreatePHI(Type::getDoubleTy(GlobalContext), 2, counter_name.c_str());
 		counter->addIncoming(start_val, headerBB);
 		
-		Value * old_val = NamedValues[counter_name];
-		NamedValues[counter_name] = counter;
+		//Value * old_val = NamedValues[counter_name];
+		//NamedValues[counter_name] = counter;
 		
 		if (Body != NULL) {
 			Value * step_val = NULL;
@@ -131,10 +131,10 @@ Value * ForLoop::generateCode() {
 						Builder.SetInsertPoint(afterBB);
 						counter->addIncoming(next_var, loopEndBB);
 						
-						if(old_val)
-							NamedValues[counter_name] = old_val;
-						else
-							NamedValues.erase(counter_name);
+//						if(old_val)
+//							NamedValues[counter_name] = old_val;
+//						else
+//							NamedValues.erase(counter_name);
 					}
 				}
 			}

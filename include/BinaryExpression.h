@@ -9,6 +9,10 @@
 #include "BaseAST.h"
 #endif
 
+#ifndef VARIABLEEXPR_H
+#include "VariableExpr.h"
+#endif
+
 class BinaryExpression : public Base_AST
 {
 public:

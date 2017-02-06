@@ -94,8 +94,11 @@ Value * BinaryExpression::generateCode() {
 	Value * ret;
 	Value * LHS_code = NULL;
 	Value * RHS_code = NULL;
+	VariableExpr * ret_var = NULL;
+	std::string var_name = "";
+	StoreInst * llvm_store_inst = NULL;
 	
-	if(BinExpr_LHS != NULL)
+	if((op != OP_ASSIGN) && (BinExpr_LHS != NULL))
 		LHS_code = BinExpr_LHS->generateCode();
 	if(BinExpr_RHS != NULL)
 		RHS_code = BinExpr_RHS->generateCode();
@@ -126,7 +129,13 @@ Value * BinaryExpression::generateCode() {
 				ret = Builder.CreateOr(LHS_code, RHS_code, "ortmp");
 				break;
 			case OP_ASSIGN:
-				ret = RHS_code;
+				ret_var = (VariableExpr *)BinExpr_LHS;
+				var_name = ret_var->getName();
+				ret = NamedValues[var_name];
+				if(ret != NULL) {
+					llvm_store_inst = new StoreInst(RHS_code, ret, Builder.GetInsertBlock());
+					ret = llvm_store_inst;
+				}
 				break;
 			case OP_BINARY_UNDEFINED:
 				ret = NULL;

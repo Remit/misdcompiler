@@ -102,35 +102,10 @@ IR_OperationNode* buildDefineNode( std::vector< std::string > * def_vars, variab
 	op_node->setDefinedVars(def_vars);
 	op_node->setProcType(IR_CPU);
 	
-	//Creating and assigning ASTs for each declared variable
+	//Creating an AST node for definition
 	if((def_vars != NULL) && (def_vars->size() > 0)) {
-		if(def_vars->size() == 1) {
-			VariableExpr * var_decl = new VariableExpr((*def_vars)[0],type_of_vars,true);
-			op_node->setNodeASTSubTree(var_decl);
-		} else {
-			std::vector< std::string >::iterator iter;
-			std::vector< std::string >::iterator iter_pre_end = --def_vars->end();
-			SequenceAST * start_node = new SequenceAST();
-			VariableExpr * var_decl = new VariableExpr((*def_vars)[0],type_of_vars,true);
-			start_node->setLHS_E(var_decl);
-			SequenceAST * prev_node = start_node;
-			
-			for(iter = ++def_vars->begin(); iter != iter_pre_end; iter++) {
-				SequenceAST * cur_node = new SequenceAST();
-				var_decl = new VariableExpr((*iter),type_of_vars,true);
-				cur_node->setLHS_E(var_decl);
-				prev_node->setRHS_E(cur_node);
-				prev_node = cur_node;
-			}
-			
-			// Last node
-			if(iter != def_vars->end()) {
-				var_decl = new VariableExpr((*iter),type_of_vars,true);
-				prev_node->setRHS_E(var_decl);
-			}
-			
-			op_node->setNodeASTSubTree(start_node);
-		}
+		DefineExpr * def_ast = new DefineExpr(def_vars, type_of_vars);
+		op_node->setNodeASTSubTree(def_ast);
 	}
 
 	return op_node;

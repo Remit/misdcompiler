@@ -26,7 +26,7 @@ using namespace llvm;
 static LLVMContext GlobalContext;
 static IRBuilder<> Builder(GlobalContext);
 static std::unique_ptr<Module> GlobalModule;
-static std::map<std::string, Value *> NamedValues;
+static std::map<std::string, AllocaInst *> NamedValues;
 
 class Base_AST {
 public:

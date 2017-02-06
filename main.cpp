@@ -114,6 +114,7 @@ int main(int argc, char *argv[]) {
 	SequenceAST* al_AST = convertIRtoAST(al_graph);
 	if(al_AST != NULL) {
 		al_AST->print();
+		al_AST->generateCode();
 	}
 	
 	std::cout << std::endl << std::endl;

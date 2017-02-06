@@ -64,6 +64,10 @@
 #include "ForLoop.h"
 #endif
 
+#ifndef DEFINEEXPR_H_
+#include "DefineExpr.h"
+#endif
+
 IR_OperationNode* buildAssignNode( data_type dt, std::vector< std::string > * idents_ptr, Base_AST * expr, std::vector <std::string > * scopes_ids_list, structures_proc_op_types struct_op );
 IR_OperationNode* buildDefineNode( std::vector< std::string > * def_vars, variable_type type_of_vars);
 IR_OperationNode* buildTerminalNode();
