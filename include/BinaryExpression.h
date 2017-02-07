@@ -13,6 +13,10 @@
 #include "VariableExpr.h"
 #endif
 
+#ifndef CODEGENERATION_H_
+#include "CodeGeneration.h"
+#endif
+
 class BinaryExpression : public Base_AST
 {
 public:

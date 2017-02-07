@@ -3,7 +3,7 @@ OBJ_FILES := $(notdir $(CPP_FILES:.cpp=.o))
 
 all: $(OBJ_FILES)
 
-%.o: %.cpp ../include/%.h
+%.o: %.cpp ../include/CodeGeneration.h ../include/%.h
 	g++ -c -o $@ $< -std=c++11
 
 .SILENT : clean

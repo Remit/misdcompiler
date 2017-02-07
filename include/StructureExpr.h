@@ -9,6 +9,10 @@
 #include "BaseAST.h"
 #endif
 
+#ifndef CODEGENERATION_H_
+#include "CodeGeneration.h"
+#endif
+
 class StructureExpr : public Base_AST
 {
 public:

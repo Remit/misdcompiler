@@ -133,7 +133,7 @@ Value * BinaryExpression::generateCode() {
 				var_name = ret_var->getName();
 				ret = NamedValues[var_name];
 				if(ret != NULL) {
-					llvm_store_inst = new StoreInst(RHS_code, ret, Builder.GetInsertBlock());
+					llvm_store_inst = Builder.CreateStore(RHS_code, ret);
 					ret = llvm_store_inst;
 				}
 				break;

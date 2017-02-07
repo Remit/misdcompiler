@@ -9,6 +9,10 @@
 #include "BaseAST.h"
 #endif
 
+#ifndef CODEGENERATION_H_
+#include "CodeGeneration.h"
+#endif
+
 class DefineExpr : public Base_AST
 {
 public:

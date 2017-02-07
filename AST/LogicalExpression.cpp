@@ -107,31 +107,95 @@ Value * LogicalExpression::generateCode() {
 		
 	if((BinExpr_LHS == NULL) || (BinExpr_RHS == NULL))
 		ret = NULL;
-	else {
-		switch(op) {
-			case OP_LT:
-				ret = Builder.CreateFCmpULT(LHS_code, RHS_code, "cmplttmp");
-				ret = Builder.CreateUIToFP(ret, Type::getDoubleTy(GlobalContext), "boollttmp");
-				break;
-			case OP_GT:
-				ret = Builder.CreateFCmpUGT(LHS_code, RHS_code, "cmpgttmp");
-				ret = Builder.CreateUIToFP(ret, Type::getDoubleTy(GlobalContext), "boolgttmp");
-				break;
-			case OP_LTE:
-				ret = Builder.CreateFCmpULE(LHS_code, RHS_code, "cmpltetmp");
-				ret = Builder.CreateUIToFP(ret, Type::getDoubleTy(GlobalContext), "boolltetmp");
-				break;
-			case OP_GTE:
-				ret = Builder.CreateFCmpUGE(LHS_code, RHS_code, "cmpgtetmp");
-				ret = Builder.CreateUIToFP(ret, Type::getDoubleTy(GlobalContext), "boolgtetmp");
-				break;
-			case OP_EQ:
-				ret = Builder.CreateICmpEQ(LHS_code, RHS_code, "cmpeqtmp");
-				ret = Builder.CreateUIToFP(ret, Type::getDoubleTy(GlobalContext), "booleqtmp");
-				break;
-			case OP_LOGICAL_UNDEFINED:
-				ret = NULL;
-				break;
+	else { // Considering different cases of compared types. We need the compared values to be of the same type. If we have at least one double then we transform the other to double as well.
+		if((LHS_code->getType()->isIntOrIntVectorTy()) && (RHS_code->getType()->isIntOrIntVectorTy())) {
+			switch(op) {
+				case OP_LT:
+					ret = Builder.CreateICmpULT(LHS_code, RHS_code, "cmplttmp");
+					ret = Builder.CreateUIToFP(ret, Type::getDoubleTy(GlobalContext), "boollttmp");
+					break;
+				case OP_GT:
+					ret = Builder.CreateICmpUGT(LHS_code, RHS_code, "cmpgttmp");
+					ret = Builder.CreateUIToFP(ret, Type::getDoubleTy(GlobalContext), "boolgttmp");
+					break;
+				case OP_LTE:
+					ret = Builder.CreateICmpULE(LHS_code, RHS_code, "cmpltetmp");
+					ret = Builder.CreateUIToFP(ret, Type::getDoubleTy(GlobalContext), "boolltetmp");
+					break;
+				case OP_GTE:
+					ret = Builder.CreateICmpUGE(LHS_code, RHS_code, "cmpgtetmp");
+					ret = Builder.CreateUIToFP(ret, Type::getDoubleTy(GlobalContext), "boolgtetmp");
+					break;
+				case OP_EQ:
+					ret = Builder.CreateICmpEQ(LHS_code, RHS_code, "cmpeqtmp");
+					ret = Builder.CreateUIToFP(ret, Type::getDoubleTy(GlobalContext), "booleqtmp");
+					break;
+				case OP_LOGICAL_UNDEFINED:
+					ret = NULL;
+					break;
+			}
+		} else if((LHS_code->getType()->isDoubleTy()) || (RHS_code->getType()->isDoubleTy())) {
+			if(!LHS_code->getType()->isDoubleTy())
+				LHS_code = Builder.CreateIntCast(LHS_code, Type::getDoubleTy(GlobalContext), true, "inttofloat");
+			if(!RHS_code->getType()->isDoubleTy())
+				RHS_code = Builder.CreateIntCast(RHS_code, Type::getDoubleTy(GlobalContext), true, "inttofloat");
+			switch(op) {
+				case OP_LT:
+					ret = Builder.CreateFCmpULT(LHS_code, RHS_code, "cmplttmp");
+					ret = Builder.CreateUIToFP(ret, Type::getDoubleTy(GlobalContext), "boollttmp");
+					break;
+				case OP_GT:
+					ret = Builder.CreateFCmpUGT(LHS_code, RHS_code, "cmpgttmp");
+					ret = Builder.CreateUIToFP(ret, Type::getDoubleTy(GlobalContext), "boolgttmp");
+					break;
+				case OP_LTE:
+					ret = Builder.CreateFCmpULE(LHS_code, RHS_code, "cmpltetmp");
+					ret = Builder.CreateUIToFP(ret, Type::getDoubleTy(GlobalContext), "boolltetmp");
+					break;
+				case OP_GTE:
+					ret = Builder.CreateFCmpUGE(LHS_code, RHS_code, "cmpgtetmp");
+					ret = Builder.CreateUIToFP(ret, Type::getDoubleTy(GlobalContext), "boolgtetmp");
+					break;
+				case OP_EQ:
+					ret = Builder.CreateFCmpUEQ(LHS_code, RHS_code, "cmpeqtmp");
+					ret = Builder.CreateUIToFP(ret, Type::getDoubleTy(GlobalContext), "booleqtmp");
+					break;
+				case OP_LOGICAL_UNDEFINED:
+					ret = NULL;
+					break;
+			}
+		} else if((LHS_code->getType()->isFPOrFPVectorTy()) || (RHS_code->getType()->isFPOrFPVectorTy())) {
+			if(!LHS_code->getType()->isFPOrFPVectorTy())
+				LHS_code = Builder.CreateIntCast(LHS_code, Type::getFloatTy(GlobalContext), true, "inttofloat");
+			if(!RHS_code->getType()->isFPOrFPVectorTy())
+				RHS_code = Builder.CreateIntCast(RHS_code, Type::getFloatTy(GlobalContext), true, "inttofloat");
+			switch(op) {
+				case OP_LT:
+					ret = Builder.CreateFCmpULT(LHS_code, RHS_code, "cmplttmp");
+					ret = Builder.CreateUIToFP(ret, Type::getDoubleTy(GlobalContext), "boollttmp");
+					break;
+				case OP_GT:
+					ret = Builder.CreateFCmpUGT(LHS_code, RHS_code, "cmpgttmp");
+					ret = Builder.CreateUIToFP(ret, Type::getDoubleTy(GlobalContext), "boolgttmp");
+					break;
+				case OP_LTE:
+					ret = Builder.CreateFCmpULE(LHS_code, RHS_code, "cmpltetmp");
+					ret = Builder.CreateUIToFP(ret, Type::getDoubleTy(GlobalContext), "boolltetmp");
+					break;
+				case OP_GTE:
+					ret = Builder.CreateFCmpUGE(LHS_code, RHS_code, "cmpgtetmp");
+					ret = Builder.CreateUIToFP(ret, Type::getDoubleTy(GlobalContext), "boolgtetmp");
+					break;
+				case OP_EQ:
+					ret = Builder.CreateFCmpUEQ(LHS_code, RHS_code, "cmpeqtmp");
+					ret = Builder.CreateUIToFP(ret, Type::getDoubleTy(GlobalContext), "booleqtmp");
+					break;
+				case OP_LOGICAL_UNDEFINED:
+					ret = NULL;
+					break;
+			}
+		} else {
+			std::cout << "LHS and RHS of comparison must be of the same type." << std::endl;
 		}
 	}
 	

@@ -56,10 +56,14 @@ Value * SequenceAST::generateCode() {
 	
 	if(LHS_E != NULL)
 		LHS_code = LHS_E->generateCode();
-	if(RHS_E != NULL)
+	if(RHS_E != NULL) {
 		RHS_code = RHS_E->generateCode();
-		
-	ret = LHS_code;
+		SequenceAST * seq_next = (SequenceAST *)RHS_E;
+		if(seq_next->getRHS_E() == NULL)
+			ret = LHS_code;
+		else
+			ret = RHS_code;
+	}
 	
 	return ret;
 }

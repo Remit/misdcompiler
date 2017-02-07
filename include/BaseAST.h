@@ -4,7 +4,6 @@
  *  Created on: 14.08.2016
  *      Author: remit
  */
-
 #ifndef BASEAST_H_
 #define BASEAST_H_
 
@@ -12,21 +11,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "/usr/include/llvm/IR/DerivedTypes.h"
-#include "/usr/include/llvm/IR/LLVMContext.h"
-#include "/usr/include/llvm/IR/Module.h"
-#include "/usr/include/llvm/IR/Verifier.h"
-#include "/usr/include/llvm/IR/IRBuilder.h"
-using namespace llvm;
 
 #ifndef COMMON_TYPES_AND_CONSTANTS
 #include "CommonTypesAndConstants.h"
 #endif
 
-static LLVMContext GlobalContext;
-static IRBuilder<> Builder(GlobalContext);
-static std::unique_ptr<Module> GlobalModule;
-static std::map<std::string, AllocaInst *> NamedValues;
+#ifndef CODEGENERATION_H_
+#include "CodeGeneration.h"
+#endif
 
 class Base_AST {
 public:

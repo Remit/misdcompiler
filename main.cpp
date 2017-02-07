@@ -20,9 +20,18 @@ using namespace std;
 #include "include/IR2AST.h"
 #endif
 
+#ifndef CODEGENERATION_H_
+#include "include/CodeGeneration.h"
+#endif
+
 extern FILE *yyin;
 extern FILE *yyout;
 extern int yyparse(IR_Graph& gr);
+
+LLVMContext GlobalContext;
+IRBuilder<> Builder(GlobalContext);
+Module * GlobalModule;
+std::map<std::string, AllocaInst *> NamedValues;
 
 void create_index(std::string js_name) {
 	std::ofstream index_file;
@@ -113,8 +122,23 @@ int main(int argc, char *argv[]) {
 	std::cout << " ----- AST OF ARITHMETIC-LOGIC GRAPH ----- " << std::endl;
 	SequenceAST* al_AST = convertIRtoAST(al_graph);
 	if(al_AST != NULL) {
+		GlobalModule = new Module("MainModule", GlobalContext);//llvm::make_unique<Module>("Arithmetic and logical processing module", GlobalContext);
+		FunctionType *FT = FunctionType::get(Type::getVoidTy(GlobalContext), false);
+		Constant* c = GlobalModule->getOrInsertFunction("void",FT);
+		Function* main_func = cast<Function>(c);
+		main_func->setCallingConv(CallingConv::C);
+		BasicBlock * startBB = BasicBlock::Create(GlobalContext, "start", main_func);
+		Builder.SetInsertPoint(startBB);
+
 		al_AST->print();
 		al_AST->generateCode();
+		
+		Builder->CreateRetVoid();
+		
+		std::string str;
+		raw_string_ostream OS(str);
+		GlobalModule->print(OS,nullptr);
+		std::cout << std::endl << str << std::endl;
 	}
 	
 	std::cout << std::endl << std::endl;
@@ -190,6 +214,12 @@ int main(int argc, char *argv[]) {
 	fclose(fp);
 	fclose(out_fp);
 
+	
+	
+	std::string str;
+	raw_string_ostream OS(str);
+	GlobalModule->print(OS,nullptr);
+	cout << endl << str << endl;
 
 	if(status == 0)
 		cout << endl << "*************************" << endl << "Compilation completed successfully." << endl;

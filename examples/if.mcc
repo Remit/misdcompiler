@@ -1,2 +1,19 @@
-int x, y;
+double x, y;
 x = 7;
+y = 1;
+y = x + 1 + 5 + y;
+if(x < 2) then
+{
+x = 6;
+y = 8;
+}
+x = 4;
+if(x > 9) then
+{
+x = 8;
+y = 0;
+}
+else
+{
+y = x;
+}

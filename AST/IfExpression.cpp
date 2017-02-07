@@ -76,38 +76,32 @@ Value * IfExpression::generateCode() {
 		BasicBlock * thenBB = BasicBlock::Create(GlobalContext, "then", func);
 		BasicBlock * elseBB = BasicBlock::Create(GlobalContext, "else");
 		BasicBlock * mergeBB = BasicBlock::Create(GlobalContext, "ifcont");
-		Builder.CreateCondBr(cond, thenBB, elseBB);
-		Builder.SetInsertPoint(thenBB);
+		Builder.CreateCondBr(cond, thenBB, elseBB); // Creating a conditional branch at the current point in the IR of a program
+		Builder.SetInsertPoint(thenBB); // Inserting basic block for THEN-branch immediately after conditional branching
 		
 		Value * then_val = NULL;
 		if(ThenExpression != NULL) {
 			then_val = ThenExpression->generateCode();
-			if(then_val != NULL) {
-				Builder.CreateBr(mergeBB);
-				thenBB = Builder.GetInsertBlock();
-			}
+			Builder.CreateBr(mergeBB); // Creating the unconditional branch to merging point of branches (to "ifcont")
+			thenBB = Builder.GetInsertBlock();
 		}
 		
-		func->getBasicBlockList().push_back(elseBB);
-		Builder.SetInsertPoint(elseBB);
+		// Else part of branches is generated independently of the existence of ELSE-branch in the code
+		func->getBasicBlockList().push_back(elseBB); // Inserting basic block for ELSE-branch after basic block for THEN-branch
+		Builder.SetInsertPoint(elseBB); // Current insert point is at the end of the ELSE-branch basic block
 		Value * else_val = NULL;
 		if(ElseExpression != NULL) {
 			else_val = ElseExpression->generateCode();
-			if (else_val != NULL) {
-				Builder.CreateBr(mergeBB);
-				elseBB = Builder.GetInsertBlock();
-			}
+			Builder.CreateBr(mergeBB); // Creating the unconditional branch to merging point of branches (to "ifcont")
+			elseBB = Builder.GetInsertBlock();
 		}
 		
-		func->getBasicBlockList().push_back(mergeBB);
-		Builder.SetInsertPoint(mergeBB);
-		PHINode * PN = Builder.CreatePHI(Type::getDoubleTy(GlobalContext), 2, "iftmp");
-		if(then_val != NULL)
-			PN->addIncoming(then_val, thenBB);
-			
-		if(else_val != NULL)
-			PN->addIncoming(else_val, elseBB);
-		ret = PN;
+		func->getBasicBlockList().push_back(mergeBB); // Inserting basic block for instructions after merging of branches after basic block for ELSE-branch
+		Builder.SetInsertPoint(mergeBB); // Current insert point is at the end of the basic block with instructions after merging point
+		ret = cond;
+		
+		// Insert here PhiNode functionality if it becomes necessary.
 	}
+	
 	return ret;
 }

@@ -86,12 +86,14 @@ Value * DefineExpr::generateCode() {
 			break;
 		}
 		
-		if(type_alloc != NULL)
+		if(type_alloc != NULL) {
 			for(int i = 0; i < defined_names.size(); i++) {
 				std::string var_name = defined_names[i];
-				AllocaInst * llvm_alloca_inst = new AllocaInst(type_alloc, var_name.c_str());
+				BasicBlock * defBB = Builder.GetInsertBlock();
+				AllocaInst * llvm_alloca_inst = Builder.CreateAlloca(type_alloc, nullptr, var_name.c_str());
 				NamedValues[var_name] = llvm_alloca_inst;
 			}
+		}
 	}
 	return ret;
 }
