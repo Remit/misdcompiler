@@ -51,5 +51,27 @@ void WhileLoop::print() {
 
 Value * WhileLoop::generateCode() {
 	Value * ret = NULL;
+	
+	Function * func = Builder.GetInsertBlock()->getParent();
+	BasicBlock * headerBB = BasicBlock::Create(GlobalContext, "condition", func);
+	Builder.SetInsertPoint(headerBB);
+	BasicBlock * loopBB = BasicBlock::Create(GlobalContext, "loop", func);
+	BasicBlock * afterBB = BasicBlock::Create(GlobalContext, "afterloop", func);
+	Value * cond = NULL;
+	if(Condition != NULL) {
+		cond = Condition->generateCode();
+		if(cond != NULL) {
+			Builder.CreateCondBr(cond, loopBB, afterBB);
+			Builder.SetInsertPoint(loopBB);
+			if(Body != NULL) {
+				Body->generateCode();
+			}
+			Builder.CreateBr(headerBB);
+			BasicBlock * loopEndBB = Builder.GetInsertBlock();
+			Builder.SetInsertPoint(afterBB);
+		}
+	}
+
+	ret = Constant::getNullValue(Type::getDoubleTy(GlobalContext));
 	return ret;
 }

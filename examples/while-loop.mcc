@@ -1,12 +1,6 @@
-﻿int x, y, a;
-
-while(x < y) do {
-	y = y + a;
-	if(x < 4) then {
-		x = y;
-		_misdop_LT_STR STRUCT1, STRUCT2, x;
-	} else {
-		x = 4;
-	}
+﻿int x;
+x = 1;
+while(x < 10) do {
+x = x + 1;
 }
 

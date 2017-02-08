@@ -1,0 +1,5 @@
+bool x,y,z;
+x = true;
+y = false;
+z = x AND y;
+x = NOT z;

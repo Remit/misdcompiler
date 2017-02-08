@@ -28,4 +28,5 @@ void NumberExpr::print() {
 
 Value * NumberExpr::generateCode() {
 	return ConstantFP::get(GlobalContext, APFloat(value));
+	//return ConstantFP::get(Type::getDoubleTy(GlobalContext), value);
 }

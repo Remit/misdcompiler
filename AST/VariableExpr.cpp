@@ -80,8 +80,8 @@ Value * VariableExpr::generateCode() {
 	if (ret == NULL) {
 		std::cout << "Unknown variable name:\n" << name;
 	} else {
-		return Builder.CreateLoad(ret, name.c_str());
-		//ret = ld_inst->getPointerOperand();
+		ld_inst = Builder.CreateLoad(ret, name.c_str());
+		ret = ld_inst->getPointerOperand();
 	}
 
 	return ret;

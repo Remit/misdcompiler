@@ -131,8 +131,9 @@ Value * BinaryExpression::generateCode() {
 			case OP_ASSIGN:
 				ret_var = (VariableExpr *)BinExpr_LHS;
 				var_name = ret_var->getName();
-				ret = NamedValues[var_name];
+				ret = (Value *)NamedValues[var_name];
 				if(ret != NULL) {
+					RHS_code->mutateType(ret->getType());
 					llvm_store_inst = Builder.CreateStore(RHS_code, ret);
 					ret = llvm_store_inst;
 				}

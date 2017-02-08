@@ -1,8 +1,9 @@
-double x, y;
+int x;
+int y;
 x = 7;
 y = 1;
 y = x + 1 + 5 + y;
-if(x < 2) then
+if(0 < 0) then
 {
 x = 6;
 y = 8;
@@ -17,3 +18,4 @@ else
 {
 y = x;
 }
+x = -y;

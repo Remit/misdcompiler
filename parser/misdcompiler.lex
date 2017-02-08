@@ -25,12 +25,15 @@ exponent         	[Ee][\+\-]?{digit}+
 floatLiteral     	{digit}+"."{exponent}
 
 %%
-{digit}+			{ yylval->pch = yytext; return NUMLITERAL; }
-{floatLiteral}		{ yylval->pch = yytext; return NUMLITERAL; }
+[\+\-]?{digit}+			{ yylval->pch = yytext; return NUMLITERAL; }
+[\+\-]?{floatLiteral}	{ yylval->pch = yytext; return NUMLITERAL; }
 int					return TINT;
 double				return TDOUBLE;
 long 				return TLONG;
 float				return TFLOAT;
+bool				return TBOOL;
+true				return TTRUE;
+false				return TFALSE;
 if					return TIF;
 then				return TTHEN;
 else				return TELSE;

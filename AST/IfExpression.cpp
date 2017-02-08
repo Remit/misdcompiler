@@ -71,7 +71,6 @@ Value * IfExpression::generateCode() {
 	if(Condition != NULL)
 		cond = Condition->generateCode();
 	if(cond != NULL) {
-		Builder.CreateFCmpONE(cond,ConstantFP::get(GlobalContext, APFloat(0.0)),"ifcond");
 		Function * func = Builder.GetInsertBlock()->getParent();
 		BasicBlock * thenBB = BasicBlock::Create(GlobalContext, "then", func);
 		BasicBlock * elseBB = BasicBlock::Create(GlobalContext, "else");

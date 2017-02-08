@@ -98,6 +98,7 @@ typedef enum {
 	VAR_LONG,\
 	VAR_FLOAT,\
 	VAR_DOUBLE,\
+	VAR_BOOL,\
 	VAR_UNDEFINED
 } variable_type; // Types of variables for AST
 

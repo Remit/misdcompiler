@@ -54,6 +54,9 @@ void DefineExpr::print() {
 	case VAR_DOUBLE:
 		type_name = "double";
 		break;
+	case VAR_BOOL:
+		type_name = "bool";
+		break;
 	case VAR_UNDEFINED:
 		type_name = "undefined";
 		break;
@@ -80,6 +83,9 @@ Value * DefineExpr::generateCode() {
 			break;
 		case VAR_DOUBLE:
 			type_alloc = Type::getDoubleTy(GlobalContext);;
+			break;
+		case VAR_BOOL:
+			type_alloc = Type::getInt8Ty(GlobalContext);
 			break;
 		case VAR_UNDEFINED:
 			type_alloc = NULL;

@@ -133,7 +133,7 @@ int main(int argc, char *argv[]) {
 		al_AST->print();
 		al_AST->generateCode();
 		
-		Builder->CreateRetVoid();
+		Builder.CreateRetVoid();
 		
 		std::string str;
 		raw_string_ostream OS(str);
