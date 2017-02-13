@@ -37,6 +37,7 @@ public:
 	void print();
 	
 	virtual Value *generateCode();
+	virtual std::string generateStructCode();
 	
 private:
 	Base_AST* Start;

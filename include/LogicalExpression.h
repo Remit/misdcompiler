@@ -33,6 +33,7 @@ public:
 	void print();
 	
 	virtual Value *generateCode();
+	virtual std::string generateStructCode();
 
 private:
 	cond_op_types op;

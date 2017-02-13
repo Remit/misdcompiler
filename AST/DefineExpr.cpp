@@ -103,3 +103,8 @@ Value * DefineExpr::generateCode() {
 	}
 	return ret;
 }
+
+bool DefineExpr::generateStructCode() {
+	std::string ret = "";
+	return ret;
+}

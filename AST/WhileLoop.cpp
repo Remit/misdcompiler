@@ -75,3 +75,8 @@ Value * WhileLoop::generateCode() {
 	ret = Constant::getNullValue(Type::getDoubleTy(GlobalContext));
 	return ret;
 }
+
+std::string WhileLoop::generateStructCode() {
+	std::string ret = "";
+	return ret;
+}

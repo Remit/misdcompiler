@@ -36,6 +36,7 @@ public:
 	void print();
 	
 	virtual Value *generateCode();
+	virtual std::string generateStructCode();
 
 private:
 	bin_op_types op;

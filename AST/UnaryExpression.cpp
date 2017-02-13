@@ -82,3 +82,8 @@ Value * UnaryExpression::generateCode() {
 	
 	return ret;
 }
+
+std::string UnaryExpression::generateStructCode() {
+	std::string ret = "";
+	return ret;
+}

@@ -29,6 +29,7 @@ public:
 	ast_label getASTLabel();
 	virtual Base_AST * copyAST();
 	virtual Value *generateCode() = 0;
+	virtual std::string generateStructCode() = 0;
 
 protected:
 	ast_label lbl;

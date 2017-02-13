@@ -34,6 +34,7 @@ public:
 	void print();
 	
 	virtual Value *generateCode();
+	virtual std::string generateStructCode();
 
 private:
 	structures_proc_op_types struct_op;

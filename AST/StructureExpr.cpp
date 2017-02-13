@@ -36,3 +36,8 @@ Value * StructureExpr::generateCode() {
 	Value * ret = NULL;
 	return ret;
 }
+
+std::string StructureExpr::generateStructCode() {
+	std::string ret = name;
+	return ret;
+}

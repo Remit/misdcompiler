@@ -104,3 +104,8 @@ Value * IfExpression::generateCode() {
 	
 	return ret;
 }
+
+std::string IfExpression::generateStructCode() {
+	std::string ret = "";
+	return ret;
+}

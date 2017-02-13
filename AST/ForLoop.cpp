@@ -143,3 +143,8 @@ Value * ForLoop::generateCode() {
 
 	return ret;
 }
+
+std::string ForLoop::generateStructCode() {
+	std::string ret = "";
+	return ret;
+}

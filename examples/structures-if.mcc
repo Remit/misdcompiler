@@ -1,14 +1,10 @@
 ﻿int x, y, z;
+x = 0;
+y = 1;
+z = 2;
 if (x < y) then
 {
-if (x < z) then
-{
 _misdop_INSERT_STR STRUCT1, x, z;
-}
-else
-{
-_misdop_INSERT_STR STRUCT1, x, y;
-}
 }
 else
 {

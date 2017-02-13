@@ -47,3 +47,8 @@ Value * TransferExpr::generateCode() {
 	Value * ret = NULL;
 	return ret;
 }
+
+std::string TransferExpr::generateStructCode() {
+	std::string ret = "";
+	return ret;
+}

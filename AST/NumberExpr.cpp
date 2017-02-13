@@ -30,3 +30,8 @@ Value * NumberExpr::generateCode() {
 	return ConstantFP::get(GlobalContext, APFloat(value));
 	//return ConstantFP::get(Type::getDoubleTy(GlobalContext), value);
 }
+
+std::string NumberExpr::generateStructCode() {
+	std::string ret = std::to_string(value);
+	return ret;
+}

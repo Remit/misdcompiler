@@ -67,3 +67,8 @@ Value * SequenceAST::generateCode() {
 	
 	return ret;
 }
+
+std::string SequenceAST::generateStructCode() {
+	std::string ret = "";
+	return ret;
+}

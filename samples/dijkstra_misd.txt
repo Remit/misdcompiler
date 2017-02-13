@@ -1,0 +1,47 @@
+;Init including holes
+; Structures:
+; Q eq 2
+; G eq 1
+init: 
+	jwt ?
+	add ?,?,?
+    jwt ?
+
+;Make start s node
+
+make0: 
+	del 2,?
+    add 2,?,? 
+    add 1,?,?
+    add 1,?,?
+
+; Main Dijkstra code
+start:
+	powerq 2 
+    jwt ?
+    minq 2
+    del 2,?
+	searchq 1,?
+    add 1,?,?
+
+for_adj:
+	jwt ?
+	searchq 1,?
+	searchq 1,?
+	searchq 1,?
+
+if_eQ:
+	jwt ?
+	del 2,?
+	add 2,?,?
+	add 1,?,?
+	add 1,?,?
+	jnw for_adj				
+
+get_rez:
+	searchq 1,?
+	searchq 1,?
+	dels 1
+	dels 2
+end:
+	jwt ?

@@ -64,3 +64,8 @@ Value * ExpressionAST::generateCode() {
 	
 	return ret;
 }
+
+std::string ExpressionAST::generateStructCode() {
+	std::string ret = "";
+	return ret;
+}

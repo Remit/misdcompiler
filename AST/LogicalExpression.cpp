@@ -105,6 +105,7 @@ Value * LogicalExpression::generateCode() {
 	if(BinExpr_RHS != NULL)
 		RHS_code = BinExpr_RHS->generateCode();
 		
+	
 	if((BinExpr_LHS == NULL) || (BinExpr_RHS == NULL))
 		ret = NULL;
 	else { // Considering different cases of compared types. We need the compared values to be of the same type. If we have at least one double then we transform the other to double as well.
@@ -200,5 +201,10 @@ Value * LogicalExpression::generateCode() {
 	}
 
 	
+	return ret;
+}
+
+std::string LogicalExpression::generateStructCode() {
+	std::string ret = "";
 	return ret;
 }

@@ -146,3 +146,8 @@ Value * BinaryExpression::generateCode() {
 	
 	return ret;
 }
+
+std::string BinaryExpression::generateStructCode() {
+	std::string ret = "";
+	return ret;
+}
