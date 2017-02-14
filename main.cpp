@@ -68,7 +68,7 @@ void create_index(std::string js_name) {
 
 int main(int argc, char *argv[]) {
 	if( argc < 3 ) {
-		cout << "You need to specify input and output files." << endl;
+		cout << "You need to specify at least input and output files." << endl;
 		exit(0);
 	}
 
@@ -88,11 +88,15 @@ int main(int argc, char *argv[]) {
 	yyout = out_fp;
 
 	// Considering non-obligatory arguments
-	visualisation_option option_vis = VIS_NONE;
-	if( argc > 3 ) {
-		if(strcmp(argv[3],"-v") == 0) {
-			if(argc > 4) {
-				char * option_params = argv[4];
+	int basis_opt_adr = 3;
+	
+	// Visualization options
+	visualization_option option_vis = VIS_NONE;
+	if( argc > basis_opt_adr) {
+		if(strcmp(argv[basis_opt_adr],"-v") == 0) {
+			basis_opt_adr++;
+			if(argc > basis_opt_adr + 1) {
+				char * option_params = argv[basis_opt_adr + 1];
 				if(strcmp(option_params,"ias") == 0) 
 					option_vis = VIS_ALL;
 				else if(strcmp(option_params,"i--") == 0)
@@ -109,9 +113,102 @@ int main(int argc, char *argv[]) {
 					option_vis = VIS_ARITH_STRUCT;
 				else if (strcmp(option_params,"---") == 0)
 					option_vis = VIS_NONE;
+				else
+					cout << "Error: Non-existent arguments for \'-v\'." << endl;
+					
+				basis_opt_adr++;
+			} else {
+				cout << "Error: No arguments for \'-v\'." << endl;
 			}
 		}
 	}
+	
+	// Considering output of AST IRs of CPU code and SPU code
+	ast_IR_option option_ast_IR = AST_IR_NONE;
+	FILE *ast_out = NULL;
+	if(argc > basis_opt_adr) {
+		if(strcmp(argv[basis_opt_adr],"-ast") == 0) {
+			basis_opt_adr++;
+			if(argc > basis_opt_adr + 1) {
+
+				char * option_params = argv[basis_opt_adr + 1];
+				if(strlen(option_params) == 3) {
+					char * option_params_main = (char*)malloc(2);
+					char * option_params_file = (char*)malloc(1);
+					strncpy(option_params_main,option_params,2);
+					strncpy(option_params_file,option_params + 2,1);
+					if(strcmp(option_params_main,"as") == 0) 
+						option_ast_IR = AST_IR_ALL;
+					else if(strcmp(option_params_main,"a-") == 0)
+						option_ast_IR = AST_IR_CPU;
+					else if (strcmp(option_params_main,"-s") == 0)
+						option_ast_IR = AST_IR_SPU;
+					else if (strcmp(option_params_main,"--") == 0)
+						option_ast_IR = AST_IR_NONE;
+					else
+						cout << "Error: Non-existent arguments for AST printing settings in \'-ast\'." << endl;
+						
+					size_t flag_pos = 2;
+					basis_opt_adr++;
+					if(argc > basis_opt_adr + 1) {
+						if(strcmp(option_params_file,"f")  == 0) {
+							ast_out = fopen(argv[basis_opt_adr + 1],"w");
+							basis_opt_adr++;
+						} else if(strcmp(option_params_file,"-")  != 0) {
+							cout << "Error: Non-existent argument for AST file print option in \'-ast\'." << endl;
+						}
+						basis_opt_adr++;
+					}
+				}
+			} else {
+				cout << "Error: No arguments for \'-ast\'." << endl;
+			}
+		}
+	}
+	
+	// Considering output of asm IRs of CPU code and SPU code
+	asm_IR_option option_asm_IR = ASM_IR_NONE;
+	FILE *asm_out = NULL;
+	if(argc > basis_opt_adr) {
+		if(strcmp(argv[basis_opt_adr],"-asm") == 0) {
+			basis_opt_adr++;
+			if(argc > basis_opt_adr + 1) {
+
+				char * option_params = argv[basis_opt_adr + 1];
+				if(strlen(option_params) == 3) {
+					char * option_params_main = (char*)malloc(2);
+					char * option_params_file = (char*)malloc(1);
+					strncpy(option_params_main,option_params,2);
+					strncpy(option_params_file,option_params + 2,1);
+					if(strcmp(option_params_main,"as") == 0) 
+						option_asm_IR = ASM_IR_ALL;
+					else if(strcmp(option_params_main,"a-") == 0)
+						option_asm_IR = ASM_IR_CPU;
+					else if (strcmp(option_params_main,"-s") == 0)
+						option_asm_IR = ASM_IR_SPU;
+					else if (strcmp(option_params_main,"--") == 0)
+						option_asm_IR = ASM_IR_NONE;
+					else
+						cout << "Error: Non-existent arguments for asm IR printing settings in \'-asm\'." << endl;
+						
+					size_t flag_pos = 2;
+					basis_opt_adr++;
+					if(argc > basis_opt_adr + 1) {
+						if(strcmp(option_params_file,"f")  == 0) {
+							asm_out = fopen(argv[basis_opt_adr + 1],"w");
+							basis_opt_adr++;
+						} else if(strcmp(option_params_file,"-")  != 0) {
+							cout << "Error: Non-existent argument for asm IR file print option in \'-asm\'." << endl;
+						}
+						basis_opt_adr++;
+					}
+				}
+			} else {
+				cout << "Error: No arguments for \'-asm\'." << endl;
+			}
+		}
+	}
+	
 
 	IR_Graph result_graph;
 	int status = yyparse(result_graph);

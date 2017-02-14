@@ -1,25 +1,40 @@
 # misdcompiler
 A native compiler for MISD computer architecture.
 
-## Parser
-The compiler can be constructed using makefile in the root directory.
-Separate compiler parts (lexical analyser, syntactical analyser, etc.) can be translated and compiled separatle. Instructions can be found below.
+## Prerequisites
+In order to compile the MISD compiler you should have the following software:
+- Linux (e.g. https://www.archlinux.org/)
+- GCC ver. >= 6.2.1 (https://gcc.gnu.org/)
+- GNU flex (https://github.com/westes/flex)
+- GNU bison (https://www.gnu.org/software/bison/), some older versions may require **-lfl** option
+- CLANG /w LLVM ver. >= 3.9 (http://clang.llvm.org/)
+- Web Browser with support for JavaScript
 
-In order to add new syntactical rules and new tokens, you must have flex and bison installed.
-Commands for translation and compilation of misdcompiler.ypp:
-- ordinary translation (no tokens changed/added): bison misdcompiler.ypp
-- translation with tokens changed/added: bison -d misdcompiler.ypp (generated header is used in .lex file)
-- compilation
+## Compiler Compilation
+The compiler can be compiled using makefile in the root directory.
+In order to compile the MISD compiler, open the Terminal, change to the source code directory and run `make` command.
+After some time, you will see the **misdcompiler** binary in the same directory.
 
-Commands for translation and compilation of misdcompiler.lex:
-- translation: flex misdcompiler.lex
-- compilation using tokens defs and other defs by bison: g++ -o misdlex flex-misdcompiler.cpp misdcompiler.tab.hpp -lfl
+## Usage
+The compilation command format is as follows:
+`misdcompiler [FILE WITH SOURCE CODE, .mcc FORMAT] [DESTINATION BINARY, .out FORMAT] [[-v ias]] [[-ast asf [[OUTPUT FILE FOR ASTs, .txt FORMAT]] ]] [[-asm asf [[OUTPUT FILE FOR ASM IRs, .txt FORMAT]] ]]`
+where
+`[...]` - mandatory parts of command,
+`[[...]]` - non-mandatory parts of command,
+`-v` - IR graphs visualization option with parameters:
+- `i` - visualize graph IR for the initial program (`-` - no vizualization for initial IR)
+- `a` - visualize graph IR for the arithmetic-logic part of program (`-` - no vizualization for arithmetic-logic IR)
+- `s` - visualize graph IR for the structures processing part of program (`-` - no vizualization for structures processing IR),
+`-ast` - AST print option with parameters:
+- `a` - print AST for the arithmetic-logic part of program (`-` - no AST print for the arithmetic-logic part of program)
+- `s` - print AST for the structures processing part of program (`-` - no AST print for the structures processing part part of program)
+- `f` - print ASTs to the following file (`-` - print to standard output),
+`-asm` - assembler IR print option with parameters:
+- `a` - print asm IR for the arithmetic-logic part of program, provided by LLVM (`-` - no asm IR print for the arithmetic-logic part of program)
+- `s` - print asm IR for the structures processing part of program (`-` - no asm IR print for the structures processing part part of program)
+- `f` - print asm IRs to the following file (`-` - print to standard output).
 
 ## Development ideas
-- graphs visualisation using JS (there are special libraries): generating JS page and opening it with browser (use flag to specify whether we need to generate those visualisations or not
-- libraries for different applications (e.g. graph databases)
-
-## Visualisation in form of graphs
-- We use free open-source Cytospace library to visualise program graphs
-- Graph visualisations of programs are stored in the folder "Visualisation"
-- Visualisation is provided by using "-v" when compiling
+- Libraries for specific solutions
+- Support for uploading the structured data into SPU structures memory
+- Documentation (esp. on language)

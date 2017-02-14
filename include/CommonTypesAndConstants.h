@@ -111,7 +111,21 @@ typedef enum {
 	VIS_INITIAL_STRUCT,\
 	VIS_ARITH_STRUCT,\
 	VIS_NONE
-} visualisation_option; // Options to visualise the graph
+} visualization_option; // Options to visualize the graph
+
+typedef enum {
+	ASM_IR_ALL,\
+	ASM_IR_CPU,\
+	ASM_IR_SPU,\
+	ASM_IR_NONE
+} asm_IR_option; // Options to print asm IR
+
+typedef enum {
+	AST_IR_ALL,\
+	AST_IR_CPU,\
+	AST_IR_SPU,\
+	AST_IR_NONE
+} ast_IR_option; // Options to print asm IR
 
 typedef enum {
 	AST_BASE,\
