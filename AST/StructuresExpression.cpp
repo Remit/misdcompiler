@@ -152,32 +152,50 @@ std::string StructuresExpression::generateStructCode() {
 	SP_IR[mem_point].tag[1] = true;
 	SP_IR[mem_point].tag[2] = true;
 	
+	// Writing arguments to the instruction representation
 	if(arg1 != NULL) {
 		arg1_str = arg1->generateStructCode();
-		if(arg1_str.compare("?") == 0)
+		if(arg1_str.compare("?") == 0) // If the argument is to be received
 			SP_IR[mem_point].tag[0] = false;
+		else if(arg1_str.substr(0,6).compare("STRUCT") == 0) // If the argument is structure
+			SP_IR[mem_point].op[0] = std::stol(arg1_str.substr(6,1));
+		else // If the argument is a number
+			SP_IR[mem_point].op[0] = std::stol(arg1_str);
 	}
 	if(arg2 != NULL) {
 		arg2_str = arg1->generateStructCode();
-		if(arg2_str.compare("?") == 0)
+		if(arg2_str.compare("?") == 0) // If the argument is to be received
 			SP_IR[mem_point].tag[1] = false;
+		else if(arg1_str.substr(0,6).compare("STRUCT") == 0) // If the argument is structure
+			SP_IR[mem_point].op[1] = std::stol(arg1_str.substr(6,1));
+		else // If the argument is a number
+			SP_IR[mem_point].op[1] = std::stol(arg1_str);
 	}
 	if(arg3 != NULL) {
 		arg3_str = arg1->generateStructCode();
-		if(arg3_str.compare("?") == 0)
+		if(arg3_str.compare("?") == 0) // If the argument is to be received
 			SP_IR[mem_point].tag[2] = false;
+		else if(arg1_str.substr(0,6).compare("STRUCT") == 0) // If the argument is structure
+			SP_IR[mem_point].op[2] = std::stol(arg1_str.substr(6,1));
+		else // If the argument is a number
+			SP_IR[mem_point].op[2] = std::stol(arg1_str);
 	}
 	
+	// Writing operation code and queue format to the instruction representation
+	bool queue = false;
 	int opcode;
 	switch(struct_op) {
 		case OP_SEARCH_STR:
 			opcode = SEARCH;
+			queue = true;
 			break;
 		case OP_SEARCH_SML_STR:
-			opcode = 0;
+			opcode = 0; // TODO:
+			queue = true;
 			break;
 		case OP_SEARCH_GRT_STR:
-			opcode = 0;
+			opcode = 0; // TODO:
+			queue = true;
 			break;
 		case OP_INSERT_STR:
 			opcode = ADD;
@@ -187,18 +205,22 @@ std::string StructuresExpression::generateStructCode() {
 			break;
 		case OP_NEXT_STR:
 			opcode = NEXT;
+			queue = true;
 			break;
 		case OP_DELETE_STR:
 			opcode = DELS;
 			break;
 		case OP_MAX_STR:
 			opcode = MAX;
+			queue = true;
 			break;
 		case OP_MIN_STR:
 			opcode = MIN;
+			queue = true;
 			break;
 		case OP_POWER_STR:
 			opcode = POWER;
+			queue = true;
 			break;
 		case OP_UNION_STR:
 			opcode = OR;
@@ -226,11 +248,13 @@ std::string StructuresExpression::generateStructCode() {
 			break;
 	}
 	
+	SP_IR[mem_point].q = queue;
 	SP_IR[mem_point].opcode = opcode;
-	SP_IR[mem_point].q = QUEUE_REGIME;
-	SP_IR[mem_point].jmp_label = "";
-	SP_IR[mem_point].label = "";
-	SP_IR[mem_point].jmp_adr = 0;
+	
+	// These to be set on when parsing on the level of structures
+	strcpy(SP_IR[mem_point].jmp_label,"");
+	strcpy(SP_IR[mem_point].label,"");
+	SP_IR[mem_point].jmp_adr = -1;
 	
 	mem_point++;
 	

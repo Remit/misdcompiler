@@ -129,7 +129,7 @@
 %type <str> struct ident
 %type <type_int> tlc trc
 %type <tov> id_type
-%type <ast> expr
+%type <ast> expr identnum
 %type <numerical> num boolval
 %type <logic> bool_expr
 %type <cond> log_op
@@ -715,6 +715,16 @@ struct:
 																	}
 ;
 
+identnum:
+   ident															{
+																		exp_vars_list.push_back(* $1);
+																		std::vector< std::string > scopes_ids_list_cp = scopes_ids_list;
+																		std::vector< std::string > * scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
+																		$$ = buildVariableExpr(* $1, scopes_ids_list_cp_ptr);
+																	}
+|  num																{	$$ = buildNumberExpr( $1 ); }
+;
+
 ident:
    TIDENT															{
 																		std::string* ident_name = new std::string(yylval.pch, 0, 1024);
@@ -746,13 +756,7 @@ expr:
 |  expr TOR expr													{	$$ = buildBinaryExpression($1, $3, OP_OR); }
 |  TNOT expr														{	$$ = buildUnaryExpression($2, OP_NOT); }
 |  TMINUS expr														{	$$ = buildUnaryExpression($2, OP_UMINUS); }
-|  ident															{
-																		exp_vars_list.push_back(* $1);
-																		std::vector< std::string > scopes_ids_list_cp = scopes_ids_list;
-																		std::vector< std::string > * scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
-																		$$ = buildVariableExpr(* $1, scopes_ids_list_cp_ptr);
-																	}
-|  num																{	$$ = buildNumberExpr( $1 ); }
+|  identnum															{	$$ = $1; }
 |  boolval															{	$$ = buildNumberExpr( $1 ); }
 ;
 

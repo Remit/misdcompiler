@@ -70,5 +70,11 @@ Value * SequenceAST::generateCode() {
 
 std::string SequenceAST::generateStructCode() {
 	std::string ret = "";
+	
+	if(LHS_E != NULL)
+		LHS_E->generateStructCode();
+	if(RHS_E != NULL)
+		RHS_E->generateStructCode();
+	
 	return ret;
 }
