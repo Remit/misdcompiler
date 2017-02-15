@@ -49,7 +49,7 @@ Base_AST * VariableExpr::copyAST() {
 	return cpy;
 }
 
-void VariableExpr::print() {
+void VariableExpr::print(std::ostream * print_stream) {
 	std::string v_type;
 	switch(var_type) {
     case VAR_INT:
@@ -64,13 +64,16 @@ void VariableExpr::print() {
     case VAR_DOUBLE:
 		v_type = "double";
 		break;
+    case VAR_BOOL:
+		v_type = "bool";
+		break;
     case VAR_UNDEFINED:
 		v_type = "?";
 		break;
 	}
-	std::cout << "\n - Variable " << name << " of type " << v_type;
+	* print_stream << "\n - Variable " << name << " of type " << v_type;
 	if(isDeclaration)
-		std::cout << " (declaration) ";
+		* print_stream << " (declaration) ";
 }
 
 Value * VariableExpr::generateCode() {

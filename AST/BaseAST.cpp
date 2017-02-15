@@ -15,8 +15,8 @@ Base_AST::~Base_AST() {
 	// TODO Auto-generated destructor stub
 }
 
-void Base_AST::print() {
-	std::cout << "BASE" << std::endl;
+void Base_AST::print(std::ostream * print_stream) {
+	*print_stream << "BASE" << std::endl;
 }
 
 void Base_AST::setASTLabel(ast_label a_lbl) {

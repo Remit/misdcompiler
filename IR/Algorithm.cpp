@@ -145,9 +145,8 @@ bool check_presence_cpu_data_nodes(std::vector< int > * data_nodes, IR_Graph * g
 	return check;
 }
 
-IR_Graph* Graph_ArithmeticLogicProcessing( IR_Graph* src_graph ) {
+int Graph_ArithmeticLogicProcessing( IR_Graph* src_graph, IR_Graph* alp_graph) {
 	// Copying program graph to transform it to AL-form
-	IR_Graph* alp_graph = new IR_Graph();
 	alp_graph->copyGraph(src_graph);
 	alp_graph->setGraphType(GR_AL);
 	
@@ -407,12 +406,11 @@ IR_Graph* Graph_ArithmeticLogicProcessing( IR_Graph* src_graph ) {
 		}
 	}
 
-	return alp_graph;
+	return 0;
 }
 
-IR_Graph* Graph_StructureProcessing( IR_Graph* src_graph ) {
+int Graph_StructureProcessing( IR_Graph* src_graph, IR_Graph* sp_graph ) {
 	// Copying program graph to transform it to SP-form
-	IR_Graph* sp_graph = new IR_Graph();
 	sp_graph->copyGraph(src_graph);
 	sp_graph->setGraphType(GR_SP);
 	std::vector< int > branch_ids_for_deletion;
@@ -838,7 +836,7 @@ IR_Graph* Graph_StructureProcessing( IR_Graph* src_graph ) {
 		}
 	}
 
-	return sp_graph;
+	return 0;
 }
 
 

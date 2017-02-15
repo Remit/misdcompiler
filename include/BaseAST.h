@@ -24,7 +24,7 @@ class Base_AST {
 public:
 	Base_AST();
 	virtual ~Base_AST();
-	virtual void print();
+	virtual void print(std::ostream * print_stream);
 	void setASTLabel(ast_label a_lbl);
 	ast_label getASTLabel();
 	virtual Base_AST * copyAST();

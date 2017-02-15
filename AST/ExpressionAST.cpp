@@ -37,16 +37,16 @@ Base_AST * ExpressionAST::copyAST() {
 	return cpy;
 }
 
-void ExpressionAST::print() {
-	std::cout << "\n - Expression - ";
+void ExpressionAST::print(std::ostream * print_stream) {
+	*print_stream << "\n - Expression - ";
 	
 	if(LHS_E != NULL) {
-		std::cout << "\n - Left operand: ";
-		LHS_E->print();
+		*print_stream << "\n - Left operand: ";
+		LHS_E->print(print_stream);
 	}
 	if(RHS_E != NULL) {
-		std::cout << "\n - Right operand: ";
-		RHS_E->print();
+		*print_stream << "\n - Right operand: ";
+		RHS_E->print(print_stream);
 	}
 }
 

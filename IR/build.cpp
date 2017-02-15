@@ -13,7 +13,6 @@ StructuresTable struct_table;
 //Building assignment node
 IR_OperationNode* buildAssignNode( data_type dt, std::vector< std::string > * idents_ptr, Base_AST * expr, std::vector <std::string > * scopes_ids_list, structures_proc_op_types struct_op ) {
 	IR_OperationNode* op_node = NULL;
-	std::cout << "HERE!!!" << scopes_ids_list->size() << std::endl;
 	op_node = new IR_OperationNode();
 	op_node->setOperationType(IR_OP_PROCESSING);
 

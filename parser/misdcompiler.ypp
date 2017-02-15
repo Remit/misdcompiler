@@ -153,7 +153,6 @@ program:
 																		IR_Graph* last_gr = new IR_Graph();
 																		last_gr->addOperationNode( terminalNode_end );
 																		$$->appendGraph(last_gr);
-																		$$->printNodes();
 																		gr = *$$;
 																	}
 ;

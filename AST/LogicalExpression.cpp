@@ -60,7 +60,7 @@ Base_AST * LogicalExpression::copyAST() {
 	return cpy;
 }
 
-void LogicalExpression::print() {
+void LogicalExpression::print(std::ostream * print_stream) {
 	std::string op_str;
 	
 	switch(op) {
@@ -84,14 +84,14 @@ void LogicalExpression::print() {
 		break;
     }
 	
-	std::cout << "\n - Logical expression: " << op_str;
+	* print_stream << "\n - Logical expression: " << op_str;
 	if(BinExpr_LHS != NULL) {
-		std::cout << "\n - Left operand: ";
-		BinExpr_LHS->print();
+		* print_stream << "\n - Left operand: ";
+		BinExpr_LHS->print(print_stream);
 	}
 	if(BinExpr_RHS != NULL) {
-		std::cout << "\n - Right operand: ";
-		BinExpr_RHS->print();
+		* print_stream << "\n - Right operand: ";
+		BinExpr_RHS->print(print_stream);
 	}
 }
 

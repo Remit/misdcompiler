@@ -72,23 +72,23 @@ Base_AST * ForLoop::copyAST() {
 	return cpy;
 }
 
-void ForLoop::print() {
-	std::cout << "\n - For-Loop - ";
-	std::cout << "\n - Start of loop: ";
+void ForLoop::print(std::ostream * print_stream) {
+	*print_stream << "\n - For-Loop - ";
+	*print_stream << "\n - Start of loop: ";
 	if(Start != NULL)
-		Start->print();
+		Start->print(print_stream);
 		
-	std::cout << "\n - Ending condition of loop: ";
+	*print_stream << "\n - Ending condition of loop: ";
 	if(End != NULL)
-		End->print();
+		End->print(print_stream);
 		
-	std::cout << "\n - Step of loop: ";
+	*print_stream << "\n - Step of loop: ";
 	if(Step != NULL)
-		Step->print();
+		Step->print(print_stream);
 	
-	std::cout << "\n - Body of loop: ";
+	*print_stream << "\n - Body of loop: ";
 	if(Body != NULL)
-		Body->print();
+		Body->print(print_stream);
 }
 
 Value * ForLoop::generateCode() {

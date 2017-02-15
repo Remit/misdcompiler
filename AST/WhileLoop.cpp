@@ -37,15 +37,15 @@ Base_AST * WhileLoop::copyAST() {
 	return cpy;
 }
 
-void WhileLoop::print() {
-	std::cout << "\n - While-Loop - ";
+void WhileLoop::print(std::ostream * print_stream) {
+	* print_stream << "\n - While-Loop - ";
 	if(Condition != NULL) {
-		std::cout << "\n - Condition: ";
-		Condition->print();
+		* print_stream << "\n - Condition: ";
+		Condition->print(print_stream);
 	}
 	if(Body != NULL) {
-		std::cout << "\n - Body: ";
-		Body->print();
+		* print_stream << "\n - Body: ";
+		Body->print(print_stream);
 	}
 }
 

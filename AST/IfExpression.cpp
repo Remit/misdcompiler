@@ -36,19 +36,19 @@ Base_AST* IfExpression::getElseExpression() {
 	return ElseExpression;
 }
 
-void IfExpression::print() {
-	std::cout << "\n - If-expression - ";
+void IfExpression::print(std::ostream * print_stream) {
+	* print_stream << "\n - If-expression - ";
 	if(Condition != NULL) {
-		std::cout << "\n - Condition: ";
-		Condition->print();
+		* print_stream << "\n - Condition: ";
+		Condition->print(print_stream);
 	}
 	if(ThenExpression != NULL) {
-		std::cout << "\n - Then: ";
-		ThenExpression->print();
+		* print_stream << "\n - Then: ";
+		ThenExpression->print(print_stream);
 	}
 	if(ElseExpression != NULL) {
-		std::cout << "\n - Else: ";
-		ElseExpression->print();
+		* print_stream << "\n - Else: ";
+		ElseExpression->print(print_stream);
 	}
 }
 

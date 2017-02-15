@@ -39,7 +39,7 @@ Base_AST * DefineExpr::copyAST() {
 	return cpy;
 }
 	
-void DefineExpr::print() {
+void DefineExpr::print(std::ostream * print_stream) {
 	std::string type_name = "";
 	switch(def_type) {
 	case VAR_INT:
@@ -62,9 +62,9 @@ void DefineExpr::print() {
 		break;
 	}
 	
-	std::cout << "\n - Define the following variables of " <<  type_name << " type: ";
+	*print_stream << "\n - Define the following variables of " <<  type_name << " type: ";
 	for(int i = 0; i < defined_names.size(); i++)
-		std::cout << defined_names[i] << "   ";
+		*print_stream << defined_names[i] << "   ";
 }
 	
 Value * DefineExpr::generateCode() {

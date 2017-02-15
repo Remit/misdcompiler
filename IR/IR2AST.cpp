@@ -4,10 +4,9 @@
 //the AST is unbalanced and grows in the right direction,
 //from top to the bottom. The rightmost end node of the AST
 //has NULL LHS and RHS pointers.
-SequenceAST * convertIRtoAST(IR_Graph * graph) {
-	SequenceAST * ast = new SequenceAST();
+int convertIRtoAST(IR_Graph * graph, SequenceAST * ast) {
 	SequenceAST * cur_ptr = ast;
-	
+
 	if(graph != NULL) {
 		int considered_op_node_id = graph->getStartTerminalNodeID();
 		
@@ -16,11 +15,9 @@ SequenceAST * convertIRtoAST(IR_Graph * graph) {
 			considered_op_node_id = (*dep_op_ids)[0]; //We do not consider terminal nodes
 		
 		dep_op_ids = graph->getDependentOperationNodes(considered_op_node_id);
-				
 		if(dep_op_ids != NULL) {
 			// Main sequential processing loop (loops and if-constructions are processed as elements of sequence
 			while(dep_op_ids->size() > 0) {
-				
 				IR_OperationNode* op_node = ( IR_OperationNode* )graph->getNode(considered_op_node_id);
 		
 				if(op_node != NULL) {
@@ -113,7 +110,7 @@ SequenceAST * convertIRtoAST(IR_Graph * graph) {
 		}
 	}
 	
-	return ast;
+	return 0;
 }
 
 //Subfunction to convert if-IR to appropriate AST parts

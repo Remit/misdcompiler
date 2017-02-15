@@ -58,7 +58,7 @@ Base_AST * StructuresExpression::copyAST() {
 	return cpy;
 }
 
-void StructuresExpression::print() {
+void StructuresExpression::print(std::ostream * print_stream) {
 	std::string op_str;
 
 	switch(struct_op) {
@@ -118,18 +118,18 @@ void StructuresExpression::print() {
 		break;
     }
 	
-	std::cout << "\n - Structures processing expression: " << op_str;
+	* print_stream << "\n - Structures processing expression: " << op_str;
 	if(arg1 != NULL) {
-		std::cout << "\n - First argument: ";
-		arg1->print();
+		* print_stream << "\n - First argument: ";
+		arg1->print(print_stream);
 	}
 	if(arg2 != NULL) {
-		std::cout << "\n - Second argument: ";
-		arg2->print();
+		* print_stream << "\n - Second argument: ";
+		arg2->print(print_stream);
 	}
 	if(arg3 != NULL) {
-		std::cout << "\n - Third argument: ";
-		arg3->print();
+		* print_stream << "\n - Third argument: ";
+		arg3->print(print_stream);
 	}
 }
 

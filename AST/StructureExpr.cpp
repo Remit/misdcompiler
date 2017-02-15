@@ -28,8 +28,8 @@ Base_AST * StructureExpr::copyAST() {
 	return cpy;
 }
 
-void StructureExpr::print() {
-	std::cout << "\n - Structure: " << name;
+void StructureExpr::print(std::ostream * print_stream) {
+	* print_stream << "\n - Structure: " << name;
 }
 
 Value * StructureExpr::generateCode() {

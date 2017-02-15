@@ -17,13 +17,16 @@ LDFLAGS += `/bin/llvm-config --ldflags`
 
 all: misdcompiler.exe
 
-misdcompiler.exe: main.o
+misdcompiler.exe: main.o Passes.o
 	cd AST && make
 	cd IR && make
 	cd parser && make
-	g++ $(LDFLAGS) -g -o misdcompiler main.o $(OBJ_FILES_IR) $(OBJ_FILES_PARSER) $(OBJ_FILES_AST) $(LLVMLIBS) -std=c++11
+	g++ $(LDFLAGS) -g -o misdcompiler main.o Passes.o $(OBJ_FILES_IR) $(OBJ_FILES_PARSER) $(OBJ_FILES_AST) $(LLVMLIBS) -std=c++11
 
-main.o:
+Passes.o: Passes.cpp
+	g++ -c -g Passes.cpp
+	
+main.o: main.cpp
 	g++ -c -g main.cpp
 
 .SILENT : clean
@@ -33,6 +36,6 @@ clean:
 	cd parser && make clean
 	cd AST && make clean
 	cd IR && make clean
-	-rm -f main.o misdcompiler
+	-rm -f main.o Passes.o misdcompiler
 	-rm -rf $(TMP_FILES_ROOT) $(TMP_FILES_IR) $(TMP_FILES_INCLUDE) $(TMP_FILES_PARSER) $(TMP_FILES_AST) $(TMP_FILES_EXAMPLES)
 

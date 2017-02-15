@@ -36,7 +36,7 @@ Base_AST * UnaryExpression::copyAST() {
 	return cpy;
 }
 
-void UnaryExpression::print() {
+void UnaryExpression::print(std::ostream * print_stream) {
 	std::string op_str;
 	switch(op) {
     case OP_NOT:
@@ -50,10 +50,10 @@ void UnaryExpression::print() {
 		break;
 	}
 	
-	std::cout << "\n - Unary Expression: " << op_str;
+	* print_stream << "\n - Unary Expression: " << op_str;
 	if(UnaryExpr_RHS != NULL) {
-		std::cout << "\n - Right side of expression: ";
-		UnaryExpr_RHS->print();
+		* print_stream << "\n - Right side of expression: ";
+		UnaryExpr_RHS->print(print_stream);
 	}
 }
 

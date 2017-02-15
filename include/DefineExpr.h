@@ -27,7 +27,7 @@ public:
 	
 	Base_AST * copyAST();
 	
-	void print();
+	void print(std::ostream * print_stream);
 	
 	virtual Value *generateCode();
 	virtual std::string generateStructCode();

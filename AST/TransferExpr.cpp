@@ -30,17 +30,17 @@ Base_AST * TransferExpr::copyAST() {
 	return cpy;
 }
 
-void TransferExpr::print() {
-	std::cout << "\n - Transfer expression: ";
+void TransferExpr::print(std::ostream * print_stream) {
+	* print_stream << "\n - Transfer expression: ";
 	if(direction == TR_SEND) {
-		std::cout << " SEND ";
+		* print_stream << " SEND ";
 	} else if(direction == TR_RECEIVE) {
-		std::cout << " RECEIVE ";
+		* print_stream << " RECEIVE ";
 	} else if(direction == TR_UNDEFINED) {
-		std::cout << " UNDEFINED ";
+		* print_stream << " UNDEFINED ";
 	}
 	
-	std::cout << " variable " << name_of_var;
+	* print_stream << " variable " << name_of_var;
 }
 
 Value * TransferExpr::generateCode() {

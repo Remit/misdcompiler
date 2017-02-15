@@ -27,15 +27,15 @@ void SequenceAST::setRHS_E(Base_AST* a_RHS_E) {
 	RHS_E = a_RHS_E;
 }
 
-void SequenceAST::print() {
-	std::cout << "\n - Sequence - ";
+void SequenceAST::print(std::ostream * print_stream) {
+	* print_stream << "\n - Sequence - ";
 	if(LHS_E != NULL) {
-		std::cout << "\n - Left subtree: ";
-		LHS_E->print();
+		* print_stream << "\n - Left subtree: ";
+		LHS_E->print(print_stream);
 	}
 	if(RHS_E != NULL) {
-		std::cout << "\n - Right subtree: ";
-		RHS_E->print();
+		* print_stream << "\n - Right subtree: ";
+		RHS_E->print(print_stream);
 	}
 }
 

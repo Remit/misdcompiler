@@ -22,8 +22,8 @@ Base_AST * NumberExpr::copyAST() {
 	NumberExpr * cpy = new NumberExpr(value);
 	return cpy;
 }
-void NumberExpr::print() {
-	std::cout << "\n - Number (constant): " <<  value;
+void NumberExpr::print(std::ostream * print_stream) {
+	* print_stream << "\n - Number (constant): " <<  value;
 }
 
 Value * NumberExpr::generateCode() {

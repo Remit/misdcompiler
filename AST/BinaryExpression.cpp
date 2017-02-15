@@ -47,7 +47,7 @@ Base_AST * BinaryExpression::copyAST() {
 	return cpy;
 }
 
-void BinaryExpression::print() {
+void BinaryExpression::print(std::ostream * print_stream) {
 	std::string op_str;
 	switch(op) {
     case OP_PLUS:
@@ -79,14 +79,14 @@ void BinaryExpression::print() {
 		break;
     }
 	
-	std::cout << "\n - Binary expression: " << op_str;
+	*print_stream << "\n - Binary expression: " << op_str;
 	if(BinExpr_LHS != NULL) {
-		std::cout << "\n - Left operand: ";
-		BinExpr_LHS->print();
+		*print_stream << "\n - Left operand: ";
+		BinExpr_LHS->print(print_stream);
 	}
 	if(BinExpr_RHS != NULL) {
-		std::cout << "\n - Right operand: ";
-		BinExpr_RHS->print();
+		*print_stream << "\n - Right operand: ";
+		BinExpr_RHS->print(print_stream);
 	}
 }
 
