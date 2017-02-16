@@ -9,18 +9,7 @@ int label_i = 0;
 // This procedure prints the asm representation
 // of SPU program either to file or to the
 // standard output.
-void print_SPU_asm_IR(std::string * filename) {
-	std::streambuf * buf;
-	std::ofstream of;
-
-	if(filename->compare("") == 0) {
-		buf = std::cout.rdbuf();
-	} else {
-		of.open(filename->c_str());
-		buf = of.rdbuf();
-	}
-
-	std::ostream out_SPU_asm_IR(buf);
+void print_SPU_asm_IR(std::ostream * print_stream) {
 	
 	for(int i = 0; i < mem_point; i++) { // End is where we stopped writing the instructions
 		std::string out_str;
@@ -118,14 +107,9 @@ void print_SPU_asm_IR(std::string * filename) {
 				operation = "DELS";
 				cnt_of_ops = DELS_C;
 				break;
-			case JWT:
-				operation = "JWT";
-				cnt_of_ops = JWT_C;
-				is_jmp_op = true;
-				break;
-			case JNW:
-				operation = "JNW";
-				cnt_of_ops = JNW_C;
+			case JT:
+				operation = "JT";
+				cnt_of_ops = JT_C;
 				is_jmp_op = true;
 				break;
 			case NEXT:
@@ -138,6 +122,7 @@ void print_SPU_asm_IR(std::string * filename) {
 		if(SP_IR[i].q)
 			operation += "q";
 
+		out_str += operation;
 		out_str += " ";
 
 		// Printing operands if any
@@ -165,8 +150,8 @@ void print_SPU_asm_IR(std::string * filename) {
 		// Printing jump labels and addresses for jump instructions
 		if(is_jmp_op) {
 			std::string jmp_lbl(SP_IR[i].jmp_label);
-			if(opcode == JWT)
-				out_str += ", "; // JWT has operations
+			if(opcode == JT)
+				out_str += ", "; // JT has operations
 				
 			out_str += jmp_lbl;
 			out_str += "(";
@@ -174,7 +159,7 @@ void print_SPU_asm_IR(std::string * filename) {
 			out_str += ") ";
 		}
 		
-		out_SPU_asm_IR << out_str;
+		* print_stream << out_str << std::endl;
 	}
 }
 

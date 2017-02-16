@@ -155,7 +155,7 @@ std::string StructuresExpression::generateStructCode() {
 	// Writing arguments to the instruction representation
 	if(arg1 != NULL) {
 		arg1_str = arg1->generateStructCode();
-		if(arg1_str.compare("?") == 0) // If the argument is to be received
+		if(arg1_str.compare("") == 0) // If the argument is to be received
 			SP_IR[mem_point].tag[0] = false;
 		else if(arg1_str.substr(0,6).compare("STRUCT") == 0) // If the argument is structure
 			SP_IR[mem_point].op[0] = std::stol(arg1_str.substr(6,1));
@@ -163,8 +163,8 @@ std::string StructuresExpression::generateStructCode() {
 			SP_IR[mem_point].op[0] = std::stol(arg1_str);
 	}
 	if(arg2 != NULL) {
-		arg2_str = arg1->generateStructCode();
-		if(arg2_str.compare("?") == 0) // If the argument is to be received
+		arg2_str = arg2->generateStructCode();
+		if(arg2_str.compare("") == 0) // If the argument is to be received
 			SP_IR[mem_point].tag[1] = false;
 		else if(arg1_str.substr(0,6).compare("STRUCT") == 0) // If the argument is structure
 			SP_IR[mem_point].op[1] = std::stol(arg1_str.substr(6,1));
@@ -172,8 +172,8 @@ std::string StructuresExpression::generateStructCode() {
 			SP_IR[mem_point].op[1] = std::stol(arg1_str);
 	}
 	if(arg3 != NULL) {
-		arg3_str = arg1->generateStructCode();
-		if(arg3_str.compare("?") == 0) // If the argument is to be received
+		arg3_str = arg3->generateStructCode();
+		if(arg3_str.compare("") == 0) // If the argument is to be received
 			SP_IR[mem_point].tag[2] = false;
 		else if(arg1_str.substr(0,6).compare("STRUCT") == 0) // If the argument is structure
 			SP_IR[mem_point].op[2] = std::stol(arg1_str.substr(6,1));

@@ -27,7 +27,7 @@ extern std::map<std::string, AllocaInst *> NamedValues;
 //           Define opcodes
 /////////////////////////////////////////
 
-#define NOOP 0
+#define NOOP 99
 #define DEL 1
 #define ADD 2
 #define MIN 3
@@ -43,8 +43,9 @@ extern std::map<std::string, AllocaInst *> NamedValues;
 #define GREQ 13
 #define GR 14
 #define DELS 15
-#define JWT 98
-#define JNW 99
+#define JT 0
+//#define JWT 98
+//#define JNW 99
 #define NEXT 16
 
 /////////////////////////////////////////
@@ -67,8 +68,9 @@ extern std::map<std::string, AllocaInst *> NamedValues;
 #define GR_C 3
 #define DELS_C 1
 #define POWER_C 1
-#define JWT_C 1
-#define JNW_C 0
+#define JT_C 1
+//#define JWT_C 1
+//#define JNW_C 0
 #define NEXT_C 2
 
 typedef struct { 		//Structure type for inner command representation, a structure corresponds to a command of SPU
@@ -85,6 +87,6 @@ extern spu_cmd SP_IR[MEM_LENGTH];
 extern int mem_point;
 extern int label_i;
 extern std::string print_bin(int num, int l); //Function to convert the command to its binary representation
-extern void print_SPU_asm_IR(std::string * filename);
+extern void print_SPU_asm_IR(std::ostream * print_stream);
 
 #endif

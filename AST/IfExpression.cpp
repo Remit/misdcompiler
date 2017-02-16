@@ -117,7 +117,7 @@ std::string IfExpression::generateStructCode() {
 		SP_IR[mem_point].op[0] = 0; // The value is received from CPU
 		SP_IR[mem_point].op[1] = 0; // Not in use
 		SP_IR[mem_point].op[2] = 0; // Not in use
-		SP_IR[mem_point].opcode = JWT; // Setting the opcode for conditional jump to ELSE-branch
+		SP_IR[mem_point].opcode = JT; // Setting the opcode for conditional jump to ELSE-branch
 		SP_IR[mem_point].q = false;
 
 		int jwt_pos = mem_point;
@@ -130,6 +130,12 @@ std::string IfExpression::generateStructCode() {
 			strcpy(SP_IR[then_pos_beg].label, std::to_string(label_i).c_str()); // Creating a label for then-branch
 			label_i++;
 			int unc_jmp_end = mem_point; // Point to insert an unconditional branch later when it becomes known
+			SP_IR[mem_point].tag[0] = true; // Unconditional branch
+			SP_IR[mem_point].tag[1] = true; // Not in use
+			SP_IR[mem_point].tag[2] = true; // Not in use
+			SP_IR[mem_point].op[0] = 1; // Unconditional branch
+			SP_IR[mem_point].op[1] = 0; // Not in use
+			SP_IR[mem_point].op[2] = 0; // Not in use
 			mem_point++;
 			
 			else_pos_beg = mem_point;
@@ -144,13 +150,13 @@ std::string IfExpression::generateStructCode() {
 				
 				SP_IR[mem_point].opcode = NOOP;
 				strcpy(SP_IR[mem_point].label, std::to_string(label_i).c_str());// An empty-command for end label and position
-				SP_IR[unc_jmp_end].opcode = JNW;// Assigning jump to end after finishing then-branch, whereas the continuation in case of else-branch is unconditional
+				SP_IR[unc_jmp_end].opcode = JT;// Assigning jump to end after finishing then-branch, whereas the continuation in case of else-branch is unconditional
 				strcpy(SP_IR[unc_jmp_end].jmp_label, std::to_string(label_i).c_str());
 				SP_IR[unc_jmp_end].jmp_adr = mem_point;
-				SP_IR[mem_point].tag[0] = true; // Unconditional branch
+				SP_IR[mem_point].tag[0] = true; // Not in use
 				SP_IR[mem_point].tag[1] = true; // Not in use
 				SP_IR[mem_point].tag[2] = true; // Not in use
-				SP_IR[mem_point].op[0] = 0; // The value is received from CPU
+				SP_IR[mem_point].op[0] = 0; // Not in use
 				SP_IR[mem_point].op[1] = 0; // Not in use
 				SP_IR[mem_point].op[2] = 0; // Not in use
 				SP_IR[mem_point].q = false;

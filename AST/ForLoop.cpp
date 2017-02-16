@@ -157,7 +157,7 @@ std::string ForLoop::generateStructCode() { // The same as for the While-loop, c
 		SP_IR[mem_point].op[0] = 0; // The value is received from CPU
 		SP_IR[mem_point].op[1] = 0; // Not in use
 		SP_IR[mem_point].op[2] = 0; // Not in use
-		SP_IR[mem_point].opcode = JWT; // Setting the opcode for conditional jump to ELSE-branch
+		SP_IR[mem_point].opcode = JT; // Setting the opcode for conditional jump end of the loop
 		SP_IR[mem_point].q = false;
 
 		int jwt_pos = mem_point;
@@ -176,10 +176,10 @@ std::string ForLoop::generateStructCode() { // The same as for the While-loop, c
 			SP_IR[mem_point].tag[0] = true; 
 			SP_IR[mem_point].tag[1] = true; // Not in use
 			SP_IR[mem_point].tag[2] = true; // Not in use
-			SP_IR[mem_point].op[0] = 0; // The value is received from CPU
+			SP_IR[mem_point].op[0] = 1; // Unconditional branch
 			SP_IR[mem_point].op[1] = 0; // Not in use
 			SP_IR[mem_point].op[2] = 0; // Not in use
-			SP_IR[mem_point].opcode = JNW; // Setting the opcode for conditional jump to ELSE-branch
+			SP_IR[mem_point].opcode = JT; // Jump to condition after the loop body is processed
 			SP_IR[mem_point].q = false;
 			SP_IR[mem_point].jmp_adr = jwt_pos;
 			strcpy(SP_IR[mem_point].jmp_label,lbl_cond.c_str());
@@ -191,10 +191,10 @@ std::string ForLoop::generateStructCode() { // The same as for the While-loop, c
 			strcpy(SP_IR[jwt_pos].jmp_label, std::to_string(label_i).c_str()); // Assigning a unique label for condition to jump to else-branch
 			SP_IR[jwt_pos].jmp_adr = mem_point;
 			strcpy(SP_IR[mem_point].label, std::to_string(label_i).c_str());// An empty-command for end label and position
-			SP_IR[mem_point].tag[0] = true; // Unconditional branch
+			SP_IR[mem_point].tag[0] = true; // Not in use
 			SP_IR[mem_point].tag[1] = true; // Not in use
 			SP_IR[mem_point].tag[2] = true; // Not in use
-			SP_IR[mem_point].op[0] = 0; // The value is received from CPU
+			SP_IR[mem_point].op[0] = 0; // Not in use
 			SP_IR[mem_point].op[1] = 0; // Not in use
 			SP_IR[mem_point].op[2] = 0; // Not in use
 			SP_IR[mem_point].q = false;

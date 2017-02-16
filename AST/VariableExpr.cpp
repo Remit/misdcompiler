@@ -91,6 +91,6 @@ Value * VariableExpr::generateCode() {
 }
 
 std::string VariableExpr::generateStructCode() {
-	std::string ret = "?";
+	std::string ret = "";
 	return ret;
 }

@@ -158,7 +158,6 @@ int AST2ASMConversionPass(SequenceAST* al_AST, SequenceAST* sp_AST, asm_IR_optio
 
 	if(asm_filename.compare("") == 0) {
 		buf = std::cout.rdbuf();
-		std::cout << "HI FUCK!" << std::endl;
 	} else {
 		of.open(asm_filename.c_str());
 		buf = of.rdbuf();
@@ -169,7 +168,8 @@ int AST2ASMConversionPass(SequenceAST* al_AST, SequenceAST* sp_AST, asm_IR_optio
 	std::string al_hdr("\n ----- MACHINE CODE OF ARITHMETIC-LOGIC INSTRUCTIONS STREAM ----- \n");
 	std::string sp_hdr("\n ----- MACHINE CODE OF STRUCTURE PROCESSING INSTRUCTIONS STREAM ----- \n");
 	
-	if((al_AST != NULL) && (sp_AST != 0)) {
+	if((al_AST != NULL) && (sp_AST != NULL)) {
+		// Generating LLVM IR for AL-instructions stream
 		GlobalModule = new Module("MainModule", GlobalContext);
 		FunctionType *FT = FunctionType::get(Type::getVoidTy(GlobalContext), false);
 		Constant* c = GlobalModule->getOrInsertFunction("void",FT);
@@ -186,13 +186,16 @@ int AST2ASMConversionPass(SequenceAST* al_AST, SequenceAST* sp_AST, asm_IR_optio
 		raw_string_ostream OS(asm_llvm);
 		GlobalModule->print(OS,nullptr);
 		
+		// Generating SPU asm IR for SP-instructions stream
+		sp_AST->generateStructCode();
+		
 		switch(option_asm_IR) {
 			case ASM_IR_ALL:
 				out_ASM_IR << al_hdr;
 				out_ASM_IR << asm_llvm;
 				out_ASM_IR << std::endl;
 				out_ASM_IR << sp_hdr;
-				//sp_AST->print(&out_AST_IR);
+				print_SPU_asm_IR(&out_ASM_IR);
 				break;
 			case ASM_IR_CPU:
 				out_ASM_IR << al_hdr;
@@ -200,7 +203,7 @@ int AST2ASMConversionPass(SequenceAST* al_AST, SequenceAST* sp_AST, asm_IR_optio
 				break;
 			case ASM_IR_SPU:
 				out_ASM_IR << sp_hdr;
-				//sp_AST->print(&out_AST_IR);
+				print_SPU_asm_IR(&out_ASM_IR);
 				break;
 			case ASM_IR_NONE:
 				break;
