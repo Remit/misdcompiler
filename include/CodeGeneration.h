@@ -76,7 +76,7 @@ extern std::map<std::string, AllocaInst *> NamedValues;
 typedef struct { 		//Structure type for inner command representation, a structure corresponds to a command of SPU
     char label[80];     //Label of the operator
     int opcode;         //Inner code of operation
-    long op[3];          //Operands (numbers are for structures, the simple data is unnumbered)
+    long op[3];         //Operands (numbers are for structures, the simple data is unnumbered)
     bool tag[3];        //Tags
     char jmp_label[80]; //Symbolic jump label (see above) for jwt and jnw
     int jmp_adr;        //Jump address
@@ -84,9 +84,10 @@ typedef struct { 		//Structure type for inner command representation, a structur
 } spu_cmd;
 
 extern spu_cmd SP_IR[MEM_LENGTH];
+extern unsigned int SP_BIN[MEM_LENGTH][5];
 extern int mem_point;
 extern int label_i;
-extern std::string print_bin(int num, int l); //Function to convert the command to its binary representation
+extern void SPU_IR2BIN(); //Function to convert the IR of SPU command to its binary representation
 extern void print_SPU_asm_IR(std::ostream * print_stream);
 
 #endif

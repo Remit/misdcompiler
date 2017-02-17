@@ -182,12 +182,15 @@ int AST2ASMConversionPass(SequenceAST* al_AST, SequenceAST* sp_AST, asm_IR_optio
 				
 		Builder.CreateRetVoid();
 				
-		std::string asm_llvm;
-		raw_string_ostream OS(asm_llvm);
-		GlobalModule->print(OS,nullptr);
 		
 		// Generating SPU asm IR for SP-instructions stream
 		sp_AST->generateStructCode();
+		SPU_IR2BIN(); // Generating binary of SP-instructions stream
+		// TODO: Inserting at start commands to send the binary SPU program to SPU through PCI
+		
+		std::string asm_llvm;
+		raw_string_ostream OS(asm_llvm);
+		GlobalModule->print(OS,nullptr);
 		
 		switch(option_asm_IR) {
 			case ASM_IR_ALL:

@@ -29,6 +29,7 @@ The compilation command format is as follows:
 
 where
 `[...]` - mandatory parts of command,
+
 `[[...]]` - non-mandatory parts of command,
 
 `-v` - IR graphs visualization option with parameters:
