@@ -15,13 +15,13 @@ TMP_FILES_EXAMPLES := $(wildcard examples/*~)
 LLVMLIBS = `/bin/llvm-config --libs`
 LDFLAGS += `/bin/llvm-config --ldflags`
 
-all: misdcompiler.exe
+all: disccompiler.exe
 
-misdcompiler.exe: main.o Passes.o
+disccompiler.exe: main.o Passes.o
 	cd AST && make
 	cd IR && make
 	cd parser && make
-	g++ $(LDFLAGS) -g -o misdcompiler main.o Passes.o $(OBJ_FILES_IR) $(OBJ_FILES_PARSER) $(OBJ_FILES_AST) $(LLVMLIBS) -std=c++11
+	g++ $(LDFLAGS) -g -o disccompiler main.o Passes.o $(OBJ_FILES_IR) $(OBJ_FILES_PARSER) $(OBJ_FILES_AST) $(LLVMLIBS) -std=c++11
 
 Passes.o: Passes.cpp
 	g++ -c -g Passes.cpp
