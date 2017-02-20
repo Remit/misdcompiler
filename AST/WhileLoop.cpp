@@ -119,20 +119,11 @@ std::string WhileLoop::generateStructCode() {
 			mem_point++;
 			
 			// End of the loop
-			SP_IR[mem_point].opcode = NOOP;
 			strcpy(SP_IR[jwt_pos].jmp_label, std::to_string(label_i).c_str()); // Assigning a unique label for condition to jump to else-branch
 			SP_IR[jwt_pos].jmp_adr = mem_point;
-			strcpy(SP_IR[mem_point].label, std::to_string(label_i).c_str());// An empty-command for end label and position
-			SP_IR[mem_point].tag[0] = true; // Not in use
-			SP_IR[mem_point].tag[1] = true; // Not in use
-			SP_IR[mem_point].tag[2] = true; // Not in use
-			SP_IR[mem_point].op[0] = 0; // The value is received from CPU
-			SP_IR[mem_point].op[1] = 0; // Not in use
-			SP_IR[mem_point].op[2] = 0; // Not in use
-			SP_IR[mem_point].q = false;
+			strcpy(SP_IR[mem_point].label, std::to_string(label_i).c_str());
 				
 			label_i++;
-			mem_point++;
 		}
 	}
 	

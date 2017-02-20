@@ -148,21 +148,12 @@ std::string IfExpression::generateStructCode() {
 				SP_IR[jwt_pos].jmp_adr = else_pos_beg;
 				label_i++;
 				
-				SP_IR[mem_point].opcode = NOOP;
-				strcpy(SP_IR[mem_point].label, std::to_string(label_i).c_str());// An empty-command for end label and position
+				strcpy(SP_IR[mem_point].label, std::to_string(label_i).c_str());
 				SP_IR[unc_jmp_end].opcode = JT;// Assigning jump to end after finishing then-branch, whereas the continuation in case of else-branch is unconditional
 				strcpy(SP_IR[unc_jmp_end].jmp_label, std::to_string(label_i).c_str());
 				SP_IR[unc_jmp_end].jmp_adr = mem_point;
-				SP_IR[mem_point].tag[0] = true; // Not in use
-				SP_IR[mem_point].tag[1] = true; // Not in use
-				SP_IR[mem_point].tag[2] = true; // Not in use
-				SP_IR[mem_point].op[0] = 0; // Not in use
-				SP_IR[mem_point].op[1] = 0; // Not in use
-				SP_IR[mem_point].op[2] = 0; // Not in use
-				SP_IR[mem_point].q = false;
 				
 				label_i++;
-				mem_point++;
 			}
 		}
 	}

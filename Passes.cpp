@@ -18,8 +18,8 @@ int Compile(visualization_option option_vis, ast_IR_option option_ast_IR, std::s
 			status = AST2ASMConversionPass(al_AST, sp_AST, option_asm_IR, asm_filename);
 			
 			if(status == 0) {
-				// Generation of binary code
-				// TODO:
+				// TODO: Passes of LLVM & Generation of target-specific binary code based on LLVM IR which includes SPU code (to transfer through PCI)
+				// out_filename
 			}
 		}
 	}
@@ -169,7 +169,7 @@ int AST2ASMConversionPass(SequenceAST* al_AST, SequenceAST* sp_AST, asm_IR_optio
 	std::string sp_hdr("\n ----- MACHINE CODE OF STRUCTURE PROCESSING INSTRUCTIONS STREAM ----- \n");
 	
 	if((al_AST != NULL) && (sp_AST != NULL)) {
-		// Generating LLVM IR for AL-instructions stream
+		
 		GlobalModule = new Module("MainModule", GlobalContext);
 		FunctionType *FT = FunctionType::get(Type::getVoidTy(GlobalContext), false);
 		Constant* c = GlobalModule->getOrInsertFunction("void",FT);
@@ -177,17 +177,110 @@ int AST2ASMConversionPass(SequenceAST* al_AST, SequenceAST* sp_AST, asm_IR_optio
 		main_func->setCallingConv(CallingConv::C);
 		BasicBlock * startBB = BasicBlock::Create(GlobalContext, "start", main_func);
 		Builder.SetInsertPoint(startBB);
-
-		al_AST->generateCode();
-				
-		Builder.CreateRetVoid();
 				
 		
 		// Generating SPU asm IR for SP-instructions stream
 		sp_AST->generateStructCode();
-		SPU_IR2BIN(); // Generating binary of SP-instructions stream
-		// TODO: Inserting at start commands to send the binary SPU program to SPU through PCI
+		// TODO: Inserting the last command to halt the SPU program
+		SP_IR[mem_point].tag[0] = true; // Not in use
+		SP_IR[mem_point].tag[1] = false; // waiting for address
+		SP_IR[mem_point].tag[2] = true; // Not in use
+		SP_IR[mem_point].op[0] = 1; // Unconditional branch
+		SP_IR[mem_point].op[1] = 0; // Not in use
+		SP_IR[mem_point].op[2] = 0; // Not in use
+		SP_IR[mem_point].opcode = JT; // Jump to condition after the loop body is processed
+		SP_IR[mem_point].q = true;
+		SP_IR[mem_point].jmp_adr = 0;
+		mem_point++;
 		
+		SPU_IR2BIN(); // Generating binary of SP-instructions stream
+		// TODO: Inserting at start commands to store the binary representation of the SPU program in the memory of target machine
+
+		// Signature of int ioctl(int fd, unsigned long request, ...) The third argument is either void * or char * (may be not present)
+		Type* argsPTC[] = { Type::getInt16Ty(GlobalContext), Type::getInt32Ty(GlobalContext), Type::getInt32PtrTy(GlobalContext) };
+		FunctionType* ioctlTy = FunctionType::get(Type::getInt16Ty(GlobalContext), ArrayRef<Type*>(argsPTC,3), false);
+		Constant* c_ioctl = GlobalModule->getOrInsertFunction("ioctl",ioctlTy);
+		Function* ioctl_func = cast<Function>(c_ioctl);
+		// Transforming binary representation of SPU code into format for PCI transfer
+		
+		unsigned int words_count = ceil( (mem_point * 5 * sizeof(unsigned int) ) / sizeof(unsigned long) ); // Computing number of words to transfer to SPU via PCI
+		unsigned long* adr = (unsigned long*)malloc(sizeof(unsigned long)); // Allocating memory for address
+		unsigned long* data = (unsigned long*)calloc(words_count, sizeof(unsigned long)); // Allocating memory for binary SPU program to transfer it to SPU via PCI
+		
+		misd_burst SPU_bin_prog;
+		SPU_bin_prog.count = words_count;
+		SPU_bin_prog.adr = adr;
+		SPU_bin_prog.data = data;
+		
+		int j = 0;
+		unsigned long tmp, elem;
+		for(int i = 0; i < mem_point; i++) {
+			if(i % 2 != 0) {//uneven lines
+				tmp = SP_BIN[i][0];
+				elem = (tmp << 16) & 0xFFFF0000;
+				tmp = SP_BIN[i][1];
+				elem = elem | tmp;
+				data[j] = elem;
+				j++;
+				
+				tmp = SP_BIN[i][2];
+				elem = (tmp << 16) & 0xFFFF0000;
+				tmp = SP_BIN[i][3];
+				elem = elem | tmp;
+				data[j] = elem;
+				j++;
+			} else { //even lines
+				tmp = SP_BIN[i-1][4];
+				elem = (tmp << 16) & 0xFFFF0000;
+				tmp = SP_BIN[i][0];
+				elem = elem | tmp;
+				data[j] = elem;
+				j++;
+				
+				tmp = SP_BIN[i][1];
+				elem = (tmp << 16) & 0xFFFF0000;
+				tmp = SP_BIN[i][2];
+				elem = elem | tmp;
+				data[j] = elem;
+				j++;
+				
+				tmp = SP_BIN[i][3];
+				elem = (tmp << 16) & 0xFFFF0000;
+				tmp = SP_BIN[i][4];
+				elem = elem | tmp;
+				data[j] = elem;
+				j++;
+			}
+		}
+		if(mem_point % 2 != 0) { //Last word for uneven number of binary lines
+			tmp = SP_BIN[mem_point - 1][4];
+			elem = (tmp << 16) & 0xFFFF0000;
+			data[j] = elem;
+		}
+		
+		// Inserting into IRBuilder command to send the binary SPU code to SPU via PCI
+		int dfd;
+		if( ( dfd = open( "/dev/misd", O_RDWR ) ) < 0 ) std::cout << "Open MISD device error" << std::endl;
+		unsigned long request = MISD_WRITE_LCM;
+
+		std::vector<Value*> ArgsV;
+		// First arg
+		ConstantInt* fd_val = ConstantInt::get(Type::getInt16Ty(GlobalContext), dfd);
+		ArgsV.push_back(fd_val);
+		// Second arg
+		ConstantInt* request_val = ConstantInt::get(Type::getInt32Ty(GlobalContext), request);
+		ArgsV.push_back(request_val);
+		// Third arg
+		long unsigned int ptr_data = (long unsigned int)&SPU_bin_prog;
+		ConstantInt* data_ptr_val = ConstantInt::get(Type::getInt32Ty(GlobalContext), ptr_data);
+		ArgsV.push_back(data_ptr_val);
+		
+		Builder.CreateCall(ioctl_func, ArgsV, "callioctl");
+		
+		// Generating LLVM IR for AL-instructions stream
+		al_AST->generateCode();
+				
+		Builder.CreateRetVoid();
 		std::string asm_llvm;
 		raw_string_ostream OS(asm_llvm);
 		GlobalModule->print(OS,nullptr);

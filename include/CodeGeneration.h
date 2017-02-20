@@ -27,7 +27,6 @@ extern std::map<std::string, AllocaInst *> NamedValues;
 //           Define opcodes
 /////////////////////////////////////////
 
-#define NOOP 99
 #define DEL 1
 #define ADD 2
 #define MIN 3
@@ -52,7 +51,6 @@ extern std::map<std::string, AllocaInst *> NamedValues;
 //           Define op counts
 /////////////////////////////////////////
 
-#define NOOP_C 0
 #define DEL_C 2
 #define ADD_C 3
 #define MIN_C 1

@@ -45,10 +45,6 @@ void print_SPU_asm_IR(std::ostream * print_stream) {
 		
 		bool is_jmp_op = false;
 		switch(opcode) {
-			case NOOP:
-				operation = "NOP";
-				cnt_of_ops = NOOP_C;
-				break;
 			case DEL:
 				operation = "DEL";
 				cnt_of_ops = DEL_C;
@@ -421,7 +417,7 @@ void SPU_IR2BIN() {
 				break;
 			}
 			// format 6
-			case JT: {
+			case JT: { //TODO: Synchronize with the description using 1 and 0 tags
 				
 				first = 0x0000;
 				second = 0x0000;
@@ -430,43 +426,6 @@ void SPU_IR2BIN() {
 				fourth = (SP_IR[point].jmp_adr >> 8) & 0x0000FFFF;
 				
 				fifth = (SP_IR[point].jmp_adr << 8) & 0x0000FF00;
-				tmp = SP_IR[point].opcode; // Adding operation code
-				fifth = fifth | (tmp << 3);
-
-				// Third tag
-				if (SP_IR[point].tag[2])
-					tmp = 0x0004; // representation of 0...00100b
-				else
-					tmp = 0x0000;
-				fifth = fifth | tmp;
-				
-				// Second tag
-				if (SP_IR[point].tag[1])
-					tmp = 0x0002; // representation of 0...0010b
-				else
-					tmp = 0x0000;
-				fifth = fifth | tmp;
-				
-				// First tag
-				if (SP_IR[point].tag[0])
-					tmp = 0x0001; // representation of 0...001b
-				else
-					tmp = 0x0000;
-				fifth = fifth | tmp;
-				
-				break;
-			}
-			// format 7
-			case NOOP: {
-				
-				first = 0x0000;
-				second = 0x0000;
-				
-				third = 0x0000;
-				fourth = 0x0000;
-				
-				fifth = 0x0000;
-
 				tmp = SP_IR[point].opcode; // Adding operation code
 				fifth = fifth | (tmp << 3);
 
