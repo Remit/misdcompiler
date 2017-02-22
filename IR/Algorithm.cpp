@@ -176,14 +176,31 @@ int Graph_ArithmeticLogicProcessing( IR_Graph* src_graph, IR_Graph* alp_graph) {
 			if((enclosing_condition_id > 0) && check_presence_structure_nodes(op_id,alp_graph,enclosing_condition_ids,op_id)) {
 				// Adding tag variable (data node) to store the result of condition calculation
 				IR_DataNode *tag_node = new IR_DataNode();
+				std::string tag_name = "al_tag_" + std::to_string(tag_id);
 				tag_node->setProcType(IR_CPU);
 				tag_node->setDataType(IR_DATA_TAG);
 				tag_node->setSimpleType(VAR_INT);
+				tag_node->setDataName(tag_name);
 				alp_graph->addDataNode(tag_node);
 
 				// Adding connection from branch condition node to newly added tag data node
 				int tag_node_id = alp_graph->getLastDataID();
 				alp_graph->addConnection(op_id,tag_node_id);
+				
+				// Adding definition for tag node with connections
+				std::vector< std::string > * def_vars = new std::vector< std::string >;
+				def_vars->push_back(tag_name);
+				IR_OperationNode* def_tag = buildDefineNode(def_vars, VAR_BOOL, std::string(""));
+				alp_graph->addOperationNode(def_tag);
+				int def_tag_node_id = alp_graph->getLastOperationID();
+				
+				if(inc_op_ids != NULL)
+					for(int j = 0; j < inc_op_ids->size(); j++) {
+						alp_graph->addConnection((*inc_op_ids)[j],def_tag_node_id);
+						alp_graph->removeConnection((*inc_op_ids)[j],op_id);
+					}
+				alp_graph->addConnection(def_tag_node_id,op_id);
+				alp_graph->addConnection(def_tag_node_id,tag_node_id);
 
 				// Adding send to SPU operations in each branch after the branch
 				// condition nodes and connections from newly added tag data node to
@@ -196,7 +213,6 @@ int Graph_ArithmeticLogicProcessing( IR_Graph* src_graph, IR_Graph* alp_graph) {
 					IR_OperationNode* send_tag_node = new IR_OperationNode();
 					send_tag_node->setOperationType(IR_OP_SEND);
 					send_tag_node->setProcType(IR_CPU);
-					std::string tag_name = "al_tag_" + std::to_string(tag_id);
 					TransferExpr * te = new TransferExpr(tag_name,TR_SEND);
 					send_tag_node->setNodeASTSubTree(te);
 					alp_graph->addOperationNode(send_tag_node);
@@ -253,7 +269,6 @@ int Graph_ArithmeticLogicProcessing( IR_Graph* src_graph, IR_Graph* alp_graph) {
 			int first_transfer_added_id = 0;
 			int last_send_added_id = 0;
 			for( int j = 0; j < inc_data_ids->size(); j++) {
-
 				int data_id = (*inc_data_ids)[j];
 				IR_DataNode* data_node = ( IR_DataNode* )alp_graph->getNode(data_id);
 				if(data_node != NULL) {
@@ -812,7 +827,7 @@ int Graph_StructureProcessing( IR_Graph* src_graph, IR_Graph* sp_graph ) {
 
 			// If no receive and/or send nodes were introduced, adding simple connection
 			if( (last_recv_added_id == 0) && (last_send_added_id == 0) ) {
-				std::cout << "Problem with " << op_id;
+				std::cout << "No receive and send nodes for ID " << op_id << std::endl;
 				for(int k = 0; k < inc_op_ids->size(); k++)
 					for(int j = 0; j < dep_op_ids->size(); j++)
 						sp_graph->addConnection((*inc_op_ids)[k],(*dep_op_ids)[j]);

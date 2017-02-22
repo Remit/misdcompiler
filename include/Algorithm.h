@@ -10,6 +10,7 @@
 
 #include "IRGraph.h"
 #include "TransferExpr.h"
+#include "build.h"
 
 // Function to construct a graph only with arithmetical or logical processing
 // operation nodes and data nodes with data processed only by CPU.

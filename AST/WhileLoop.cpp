@@ -5,6 +5,7 @@ WhileLoop::WhileLoop()
 	Condition = NULL;
 	Body = NULL;
 	lbl = AST_WHILELOOP;
+	al_tag_name = "";
 }
 
 WhileLoop::~WhileLoop()
@@ -19,12 +20,20 @@ void WhileLoop::setBody(Base_AST* a_body) {
 	Body = a_body;
 }
 
+void WhileLoop::setALtagName(std::string a_al_tag_name) {
+	al_tag_name = a_al_tag_name;
+}
+
 Base_AST* WhileLoop::getCondition() {
 	return Condition;
 }
 
 Base_AST* WhileLoop::getBody() {
 	return Body;
+}
+
+std::string WhileLoop::getALTagName() {
+	return al_tag_name;
 }
 
 Base_AST * WhileLoop::copyAST() {
@@ -60,6 +69,8 @@ Value * WhileLoop::generateCode() {
 	Value * cond = NULL;
 	if(Condition != NULL) {
 		cond = Condition->generateCode();
+		Value* ret_val = (Value *)NamedValues[al_tag_name];
+		Builder.CreateStore(cond, ret_val);
 		if(cond != NULL) {
 			Builder.CreateCondBr(cond, loopBB, afterBB);
 			Builder.SetInsertPoint(loopBB);

@@ -14,6 +14,7 @@ extern LLVMContext GlobalContext;
 extern IRBuilder<> Builder;
 extern Module * GlobalModule;
 extern std::map<std::string, AllocaInst *> NamedValues;
+extern StructType * burst_struct_type;
 
 /////////////////////////////////////////
 //           Define constatnts

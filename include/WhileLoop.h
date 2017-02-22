@@ -17,14 +17,16 @@ class WhileLoop : public Base_AST
 {
 public:
 	WhileLoop();
-	WhileLoop(Base_AST* a_cond, Base_AST* a_body) : Condition(a_cond), Body(a_body) { lbl = AST_WHILELOOP; }
+	WhileLoop(Base_AST* a_cond, Base_AST* a_body, std::string a_al_tag_name) : Condition(a_cond), Body(a_body), al_tag_name(a_al_tag_name) { lbl = AST_WHILELOOP; }
 	~WhileLoop();
 	
 	void setCondition(Base_AST* a_cond);
 	void setBody(Base_AST* a_body);
+	void setALtagName(std::string a_al_tag_name);
 	
 	Base_AST* getCondition();
 	Base_AST* getBody();
+	std::string getALTagName();
 	
 	Base_AST * copyAST();
 	
@@ -36,6 +38,7 @@ public:
 private:
 	Base_AST* Condition;
 	Base_AST* Body;
+	std::string al_tag_name;
 
 };
 

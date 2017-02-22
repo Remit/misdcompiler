@@ -12,7 +12,6 @@ int Compile(visualization_option option_vis, ast_IR_option option_ast_IR, std::s
 		SequenceAST* al_AST = new SequenceAST();
 		SequenceAST* sp_AST = new SequenceAST();
 		status = IR2ASTConversionPass(al_AST, sp_AST, al_graph, sp_graph, option_ast_IR, ast_filename);
-			
 		if(status == 0) {
 			// Generation of asm IRs
 			status = AST2ASMConversionPass(al_AST, sp_AST, option_asm_IR, asm_filename);
@@ -168,8 +167,7 @@ int AST2ASMConversionPass(SequenceAST* al_AST, SequenceAST* sp_AST, asm_IR_optio
 	std::string al_hdr("\n ----- MACHINE CODE OF ARITHMETIC-LOGIC INSTRUCTIONS STREAM ----- \n");
 	std::string sp_hdr("\n ----- MACHINE CODE OF STRUCTURE PROCESSING INSTRUCTIONS STREAM ----- \n");
 	
-	if((al_AST != NULL) && (sp_AST != NULL)) {
-		
+	if((al_AST != NULL) && (sp_AST != NULL)) {		
 		GlobalModule = new Module("MainModule", GlobalContext);
 		FunctionType *FT = FunctionType::get(Type::getVoidTy(GlobalContext), false);
 		Constant* c = GlobalModule->getOrInsertFunction("void",FT);
@@ -177,7 +175,14 @@ int AST2ASMConversionPass(SequenceAST* al_AST, SequenceAST* sp_AST, asm_IR_optio
 		main_func->setCallingConv(CallingConv::C);
 		BasicBlock * startBB = BasicBlock::Create(GlobalContext, "start", main_func);
 		Builder.SetInsertPoint(startBB);
-				
+		
+		// Onetime declaration of misd burst struct type
+		Type* type1 = Type::getInt16Ty(GlobalContext);
+		Type* type23 = Type::getInt32PtrTy(GlobalContext);
+		const std::vector< Type* > types = {type1, type23, type23};
+		ArrayRef< Type * > TypesAr = ArrayRef< Type * >(types);
+		StringRef struct_name = StringRef("misdbursttype");
+		burst_struct_type = StructType::create(TypesAr, struct_name);
 		
 		// Generating SPU asm IR for SP-instructions stream
 		sp_AST->generateStructCode();
@@ -203,59 +208,92 @@ int AST2ASMConversionPass(SequenceAST* al_AST, SequenceAST* sp_AST, asm_IR_optio
 		Function* ioctl_func = cast<Function>(c_ioctl);
 		// Transforming binary representation of SPU code into format for PCI transfer
 		
-		unsigned int words_count = ceil( (mem_point * 5 * sizeof(unsigned int) ) / sizeof(unsigned long) ); // Computing number of words to transfer to SPU via PCI
-		unsigned long* adr = (unsigned long*)malloc(sizeof(unsigned long)); // Allocating memory for address
-		unsigned long* data = (unsigned long*)calloc(words_count, sizeof(unsigned long)); // Allocating memory for binary SPU program to transfer it to SPU via PCI
+		
+		unsigned int words_count = ceil( ( (float) mem_point * 5 * sizeof(unsigned int) ) / sizeof(unsigned long) ); // Computing number of words to transfer to SPU via PCI
+		//unsigned long* adr = (unsigned long*)malloc(sizeof(unsigned long)); // Allocating memory for address
+		//unsigned long* data = (unsigned long*)calloc(words_count, sizeof(unsigned long)); // Allocating memory for binary SPU program to transfer it to SPU via PCI
+		
+		//ArrayType* arrayType = ArrayType::get(Type::getInt32Ty(GlobalContext), words_count);
+		ConstantInt* words_count_val = ConstantInt::get(Type::getInt16Ty(GlobalContext), words_count);
+		Value * llvm_alloca_data_array_inst = Builder.CreateAlloca(Type::getInt32Ty(GlobalContext), words_count_val, "data");
+		Value * llvm_alloca_adr_array_inst = Builder.CreateAlloca(Type::getInt32Ty(GlobalContext), words_count_val, "adr");
+		
+		Value * llvm_alloca_misdburst_struct_inst = Builder.CreateAlloca(burst_struct_type, nullptr, "misdburst");
+		Value* insert_field1 = Builder.CreateInsertValue(llvm_alloca_misdburst_struct_inst, words_count_val, std::vector<unsigned>(1, 0), "setcount");
+		Value* insert_field2 = Builder.CreateInsertValue(llvm_alloca_misdburst_struct_inst, llvm_alloca_adr_array_inst, std::vector<unsigned>(1, 1), "setdataptr");
+		Value* insert_field3 = Builder.CreateInsertValue(llvm_alloca_misdburst_struct_inst, llvm_alloca_data_array_inst, std::vector<unsigned>(1, 2), "setadrptr");
 		
 		misd_burst SPU_bin_prog;
-		SPU_bin_prog.count = words_count;
-		SPU_bin_prog.adr = adr;
-		SPU_bin_prog.data = data;
 		
 		int j = 0;
 		unsigned long tmp, elem;
+		ConstantInt* elem_val;
 		for(int i = 0; i < mem_point; i++) {
 			if(i % 2 != 0) {//uneven lines
 				tmp = SP_BIN[i][0];
 				elem = (tmp << 16) & 0xFFFF0000;
 				tmp = SP_BIN[i][1];
 				elem = elem | tmp;
-				data[j] = elem;
+				elem_val = ConstantInt::get(Type::getInt32Ty(GlobalContext), elem);
+				Builder.CreateInsertValue(llvm_alloca_data_array_inst, elem_val, std::vector<unsigned>(1, j));
+				//TODO: Placeholder for adr
+				elem_val = ConstantInt::get(Type::getInt32Ty(GlobalContext), j);
+				Builder.CreateInsertValue(llvm_alloca_adr_array_inst, elem_val, std::vector<unsigned>(1, j));
 				j++;
 				
 				tmp = SP_BIN[i][2];
 				elem = (tmp << 16) & 0xFFFF0000;
 				tmp = SP_BIN[i][3];
 				elem = elem | tmp;
-				data[j] = elem;
+				elem_val = ConstantInt::get(Type::getInt32Ty(GlobalContext), elem);
+				Builder.CreateInsertValue(llvm_alloca_data_array_inst, elem_val, std::vector<unsigned>(1, j));
+				//TODO: Placeholder for adr
+				elem_val = ConstantInt::get(Type::getInt32Ty(GlobalContext), j);
+				Builder.CreateInsertValue(llvm_alloca_adr_array_inst, elem_val, std::vector<unsigned>(1, j));
 				j++;
 			} else { //even lines
 				tmp = SP_BIN[i-1][4];
 				elem = (tmp << 16) & 0xFFFF0000;
 				tmp = SP_BIN[i][0];
 				elem = elem | tmp;
-				data[j] = elem;
+				elem_val = ConstantInt::get(Type::getInt32Ty(GlobalContext), elem);
+				Builder.CreateInsertValue(llvm_alloca_data_array_inst, elem_val, std::vector<unsigned>(1, j));
+				//TODO: Placeholder for adr
+				elem_val = ConstantInt::get(Type::getInt32Ty(GlobalContext), j);
+				Builder.CreateInsertValue(llvm_alloca_adr_array_inst, elem_val, std::vector<unsigned>(1, j));
 				j++;
 				
 				tmp = SP_BIN[i][1];
 				elem = (tmp << 16) & 0xFFFF0000;
 				tmp = SP_BIN[i][2];
 				elem = elem | tmp;
-				data[j] = elem;
+				elem_val = ConstantInt::get(Type::getInt32Ty(GlobalContext), elem);
+				Builder.CreateInsertValue(llvm_alloca_data_array_inst, elem_val, std::vector<unsigned>(1, j));
+				//TODO: Placeholder for adr
+				elem_val = ConstantInt::get(Type::getInt32Ty(GlobalContext), j);
+				Builder.CreateInsertValue(llvm_alloca_adr_array_inst, elem_val, std::vector<unsigned>(1, j));
 				j++;
 				
 				tmp = SP_BIN[i][3];
 				elem = (tmp << 16) & 0xFFFF0000;
 				tmp = SP_BIN[i][4];
 				elem = elem | tmp;
-				data[j] = elem;
+				elem_val = ConstantInt::get(Type::getInt32Ty(GlobalContext), elem);
+				Builder.CreateInsertValue(llvm_alloca_data_array_inst, elem_val, std::vector<unsigned>(1, j));
+				//TODO: Placeholder for adr
+				elem_val = ConstantInt::get(Type::getInt32Ty(GlobalContext), j);
+				Builder.CreateInsertValue(llvm_alloca_adr_array_inst, elem_val, std::vector<unsigned>(1, j));
 				j++;
 			}
 		}
 		if(mem_point % 2 != 0) { //Last word for uneven number of binary lines
 			tmp = SP_BIN[mem_point - 1][4];
 			elem = (tmp << 16) & 0xFFFF0000;
-			data[j] = elem;
+			elem_val = ConstantInt::get(Type::getInt32Ty(GlobalContext), elem);
+			Builder.CreateInsertValue(llvm_alloca_data_array_inst, elem_val, std::vector<unsigned>(1, j));
+			//TODO: Placeholder for adr
+			elem_val = ConstantInt::get(Type::getInt32Ty(GlobalContext), j);
+			Builder.CreateInsertValue(llvm_alloca_adr_array_inst, elem_val, std::vector<unsigned>(1, j));
 		}
 		
 		// Inserting into IRBuilder command to send the binary SPU code to SPU via PCI
@@ -268,12 +306,10 @@ int AST2ASMConversionPass(SequenceAST* al_AST, SequenceAST* sp_AST, asm_IR_optio
 		ConstantInt* fd_val = ConstantInt::get(Type::getInt16Ty(GlobalContext), dfd);
 		ArgsV.push_back(fd_val);
 		// Second arg
-		ConstantInt* request_val = ConstantInt::get(Type::getInt32Ty(GlobalContext), request);
+		ConstantInt* request_val = ConstantInt::get(Type::getInt64Ty(GlobalContext), request);
 		ArgsV.push_back(request_val);
 		// Third arg
-		long unsigned int ptr_data = (long unsigned int)&SPU_bin_prog;
-		ConstantInt* data_ptr_val = ConstantInt::get(Type::getInt32Ty(GlobalContext), ptr_data);
-		ArgsV.push_back(data_ptr_val);
+		ArgsV.push_back(llvm_alloca_misdburst_struct_inst);
 		
 		Builder.CreateCall(ioctl_func, ArgsV, "callioctl");
 		

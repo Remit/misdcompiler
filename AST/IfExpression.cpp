@@ -6,6 +6,7 @@ IfExpression::IfExpression()
 	ThenExpression = NULL;
 	ElseExpression = NULL;
 	lbl = AST_IFEXPRESSION;
+	al_tag_name = "";
 }
 
 IfExpression::~IfExpression()
@@ -24,6 +25,10 @@ void IfExpression::setElseExpression(Base_AST* a_else_expr) {
 	ElseExpression = a_else_expr;
 }
 
+void IfExpression::setALtagName(std::string a_al_tag_name) {
+	al_tag_name = a_al_tag_name;
+}
+
 Base_AST* IfExpression::getCondition() {
 	return Condition;
 }
@@ -34,6 +39,10 @@ Base_AST* IfExpression::getThenExpression() {
 
 Base_AST* IfExpression::getElseExpression() {
 	return ElseExpression;
+}
+
+std::string IfExpression::getALTagName() {
+	return al_tag_name;
 }
 
 void IfExpression::print(std::ostream * print_stream) {
@@ -68,8 +77,11 @@ Value * IfExpression::generateCode() {
 	Value * ret = NULL;
 	Value * cond = NULL;
 	
-	if(Condition != NULL)
+	if(Condition != NULL) {
 		cond = Condition->generateCode();
+		Value* ret_val = (Value *)NamedValues[al_tag_name];
+		Builder.CreateStore(cond, ret_val);
+	}
 	if(cond != NULL) {
 		Function * func = Builder.GetInsertBlock()->getParent();
 		BasicBlock * thenBB = BasicBlock::Create(GlobalContext, "then", func);

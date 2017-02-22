@@ -166,19 +166,19 @@ std::string StructuresExpression::generateStructCode() {
 		arg2_str = arg2->generateStructCode();
 		if(arg2_str.compare("") == 0) // If the argument is to be received
 			SP_IR[mem_point].tag[1] = false;
-		else if(arg1_str.substr(0,6).compare("STRUCT") == 0) // If the argument is structure
-			SP_IR[mem_point].op[1] = std::stol(arg1_str.substr(6,1));
+		else if(arg2_str.substr(0,6).compare("STRUCT") == 0) // If the argument is structure
+			SP_IR[mem_point].op[1] = std::stol(arg2_str.substr(6,1));
 		else // If the argument is a number
-			SP_IR[mem_point].op[1] = std::stol(arg1_str);
+			SP_IR[mem_point].op[1] = std::stol(arg2_str);
 	}
 	if(arg3 != NULL) {
 		arg3_str = arg3->generateStructCode();
 		if(arg3_str.compare("") == 0) // If the argument is to be received
 			SP_IR[mem_point].tag[2] = false;
-		else if(arg1_str.substr(0,6).compare("STRUCT") == 0) // If the argument is structure
-			SP_IR[mem_point].op[2] = std::stol(arg1_str.substr(6,1));
+		else if(arg3_str.substr(0,6).compare("STRUCT") == 0) // If the argument is structure
+			SP_IR[mem_point].op[2] = std::stol(arg3_str.substr(6,1));
 		else // If the argument is a number
-			SP_IR[mem_point].op[2] = std::stol(arg1_str);
+			SP_IR[mem_point].op[2] = std::stol(arg3_str);
 	}
 	
 	// Writing operation code and queue format to the instruction representation

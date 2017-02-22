@@ -15,6 +15,7 @@ IR_OperationNode* buildAssignNode( data_type dt, std::vector< std::string > * id
 	IR_OperationNode* op_node = NULL;
 	op_node = new IR_OperationNode();
 	op_node->setOperationType(IR_OP_PROCESSING);
+	std::string scope_back_id = scopes_ids_list->back();
 
 	if(( dt == IR_DATA_SIMPLE ) || (dt == IR_DATA_TAG)) {
 		op_node->setProcType(IR_CPU);
@@ -24,7 +25,8 @@ IR_OperationNode* buildAssignNode( data_type dt, std::vector< std::string > * id
 
 			IR_DataNode * dn = var_table.getDataNodeByVariableName((*idents_ptr)[0],ok,scopes_ids_list);
 			if(dn != NULL) {
-				VariableExpr * var_assigned = new VariableExpr((*idents_ptr)[0],dn->getSimpleType(),false);
+				std::string var_name = (*idents_ptr)[0] + "-" + scope_back_id;
+				VariableExpr * var_assigned = new VariableExpr(var_name,dn->getSimpleType(),false);
 				BinaryExpression * bin_expr = new BinaryExpression(OP_ASSIGN,var_assigned,expr);
 				op_node->setNodeASTSubTree(bin_expr);
 			}
@@ -48,7 +50,8 @@ IR_OperationNode* buildAssignNode( data_type dt, std::vector< std::string > * id
 				}
 			} else {
 				VariableExpr * ident = NULL;
-				ident = new VariableExpr((*idents_ptr)[0],dn->getSimpleType(),false);
+				std::string var_name = (*idents_ptr)[0] + "-" + scope_back_id;
+				ident = new VariableExpr(var_name,dn->getSimpleType(),false);
 				struct_processing->setArg1(ident);
 			}
 		}
@@ -65,7 +68,8 @@ IR_OperationNode* buildAssignNode( data_type dt, std::vector< std::string > * id
 				}
 			} else {
 				VariableExpr * ident = NULL;
-				ident = new VariableExpr((*idents_ptr)[1],dn->getSimpleType(),false);
+				std::string var_name = (*idents_ptr)[1] + "-" + scope_back_id;
+				ident = new VariableExpr(var_name,dn->getSimpleType(),false);
 				struct_processing->setArg2(ident);
 			}
 		}
@@ -82,7 +86,8 @@ IR_OperationNode* buildAssignNode( data_type dt, std::vector< std::string > * id
 				}
 			} else {
 				VariableExpr * ident = NULL;
-				ident = new VariableExpr((*idents_ptr)[2],dn->getSimpleType(),false);
+				std::string var_name = (*idents_ptr)[2] + "-" + scope_back_id;
+				ident = new VariableExpr(var_name,dn->getSimpleType(),false);
 				struct_processing->setArg3(ident);
 			}
 		}
@@ -94,16 +99,26 @@ IR_OperationNode* buildAssignNode( data_type dt, std::vector< std::string > * id
 }
 
 //Building definition node in order to correctly transform graph to AST and then to proceed to llvm
-IR_OperationNode* buildDefineNode( std::vector< std::string > * def_vars, variable_type type_of_vars) {
+IR_OperationNode* buildDefineNode( std::vector< std::string > * def_vars, variable_type type_of_vars, std::string scope_id) {
 	IR_OperationNode* op_node = NULL;
 	op_node = new IR_OperationNode();
 	op_node->setOperationType(IR_OP_DEFINITION);
-	op_node->setDefinedVars(def_vars);
+	std::vector< std::string > * def_vars_full = new std::vector< std::string >;
+	for(int i = 0; i < def_vars->size(); i++) {
+		std::string full_def_name;
+		if(scope_id.compare("") != 0)
+			full_def_name = (*def_vars)[i] + "-" + scope_id;
+		else
+			full_def_name = (*def_vars)[i];
+		def_vars_full->push_back(full_def_name);
+	}
+	
+	op_node->setDefinedVars(def_vars_full);
 	op_node->setProcType(IR_CPU);
 	
 	//Creating an AST node for definition
-	if((def_vars != NULL) && (def_vars->size() > 0)) {
-		DefineExpr * def_ast = new DefineExpr(def_vars, type_of_vars);
+	if((def_vars_full != NULL) && (def_vars_full->size() > 0)) {
+		DefineExpr * def_ast = new DefineExpr(def_vars_full, type_of_vars);
 		op_node->setNodeASTSubTree(def_ast);
 	}
 
@@ -281,11 +296,14 @@ VariableExpr * buildVariableExpr(std::string var_name, std::vector <std::string 
 	bool * ok = new bool();
 	IR_DataNode * dn = NULL;
 
+	std::string scope_back_id = scopes_ids_list->back();
 	dn = var_table.getDataNodeByVariableName( var_name, ok, scopes_ids_list );
 
 	VariableExpr * var_expr = NULL;
-	if(dn != NULL)
-		var_expr = new VariableExpr(var_name,dn->getSimpleType(),false);
+	if(dn != NULL) {
+		std::string var_name_full = var_name + "-" + scope_back_id;
+		var_expr = new VariableExpr(var_name_full,dn->getSimpleType(),false);
+	}
 
 	return var_expr;
 }

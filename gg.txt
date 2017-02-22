@@ -1,0 +1,60 @@
+
+ ----- MACHINE CODE OF ARITHMETIC-LOGIC INSTRUCTIONS STREAM ----- 
+; ModuleID = 'MainModule'
+source_filename = "MainModule"
+
+%misdbursttype = type { i16, i32*, i32* }
+
+define void @void() {
+start:
+  %data = alloca i32, i16 5
+  %adr = alloca i32, i16 5
+  %misdburst = alloca %misdbursttype
+  %setcount = insertvalue %misdbursttype* %misdburst, i16 5, 0
+  %setdataptr = insertvalue %misdbursttype* %misdburst, i32* %adr, 1
+  %setadrptr = insertvalue %misdbursttype* %misdburst, i32* %data, 2
+  %0 = insertvalue i32* %data, i32 0, 0
+  %1 = insertvalue i32* %adr, i32 0, 0
+  %2 = insertvalue i32* %data, i32 0, 1
+  %3 = insertvalue i32* %adr, i32 1, 1
+  %4 = insertvalue i32* %data, i32 98346, 2
+  %5 = insertvalue i32* %adr, i32 2, 2
+  %6 = insertvalue i32* %data, i32 0, 3
+  %7 = insertvalue i32* %adr, i32 3, 3
+  %8 = insertvalue i32* %data, i32 0, 4
+  %9 = insertvalue i32* %adr, i32 4, 4
+  %callioctl = call i16 @ioctl(i16 -1, i64 3221778693, %misdbursttype* %misdburst)
+  %x-0 = alloca i32
+  %z-0 = alloca i32
+  %z-01 = load i32, i32* %z-0
+  %data2 = alloca i32, i16 1
+  %adr3 = alloca i32, i16 1
+  %10 = insertvalue i32* %data2, i32 %z-01, 0
+  %11 = insertvalue i32* %adr3, i32 0, 0
+  %misdburst4 = alloca %misdbursttype
+  %setcount5 = insertvalue %misdbursttype* %misdburst4, i16 1, 0
+  %setdataptr6 = insertvalue %misdbursttype* %misdburst4, i32* %adr3, 1
+  %setadrptr7 = insertvalue %misdbursttype* %misdburst4, i32* %data2, 2
+  %sent = call i16 @ioctl(i16 -1, i64 3221778689, %misdbursttype* %misdburst4)
+  %data8 = alloca i32, i16 1
+  %adr9 = alloca i32, i16 1
+  %12 = insertvalue i32* %adr9, i32 0, 0
+  %misdburst10 = alloca %misdbursttype
+  %setcount11 = insertvalue %misdbursttype* %misdburst10, i16 1, 0
+  %setdataptr12 = insertvalue %misdbursttype* %misdburst10, i32* %adr9, 1
+  %setadrptr13 = insertvalue %misdbursttype* %misdburst10, i32* %data8, 2
+  %received = call i16 @ioctl(i16 -1, i64 2148036866, %misdbursttype* %misdburst10)
+  store i32* %data8, i32* %x-0
+  ret void
+}
+
+declare i16 @ioctl(i16, i32, i32*)
+
+
+ ----- MACHINE CODE OF STRUCTURE PROCESSING INSTRUCTIONS STREAM ----- 
+0      |         SEARCHq ?, 1
+1      |         JTq 1, (0) 
+
+ -- BINARY REPRESENTATION OF SPU ASM CODE -- 
+0      | 00000000000000000000000000000000000000000000000000000000000000011000000000101010
+1      | 00000000000000000000000000000000000000000000000000000000000000000000000000000101

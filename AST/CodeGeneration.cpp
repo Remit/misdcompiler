@@ -7,6 +7,8 @@ unsigned int SP_BIN[MEM_LENGTH][5];
 int mem_point = 0;
 int label_i = 0;
 
+
+
 // This procedure prints the asm representation
 // of SPU program either to file or to the
 // standard output.

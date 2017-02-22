@@ -20,6 +20,7 @@ LLVMContext GlobalContext;
 IRBuilder<> Builder(GlobalContext);
 Module * GlobalModule;
 std::map<std::string, AllocaInst *> NamedValues;
+StructType * burst_struct_type;
 
 extern FILE *yyin;
 extern FILE *yyout;

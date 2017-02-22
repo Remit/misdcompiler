@@ -208,7 +208,7 @@ def_expr:
 																		$$ = $2;
 																		last_node++;
 																		std::vector< std::string > * idents_ptr = &idents;
-																		IR_OperationNode* op_node = buildDefineNode(idents_ptr, $1);
+																		IR_OperationNode* op_node = buildDefineNode(idents_ptr, $1, scopes_ids_list.back());
 																		op_node->setInstructionType(I_DEFINE);
 																		op_node->setID(last_node);
 																		op_node->setScopesIDs(scopes_ids_list);
@@ -577,7 +577,7 @@ str_search_in_str:
 																			
 																			int res_id = identNameToGID(data_node_result_name);
 																			if(data_node_2 != NULL) {
-																				std::string data_node_2_name = data_node_1->getDataName();
+																				std::string data_node_2_name = data_node_2->getDataName();
 																				isAdded = isAddedToGraph(data_node_2_name, check_existence);
 																			
 																				if( (* check_existence) == true ) {
@@ -589,7 +589,7 @@ str_search_in_str:
 																				}
 																			
 																				int node_2_id = identNameToGID(data_node_2_name);
-																			
+																				
 																				if((res_id > 0) && (op_node_id > 0) && (data_node_1_id > 0) && (node_2_id > 0)) {
 																					$$->addConnection(op_node_id,res_id);
 																					$$->addConnection(data_node_1_id,op_node_id);

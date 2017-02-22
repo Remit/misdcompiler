@@ -7,6 +7,7 @@ ForLoop::ForLoop()
 	Step = NULL;
 	Body = NULL;
 	counter_name = "";
+	al_tag_name = "";
 	lbl = AST_FORLOOP;
 }
 
@@ -34,6 +35,10 @@ void ForLoop::setCounterName(std::string a_counter_name) {
 	counter_name = a_counter_name;
 }
 
+void ForLoop::setALtagName(std::string a_al_tag_name) {
+	al_tag_name = a_al_tag_name;
+}
+
 Base_AST* ForLoop::getStart() {
 	return Start;
 }
@@ -52,6 +57,10 @@ Base_AST* ForLoop::getBody() {
 
 std::string ForLoop::getCounterName() {
 	return counter_name;
+}
+
+std::string ForLoop::getALTagName() {
+	return al_tag_name;
 }
 
 Base_AST * ForLoop::copyAST() {
@@ -126,6 +135,8 @@ Value * ForLoop::generateCode() {
 					Value * endCond = NULL;
 					if(End != NULL) {
 						endCond = End->generateCode();
+						Value* ret_val = (Value *)NamedValues[al_tag_name];
+						Builder.CreateStore(endCond, ret_val);
 						if(endCond != NULL) {
 							BasicBlock * loopEndBB = Builder.GetInsertBlock();
 							BasicBlock * afterBB = BasicBlock::Create(GlobalContext, "afterloop", func);

@@ -13,6 +13,12 @@
 #include "CodeGeneration.h"
 #endif
 
+#ifndef MISD_IOCTL_H
+#include "misd.h"
+#endif
+
+#include <fcntl.h>
+
 class TransferExpr : public Base_AST
 {
 public:

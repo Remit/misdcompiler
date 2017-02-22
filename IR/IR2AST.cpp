@@ -123,6 +123,12 @@ IfExpression * AST_st_if(int node_id, IR_Graph * graph) {
 		int first_then_id = op_node_cond->getThenID();
 		int first_else_id = op_node_cond->getElseID();
 		ast_if = (IfExpression *)op_node_cond->getNodeASTSubTree();
+		std::vector< int > * dep_data_ids = graph->getDependentDataNodes(node_id);
+		if(dep_data_ids != NULL) {
+			IR_DataNode* tag_node = ( IR_DataNode* )graph->getNode((*dep_data_ids)[0]);
+			if(tag_node != NULL)
+				ast_if->setALtagName(tag_node->getDataName());
+		}
 		//Then-branch
 		if(first_then_id > 0) {
 			int cur_op_id;
@@ -344,6 +350,12 @@ WhileLoop * AST_st_whileloop(int node_id, IR_Graph * graph) {
 		IR_OperationNode* op_node_cond = ( IR_OperationNode* )graph->getNode(node_id);
 		int end_id = op_node_cond->getConnectedNodeID();
 		ast_while = (WhileLoop *)op_node_cond->getNodeASTSubTree();
+		std::vector< int > * dep_data_ids = graph->getDependentDataNodes(node_id);
+		if(dep_data_ids != NULL) {
+			IR_DataNode* tag_node = ( IR_DataNode* )graph->getNode((*dep_data_ids)[0]);
+			if(tag_node != NULL)
+				ast_while->setALtagName(tag_node->getDataName());
+		}
 		std::vector< int > * dep_op_ids = graph->getDependentOperationNodes(node_id);
 		int cur_op_id;
 		//Getting the first body-of-loop node		
@@ -485,6 +497,11 @@ ForLoop * AST_st_forloop(int node_id, IR_Graph * graph) {
 		IR_OperationNode* op_node_cond = ( IR_OperationNode* )graph->getNode(cond_node_id);
 		int end_id = op_node_cond->getConnectedNodeID();
 		ast_for = (ForLoop *)op_node_cond->getNodeASTSubTree();
+		if(dep_data_ids != NULL) {
+			IR_DataNode* tag_node = ( IR_DataNode* )graph->getNode((*dep_data_ids)[0]);
+			if(tag_node != NULL)
+				ast_for->setALtagName(tag_node->getDataName());
+		}
 		// Setting the name of the counter for the purposes of code generation
 		if((dep_data_ids != NULL) && (dep_data_ids->size() > 0)) {
 			int counter_node_id = (*dep_data_ids)[0];

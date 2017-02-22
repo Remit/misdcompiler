@@ -8,5 +8,5 @@ _misdop_INSERT_STR STRUCT1, x, z;
 }
 else
 {
-_misdop_INSERT_STR STRUCT1, y, x;
+_misdop_SEARCH_STR x, STRUCT1, z;
 }
