@@ -17,7 +17,7 @@ class IfExpression : public Base_AST
 {
 public:
 	IfExpression();
-	IfExpression(Base_AST* a_cond, Base_AST* a_then_expr, Base_AST* a_else_expr, std::string a_al_tag_name) : Condition(a_cond), ThenExpression(a_then_expr), ElseExpression(a_else_expr), al_tag_name(a_al_tag_name) { lbl = AST_IFEXPRESSION; }
+	IfExpression(Base_AST* a_cond, Base_AST* a_then_expr, Base_AST* a_else_expr, std::string a_al_tag_name = "") : Condition(a_cond), ThenExpression(a_then_expr), ElseExpression(a_else_expr), al_tag_name(a_al_tag_name) { lbl = AST_IFEXPRESSION; }
 	~IfExpression();
 	
 	void setCondition(Base_AST* a_cond);

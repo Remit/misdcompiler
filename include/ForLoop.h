@@ -17,7 +17,7 @@ class ForLoop : public Base_AST
 {
 public:
 	ForLoop();
-	ForLoop(Base_AST* a_start, Base_AST* a_end, Base_AST* a_step, Base_AST* a_body, std::string a_al_tag_name) : Start(a_start), End(a_end), Step(a_step), Body(a_body), al_tag_name(a_al_tag_name) { lbl = AST_FORLOOP; }
+	ForLoop(Base_AST* a_start, Base_AST* a_end, Base_AST* a_step, Base_AST* a_body, std::string a_al_tag_name = "") : Start(a_start), End(a_end), Step(a_step), Body(a_body), al_tag_name(a_al_tag_name) { lbl = AST_FORLOOP; }
 	~ForLoop();
 	
 	void setStart(Base_AST* a_start);

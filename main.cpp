@@ -178,6 +178,7 @@ int main(int argc, char *argv[]) {
 	int status = yyparse(result_graph);
 	fclose(fp);
 	fclose(out_fp);
+	remove(argv[2]);
 	if(status == 0) {
 		status = Compile(option_vis, option_ast_IR, ast_filename, option_asm_IR, asm_filename, &result_graph, out_filename);
 	}

@@ -17,8 +17,40 @@ int Compile(visualization_option option_vis, ast_IR_option option_ast_IR, std::s
 			status = AST2ASMConversionPass(al_AST, sp_AST, option_asm_IR, asm_filename);
 			
 			if(status == 0) {
-				// TODO: Passes of LLVM & Generation of target-specific binary code based on LLVM IR which includes SPU code (to transfer through PCI)
-				// out_filename
+				// Generation of binary code
+				auto TargetTriple = sys::getDefaultTargetTriple();
+				InitializeAllTargetInfos();
+				InitializeAllTargets();
+				InitializeAllTargetMCs();
+				InitializeAllAsmParsers();
+				InitializeAllAsmPrinters();
+				
+				std::string Error;
+				auto Target = TargetRegistry::lookupTarget(TargetTriple, Error);
+				
+				if(Target) {
+					auto CPU = "generic";
+					auto Features = "";
+					TargetOptions opt;
+					auto RM = Optional<Reloc::Model>();
+					auto TargetMachine = Target->createTargetMachine(TargetTriple, CPU, Features, opt, RM);
+					
+					GlobalModule->setDataLayout(TargetMachine->createDataLayout());
+					GlobalModule->setTargetTriple(TargetTriple);
+					
+					std::error_code EC;
+					raw_fd_ostream dest(StringRef(out_filename.c_str()), EC, sys::fs::F_None);
+
+					if (!EC) {
+						legacy::PassManager pass;
+						auto FileType = TargetMachine::CGFT_ObjectFile;
+
+						if (!TargetMachine->addPassesToEmitFile(pass, dest, FileType)) {
+							pass.run(*GlobalModule);
+							dest.flush();
+						}
+					}
+				}
 			}
 		}
 	}
@@ -199,7 +231,7 @@ int AST2ASMConversionPass(SequenceAST* al_AST, SequenceAST* sp_AST, asm_IR_optio
 		mem_point++;
 		
 		SPU_IR2BIN(); // Generating binary of SP-instructions stream
-		// TODO: Inserting at start commands to store the binary representation of the SPU program in the memory of target machine
+		//TODO: Inserting at start commands to store the binary representation of the SPU program in the memory of target machine
 
 		// Signature of int ioctl(int fd, unsigned long request, ...) The third argument is either void * or char * (may be not present)
 		Type* argsPTC[] = { Type::getInt16Ty(GlobalContext), Type::getInt32Ty(GlobalContext), Type::getInt32PtrTy(GlobalContext) };
@@ -219,15 +251,24 @@ int AST2ASMConversionPass(SequenceAST* al_AST, SequenceAST* sp_AST, asm_IR_optio
 		Value * llvm_alloca_adr_array_inst = Builder.CreateAlloca(Type::getInt32Ty(GlobalContext), words_count_val, "adr");
 		
 		Value * llvm_alloca_misdburst_struct_inst = Builder.CreateAlloca(burst_struct_type, nullptr, "misdburst");
-		Value* insert_field1 = Builder.CreateInsertValue(llvm_alloca_misdburst_struct_inst, words_count_val, std::vector<unsigned>(1, 0), "setcount");
-		Value* insert_field2 = Builder.CreateInsertValue(llvm_alloca_misdburst_struct_inst, llvm_alloca_adr_array_inst, std::vector<unsigned>(1, 1), "setdataptr");
-		Value* insert_field3 = Builder.CreateInsertValue(llvm_alloca_misdburst_struct_inst, llvm_alloca_data_array_inst, std::vector<unsigned>(1, 2), "setadrptr");
+		Value * idx = ConstantInt::get(Type::getInt16Ty(GlobalContext), 0);
+		Value * first_field = Builder.CreateGEP(burst_struct_type,llvm_alloca_misdburst_struct_inst, idx, "get1elemptr");
+		Builder.CreateStore(words_count_val, first_field);
+		idx = ConstantInt::get(Type::getInt16Ty(GlobalContext), 1);
+		Value * second_field = Builder.CreateGEP(burst_struct_type,llvm_alloca_misdburst_struct_inst, idx, "get2elemptr");
+		Builder.CreateStore(llvm_alloca_adr_array_inst, second_field);
+		idx = ConstantInt::get(Type::getInt16Ty(GlobalContext), 2);
+		Value * third_field = Builder.CreateGEP(burst_struct_type,llvm_alloca_misdburst_struct_inst, idx, "get3elemptr");
+		Builder.CreateStore(llvm_alloca_data_array_inst, third_field);
+//		Value* insert_field1 = Builder.CreateInsertValue(llvm_alloca_misdburst_struct_inst, words_count_val, std::vector<unsigned>(0), "setcount");
+//		Value* insert_field2 = Builder.CreateInsertValue(llvm_alloca_misdburst_struct_inst, llvm_alloca_adr_array_inst, std::vector<unsigned>(1), "setdataptr");
+//		Value* insert_field3 = Builder.CreateInsertValue(llvm_alloca_misdburst_struct_inst, llvm_alloca_data_array_inst, std::vector<unsigned>(2), "setadrptr");
 		
-		misd_burst SPU_bin_prog;
-		
+
 		int j = 0;
 		unsigned long tmp, elem;
 		ConstantInt* elem_val;
+		Value * memory_reg;
 		for(int i = 0; i < mem_point; i++) {
 			if(i % 2 != 0) {//uneven lines
 				tmp = SP_BIN[i][0];
@@ -235,10 +276,13 @@ int AST2ASMConversionPass(SequenceAST* al_AST, SequenceAST* sp_AST, asm_IR_optio
 				tmp = SP_BIN[i][1];
 				elem = elem | tmp;
 				elem_val = ConstantInt::get(Type::getInt32Ty(GlobalContext), elem);
-				Builder.CreateInsertValue(llvm_alloca_data_array_inst, elem_val, std::vector<unsigned>(1, j));
+				idx = ConstantInt::get(Type::getInt16Ty(GlobalContext), j);
+				memory_reg = Builder.CreateGEP(Type::getInt32Ty(GlobalContext),llvm_alloca_data_array_inst, idx);
+				Builder.CreateStore(elem_val, memory_reg);
+				//Builder.CreateInsertValue(llvm_alloca_data_array_inst, elem_val, std::vector<unsigned>(1, j));
 				//TODO: Placeholder for adr
 				elem_val = ConstantInt::get(Type::getInt32Ty(GlobalContext), j);
-				Builder.CreateInsertValue(llvm_alloca_adr_array_inst, elem_val, std::vector<unsigned>(1, j));
+				//Builder.CreateInsertValue(llvm_alloca_adr_array_inst, elem_val, std::vector<unsigned>(1, j));
 				j++;
 				
 				tmp = SP_BIN[i][2];
@@ -246,10 +290,13 @@ int AST2ASMConversionPass(SequenceAST* al_AST, SequenceAST* sp_AST, asm_IR_optio
 				tmp = SP_BIN[i][3];
 				elem = elem | tmp;
 				elem_val = ConstantInt::get(Type::getInt32Ty(GlobalContext), elem);
-				Builder.CreateInsertValue(llvm_alloca_data_array_inst, elem_val, std::vector<unsigned>(1, j));
+				idx = ConstantInt::get(Type::getInt16Ty(GlobalContext), j);
+				memory_reg = Builder.CreateGEP(Type::getInt32Ty(GlobalContext),llvm_alloca_data_array_inst, idx);
+				Builder.CreateStore(elem_val, memory_reg);
+				//Builder.CreateInsertValue(llvm_alloca_data_array_inst, elem_val, std::vector<unsigned>(1, j));
 				//TODO: Placeholder for adr
 				elem_val = ConstantInt::get(Type::getInt32Ty(GlobalContext), j);
-				Builder.CreateInsertValue(llvm_alloca_adr_array_inst, elem_val, std::vector<unsigned>(1, j));
+				//Builder.CreateInsertValue(llvm_alloca_adr_array_inst, elem_val, std::vector<unsigned>(1, j));
 				j++;
 			} else { //even lines
 				tmp = SP_BIN[i-1][4];
@@ -257,10 +304,13 @@ int AST2ASMConversionPass(SequenceAST* al_AST, SequenceAST* sp_AST, asm_IR_optio
 				tmp = SP_BIN[i][0];
 				elem = elem | tmp;
 				elem_val = ConstantInt::get(Type::getInt32Ty(GlobalContext), elem);
-				Builder.CreateInsertValue(llvm_alloca_data_array_inst, elem_val, std::vector<unsigned>(1, j));
+				idx = ConstantInt::get(Type::getInt16Ty(GlobalContext), j);
+				memory_reg = Builder.CreateGEP(Type::getInt32Ty(GlobalContext),llvm_alloca_data_array_inst, idx);
+				Builder.CreateStore(elem_val, memory_reg);
+				//Builder.CreateInsertValue(llvm_alloca_data_array_inst, elem_val, std::vector<unsigned>(1, j));
 				//TODO: Placeholder for adr
 				elem_val = ConstantInt::get(Type::getInt32Ty(GlobalContext), j);
-				Builder.CreateInsertValue(llvm_alloca_adr_array_inst, elem_val, std::vector<unsigned>(1, j));
+				//Builder.CreateInsertValue(llvm_alloca_adr_array_inst, elem_val, std::vector<unsigned>(1, j));
 				j++;
 				
 				tmp = SP_BIN[i][1];
@@ -268,10 +318,13 @@ int AST2ASMConversionPass(SequenceAST* al_AST, SequenceAST* sp_AST, asm_IR_optio
 				tmp = SP_BIN[i][2];
 				elem = elem | tmp;
 				elem_val = ConstantInt::get(Type::getInt32Ty(GlobalContext), elem);
-				Builder.CreateInsertValue(llvm_alloca_data_array_inst, elem_val, std::vector<unsigned>(1, j));
+				idx = ConstantInt::get(Type::getInt16Ty(GlobalContext), j);
+				memory_reg = Builder.CreateGEP(Type::getInt32Ty(GlobalContext),llvm_alloca_data_array_inst, idx);
+				Builder.CreateStore(elem_val, memory_reg);
+				//Builder.CreateInsertValue(llvm_alloca_data_array_inst, elem_val, std::vector<unsigned>(1, j));
 				//TODO: Placeholder for adr
 				elem_val = ConstantInt::get(Type::getInt32Ty(GlobalContext), j);
-				Builder.CreateInsertValue(llvm_alloca_adr_array_inst, elem_val, std::vector<unsigned>(1, j));
+				//Builder.CreateInsertValue(llvm_alloca_adr_array_inst, elem_val, std::vector<unsigned>(1, j));
 				j++;
 				
 				tmp = SP_BIN[i][3];
@@ -279,10 +332,13 @@ int AST2ASMConversionPass(SequenceAST* al_AST, SequenceAST* sp_AST, asm_IR_optio
 				tmp = SP_BIN[i][4];
 				elem = elem | tmp;
 				elem_val = ConstantInt::get(Type::getInt32Ty(GlobalContext), elem);
-				Builder.CreateInsertValue(llvm_alloca_data_array_inst, elem_val, std::vector<unsigned>(1, j));
+				idx = ConstantInt::get(Type::getInt16Ty(GlobalContext), j);
+				memory_reg = Builder.CreateGEP(Type::getInt32Ty(GlobalContext),llvm_alloca_data_array_inst, idx);
+				Builder.CreateStore(elem_val, memory_reg);
+				//Builder.CreateInsertValue(llvm_alloca_data_array_inst, elem_val, std::vector<unsigned>(1, j));
 				//TODO: Placeholder for adr
 				elem_val = ConstantInt::get(Type::getInt32Ty(GlobalContext), j);
-				Builder.CreateInsertValue(llvm_alloca_adr_array_inst, elem_val, std::vector<unsigned>(1, j));
+				//Builder.CreateInsertValue(llvm_alloca_adr_array_inst, elem_val, std::vector<unsigned>(1, j));
 				j++;
 			}
 		}
@@ -290,10 +346,13 @@ int AST2ASMConversionPass(SequenceAST* al_AST, SequenceAST* sp_AST, asm_IR_optio
 			tmp = SP_BIN[mem_point - 1][4];
 			elem = (tmp << 16) & 0xFFFF0000;
 			elem_val = ConstantInt::get(Type::getInt32Ty(GlobalContext), elem);
-			Builder.CreateInsertValue(llvm_alloca_data_array_inst, elem_val, std::vector<unsigned>(1, j));
+			//Builder.CreateInsertValue(llvm_alloca_data_array_inst, elem_val, std::vector<unsigned>(1, j));
+			idx = ConstantInt::get(Type::getInt16Ty(GlobalContext), j);
+			memory_reg = Builder.CreateGEP(Type::getInt32Ty(GlobalContext),llvm_alloca_data_array_inst, idx);
+			Builder.CreateStore(elem_val, memory_reg);
 			//TODO: Placeholder for adr
 			elem_val = ConstantInt::get(Type::getInt32Ty(GlobalContext), j);
-			Builder.CreateInsertValue(llvm_alloca_adr_array_inst, elem_val, std::vector<unsigned>(1, j));
+			//Builder.CreateInsertValue(llvm_alloca_adr_array_inst, elem_val, std::vector<unsigned>(1, j));
 		}
 		
 		// Inserting into IRBuilder command to send the binary SPU code to SPU via PCI

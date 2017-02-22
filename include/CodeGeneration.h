@@ -6,6 +6,12 @@
 #include "/usr/include/llvm/IR/Module.h"
 #include "/usr/include/llvm/IR/Verifier.h"
 #include "/usr/include/llvm/IR/IRBuilder.h"
+#include "/usr/include/llvm/Support/TargetRegistry.h"
+#include "/usr/include/llvm/Support/TargetSelect.h"
+#include "/usr/include/llvm/Target/TargetMachine.h"
+#include "/usr/include/llvm/Target/TargetOptions.h"
+#include "/usr/include/llvm/IR/LegacyPassManager.h"
+#include "/usr/include/llvm/Support/FileSystem.h"
 #include <fstream>
 #include <iostream>
 
