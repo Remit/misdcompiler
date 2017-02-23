@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "include/Timestamp.h"
 using namespace std;
 
 #ifndef COMMON_TYPES_AND_CONSTANTS
@@ -31,23 +32,6 @@ int main(int argc, char *argv[]) {
 		cout << "You need to specify at least input and output files." << endl;
 		exit(0);
 	}
-
-	FILE *fp = fopen(argv[1],"r");
-	if( !fp ) {
-		cout << "Could not open the file for reading." << endl;
-		exit(0);
-	}
-
-	FILE *out_fp = fopen(argv[2],"w");
-	if( ! out_fp ) {
-		cout << "Could not open the file for writing." << endl;
-		exit(0);
-	}
-	
-	std::string out_filename(argv[2]);
-
-	yyin = fp;
-	yyout = out_fp;
 
 	// Considering non-obligatory arguments
 	int basis_opt_adr = 3;
@@ -173,20 +157,63 @@ int main(int argc, char *argv[]) {
 		}
 	}
 	
-
-	IR_Graph result_graph;
-	int status = yyparse(result_graph);
-	fclose(fp);
-	fclose(out_fp);
-	remove(argv[2]);
-	if(status == 0) {
-		status = Compile(option_vis, option_ast_IR, ast_filename, option_asm_IR, asm_filename, &result_graph, out_filename);
+	// Considering requirement to create timestamps
+	int compile_times = 1;
+	std::string timestamps_filename;
+	if(argc > basis_opt_adr) {
+		if(strcmp(argv[basis_opt_adr],"-t") == 0) {
+			basis_opt_adr++;
+			if(argc > basis_opt_adr) {
+				compile_times = atoi(argv[basis_opt_adr]);
+				basis_opt_adr++;
+				if(argc > basis_opt_adr) {
+					timestamps_filename.assign(argv[basis_opt_adr]);
+					basis_opt_adr++;
+				}
+			} else {
+				cout << "Error: No arguments for \'-t\'." << endl;
+			}
+		}
 	}
 
-	if(status == 0)
-		cout << endl << "*************************" << endl << "Compilation completed successfully." << endl;
-	else
-		cout << endl << "Some errors occured during compilation. Exiting (" << status << ")" << endl;
+	TimeStamp * global_timer = new TimeStamp(timestamps_filename);
+	
+	for(int l = 1; l <= compile_times; l++) {
+		FILE *fp = fopen(argv[1],"r");
+		if( !fp ) {
+			cout << "Could not open the file for reading." << endl;
+			exit(0);
+		}
+
+		FILE *out_fp = fopen(argv[2],"w");
+		if( ! out_fp ) {
+			cout << "Could not open the file for writing." << endl;
+			exit(0);
+		}
+		yyin = fp;
+		yyout = out_fp;
+		std::string out_filename(argv[2]);
+		
+		IR_Graph result_graph;
+		
+		global_timer->startTime(std::string(argv[1]),l,std::string("Parsing"));
+		int status = yyparse(result_graph);
+		global_timer->endTime(std::string(argv[1]),l,std::string("Parsing"));
+		
+		fclose(fp);
+		fclose(out_fp);
+		remove(argv[2]);
+		if(status == 0) {
+			status = Compile(option_vis, option_ast_IR, ast_filename, option_asm_IR, asm_filename, &result_graph, out_filename, l, std::string(argv[1]), global_timer);
+		}
+		
+		global_timer->printDurations();
+		
+		if(status == 0)
+			cout << endl << "*************************" << endl << "Compilation completed successfully." << endl;
+		else
+			cout << endl << "Some errors occured during compilation. Exiting (" << status << ")" << endl;
+	}
 		
 	return 0;
 }

@@ -25,7 +25,7 @@ After some time, you will see the **disccompiler** binary in the same directory.
 ## Usage
 The compilation command format is as follows:
 
-```disccompiler [FILE WITH SOURCE CODE, .mcc FORMAT] [DESTINATION BINARY, .out FORMAT] [[-v ias]] [[-ast asf [[OUTPUT FILE FOR ASTs, .txt FORMAT]] ]] [[-asm asf [[OUTPUT FILE FOR ASM IRs, .txt FORMAT]] ]]```
+```disccompiler [FILE WITH SOURCE CODE, .mcc FORMAT] [DESTINATION BINARY, .out FORMAT] [[-v ias]] [[-ast asf [[OUTPUT FILE FOR ASTs, .txt FORMAT]] ]] [[-asm asf [[OUTPUT FILE FOR ASM IRs, .txt FORMAT]] ]] [[-t <N> <OUTPUT FILE FOR EXEC TIMES, .csv FORMAT>]]```
 
 where
 `[...]` - mandatory parts of command,
@@ -46,6 +46,10 @@ where
 - `a` - print asm IR for the arithmetic-logic part of program, provided by LLVM (`-` - no asm IR print for the arithmetic-logic part of program)
 - `s` - print asm IR for the structures processing part of program (`-` - no asm IR print for the structures processing part part of program)
 - `f` - print asm IRs to the following file (`-` - print to standard output).
+
+`-t` - option to print durations of compilation phases:
+- `<N>` - number of tests for the program
+- `<OUTPUT FILE FOR EXEC TIMES, .csv FORMAT>` - text file to store the results of tests, if exists will write at the end.
 
 As a result of the compiler's usage you will receive the following artifacts:
 - [*mandatory*] a binary to run on the machine with a driver and an on-board FPGA SPU connected through PCI

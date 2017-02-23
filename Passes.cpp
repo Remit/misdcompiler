@@ -1,55 +1,68 @@
 #include "include/Passes.h"
 
-int Compile(visualization_option option_vis, ast_IR_option option_ast_IR, std::string ast_filename, asm_IR_option option_asm_IR, std::string asm_filename, IR_Graph * src_result_graph, std::string out_filename) {
+int Compile(visualization_option option_vis, ast_IR_option option_ast_IR, std::string ast_filename, asm_IR_option option_asm_IR, std::string asm_filename, IR_Graph * src_result_graph, std::string out_filename, int iteration, std::string in_filename, TimeStamp * ts) {
 
-	IR_Graph* al_graph = new IR_Graph();
-	IR_Graph* sp_graph = new IR_Graph();
-	
-	int status = IRDecompositionPass(al_graph, sp_graph, src_result_graph, option_vis);
-	
-	if(status == 0) {
-		// Construction of ASTs
-		SequenceAST* al_AST = new SequenceAST();
-		SequenceAST* sp_AST = new SequenceAST();
-		status = IR2ASTConversionPass(al_AST, sp_AST, al_graph, sp_graph, option_ast_IR, ast_filename);
+	int dfd, status = -1;
+	if( ( dfd = open( "/dev/misd", O_RDWR ) ) > 0 ) // TODO: Change to "<" after debug
+		std::cout << "Open MISD device error, you need to have the MISD device and the MISD driver installed before compiling" << std::endl;
+	else {
+		IR_Graph* al_graph = new IR_Graph();
+		IR_Graph* sp_graph = new IR_Graph();
+		
+		ts->startTime(in_filename,iteration,std::string("Decomposing"));
+		status = IRDecompositionPass(al_graph, sp_graph, src_result_graph, option_vis);
+		ts->endTime(in_filename,iteration,std::string("Decomposing"));
+		
 		if(status == 0) {
-			// Generation of asm IRs
-			status = AST2ASMConversionPass(al_AST, sp_AST, option_asm_IR, asm_filename);
-			
+			// Construction of ASTs
+			SequenceAST* al_AST = new SequenceAST();
+			SequenceAST* sp_AST = new SequenceAST();
+			ts->startTime(in_filename,iteration,std::string("IR2AST"));
+			status = IR2ASTConversionPass(al_AST, sp_AST, al_graph, sp_graph, option_ast_IR, ast_filename);
+			ts->endTime(in_filename,iteration,std::string("IR2AST"));
 			if(status == 0) {
-				// Generation of binary code
-				auto TargetTriple = sys::getDefaultTargetTriple();
-				InitializeAllTargetInfos();
-				InitializeAllTargets();
-				InitializeAllTargetMCs();
-				InitializeAllAsmParsers();
-				InitializeAllAsmPrinters();
+				// Generation of asm IRs
+				ts->startTime(in_filename,iteration,std::string("AST2ASM"));
+				status = AST2ASMConversionPass(al_AST, sp_AST, option_asm_IR, asm_filename);
+				ts->endTime(in_filename,iteration,std::string("AST2ASM"));
 				
-				std::string Error;
-				auto Target = TargetRegistry::lookupTarget(TargetTriple, Error);
-				
-				if(Target) {
-					auto CPU = "generic";
-					auto Features = "";
-					TargetOptions opt;
-					auto RM = Optional<Reloc::Model>();
-					auto TargetMachine = Target->createTargetMachine(TargetTriple, CPU, Features, opt, RM);
+				if(status == 0) {
+					// Generation of binary code
+					ts->startTime(in_filename,iteration,std::string("ASM2BIN"));
+					auto TargetTriple = sys::getDefaultTargetTriple();
+					InitializeAllTargetInfos();
+					InitializeAllTargets();
+					InitializeAllTargetMCs();
+					InitializeAllAsmParsers();
+					InitializeAllAsmPrinters();
 					
-					GlobalModule->setDataLayout(TargetMachine->createDataLayout());
-					GlobalModule->setTargetTriple(TargetTriple);
+					std::string Error;
+					auto Target = TargetRegistry::lookupTarget(TargetTriple, Error);
 					
-					std::error_code EC;
-					raw_fd_ostream dest(StringRef(out_filename.c_str()), EC, sys::fs::F_None);
+					if(Target) {
+						auto CPU = "generic";
+						auto Features = "";
+						TargetOptions opt;
+						auto RM = Optional<Reloc::Model>();
+						auto TargetMachine = Target->createTargetMachine(TargetTriple, CPU, Features, opt, RM);
+						
+						GlobalModule->setDataLayout(TargetMachine->createDataLayout());
+						GlobalModule->setTargetTriple(TargetTriple);
+						
+						std::error_code EC;
+						raw_fd_ostream dest(StringRef(out_filename.c_str()), EC, sys::fs::F_None);
 
-					if (!EC) {
-						legacy::PassManager pass;
-						auto FileType = TargetMachine::CGFT_ObjectFile;
+						if (!EC) {
+							legacy::PassManager pass;
+							auto FileType = TargetMachine::CGFT_ObjectFile;
 
-						if (!TargetMachine->addPassesToEmitFile(pass, dest, FileType)) {
-							pass.run(*GlobalModule);
-							dest.flush();
+							if (!TargetMachine->addPassesToEmitFile(pass, dest, FileType)) {
+								pass.run(*GlobalModule);
+								dest.flush();
+							}
 						}
 					}
+					ts->endTime(in_filename,iteration,std::string("ASM2BIN"));
 				}
 			}
 		}
@@ -355,15 +368,41 @@ int AST2ASMConversionPass(SequenceAST* al_AST, SequenceAST* sp_AST, asm_IR_optio
 			//Builder.CreateInsertValue(llvm_alloca_adr_array_inst, elem_val, std::vector<unsigned>(1, j));
 		}
 		
+		
+		// Creating open function for the device in Linux: int open(const char *path, int oflag, ... );
+		Type* argsPTCopen[] = { Type::getInt8PtrTy(GlobalContext), Type::getInt16Ty(GlobalContext) };
+		FunctionType* openTy = FunctionType::get(Type::getInt16Ty(GlobalContext), ArrayRef<Type*>(argsPTCopen,2), false);
+		Constant* c_open = GlobalModule->getOrInsertFunction("open",openTy);
+		Function* open_func = cast<Function>(c_open);
+		
+		std::vector<Value*> ArgsVopen;
+		// First arg - a path to the device driver in Linux, should be placed as an array of chars (ends with \0) in memory by program
+		ConstantInt* number_of_chars = ConstantInt::get(Type::getInt16Ty(GlobalContext), 10);
+		Value * llvm_alloca_device_chars = Builder.CreateAlloca(Type::getInt8Ty(GlobalContext), number_of_chars, "device_chars");
+		char* device_name = "/dev/misd";
+		for(int k = 0; k < 10; k++) {
+			char symbol = device_name[k];
+			idx = ConstantInt::get(Type::getInt16Ty(GlobalContext), k);
+			memory_reg = Builder.CreateGEP(Type::getInt8Ty(GlobalContext),llvm_alloca_device_chars, idx);
+			elem_val = ConstantInt::get(Type::getInt8Ty(GlobalContext), symbol);
+			Builder.CreateStore(elem_val, memory_reg);
+		}
+		ArgsVopen.push_back(llvm_alloca_device_chars);
+		// Second arg
+		ConstantInt* open_settings_val = ConstantInt::get(Type::getInt16Ty(GlobalContext), O_RDWR);
+		ArgsVopen.push_back(open_settings_val);
+		
+		// Opening MISD device from the program itself
+		Value * open_device_call = Builder.CreateCall(open_func, ArgsVopen, "callopendevice");
+		// Additional check - compare result of function with 0, if below 0 then no device was found, stop compilation
+		
 		// Inserting into IRBuilder command to send the binary SPU code to SPU via PCI
-		int dfd;
-		if( ( dfd = open( "/dev/misd", O_RDWR ) ) < 0 ) std::cout << "Open MISD device error" << std::endl;
 		unsigned long request = MISD_WRITE_LCM;
 
 		std::vector<Value*> ArgsV;
 		// First arg
-		ConstantInt* fd_val = ConstantInt::get(Type::getInt16Ty(GlobalContext), dfd);
-		ArgsV.push_back(fd_val);
+		//ConstantInt* fd_val = ConstantInt::get(Type::getInt16Ty(GlobalContext), dfd);
+		ArgsV.push_back(open_device_call);
 		// Second arg
 		ConstantInt* request_val = ConstantInt::get(Type::getInt64Ty(GlobalContext), request);
 		ArgsV.push_back(request_val);

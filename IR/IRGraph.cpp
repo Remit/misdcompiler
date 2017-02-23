@@ -15,18 +15,18 @@ IR_Graph::IR_Graph() {
 	num_of_reserve_operations = 1;
 	last_operation_id = -1;
 	last_data_id = -1;
-	full_clean = true;
+	full_clean = false;
 }
 
 IR_Graph::~IR_Graph() {
 	if(full_clean) {
-		int num_of_ops = operations.size();
-		for(int i = 0; i < num_of_ops; i++)
-			delete operations[i];
+	    int num_of_ops = operations.size();
+	    for(int i = 0; i < num_of_ops; i++)
+	        delete operations[i];
 
-		int num_of_datas = data.size();
-		for(int i = 0; i < num_of_datas; i++)
-			delete data[i];
+	    int num_of_datas = data.size();
+	    for(int i = 0; i < num_of_datas; i++)
+	        delete data[i];
 	}
 }
 

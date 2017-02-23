@@ -56,8 +56,6 @@ Value * TransferExpr::generateCode() {
 	if(direction == TR_SEND) {
 		ret = Builder.CreateLoad(ret, name_of_var.c_str());
 		// Inserting into IRBuilder command to send the data to SPU via PCI
-		int dfd;
-		if( ( dfd = open( "/dev/misd", O_RDWR ) ) < 0 ) std::cout << "Open MISD device error" << std::endl;
 		unsigned long request = MISD_WRITE_IO;
 		
 		ConstantInt* words_count_val = ConstantInt::get(Type::getInt16Ty(GlobalContext), 1);
@@ -73,10 +71,37 @@ Value * TransferExpr::generateCode() {
 		Value* insert_field2 = Builder.CreateInsertValue(llvm_alloca_misdburst_struct_inst, llvm_alloca_adr_array_inst, std::vector<unsigned>(1, 1), "setdataptr");
 		Value* insert_field3 = Builder.CreateInsertValue(llvm_alloca_misdburst_struct_inst, llvm_alloca_data_array_inst, std::vector<unsigned>(1, 2), "setadrptr");
 
+		// Creating open function for the device in Linux: int open(const char *path, int oflag, ... );
+		Type* argsPTCopen[] = { Type::getInt8PtrTy(GlobalContext), Type::getInt16Ty(GlobalContext) };
+		FunctionType* openTy = FunctionType::get(Type::getInt16Ty(GlobalContext), ArrayRef<Type*>(argsPTCopen,2), false);
+		Constant* c_open = GlobalModule->getOrInsertFunction("open",openTy);
+		Function* open_func = cast<Function>(c_open);
+		
+		std::vector<Value*> ArgsVopen;
+		// First arg - a path to the device driver in Linux, should be placed as an array of chars (ends with \0) in memory by program
+		ConstantInt* number_of_chars = ConstantInt::get(Type::getInt16Ty(GlobalContext), 10);
+		Value * llvm_alloca_device_chars = Builder.CreateAlloca(Type::getInt8Ty(GlobalContext), number_of_chars, "device_chars");
+		char* device_name = "/dev/misd";
+		Value * memory_reg;
+		Value * idx;
+		for(int k = 0; k < 10; k++) {
+			char symbol = device_name[k];
+			idx = ConstantInt::get(Type::getInt16Ty(GlobalContext), k);
+			memory_reg = Builder.CreateGEP(Type::getInt8Ty(GlobalContext),llvm_alloca_device_chars, idx);
+			elem_val = ConstantInt::get(Type::getInt8Ty(GlobalContext), symbol);
+			Builder.CreateStore(elem_val, memory_reg);
+		}
+		ArgsVopen.push_back(llvm_alloca_device_chars);
+		// Second arg
+		ConstantInt* open_settings_val = ConstantInt::get(Type::getInt16Ty(GlobalContext), O_RDWR);
+		ArgsVopen.push_back(open_settings_val);
+		
+		// Opening MISD device from the program itself
+		Value * open_device_call = Builder.CreateCall(open_func, ArgsVopen, "callopendevice");
+
 		std::vector<Value*> ArgsV;
 		// First arg
-		ConstantInt* fd_val = ConstantInt::get(Type::getInt16Ty(GlobalContext), dfd);
-		ArgsV.push_back(fd_val);
+		ArgsV.push_back(open_device_call);
 		// Second arg
 		ConstantInt* request_val = ConstantInt::get(Type::getInt64Ty(GlobalContext), request);
 		ArgsV.push_back(request_val);
@@ -86,8 +111,6 @@ Value * TransferExpr::generateCode() {
 		Builder.CreateCall(ioctl_func, ArgsV, "sent");
 	} else if(direction == TR_RECEIVE) {
 		// Inserting into IRBuilder command to send the data to SPU via PCI
-		int dfd;
-		if( ( dfd = open( "/dev/misd", O_RDWR ) ) < 0 ) std::cout << "Open MISD device error" << std::endl;
 		unsigned long request = MISD_READ_IO;
 		
 		ConstantInt* words_count_val = ConstantInt::get(Type::getInt16Ty(GlobalContext), 1);
@@ -102,10 +125,37 @@ Value * TransferExpr::generateCode() {
 		Value* insert_field2 = Builder.CreateInsertValue(llvm_alloca_misdburst_struct_inst, llvm_alloca_adr_array_inst, std::vector<unsigned>(1, 1), "setdataptr");
 		Value* insert_field3 = Builder.CreateInsertValue(llvm_alloca_misdburst_struct_inst, llvm_alloca_data_array_inst, std::vector<unsigned>(1, 2), "setadrptr");
 
+		// Creating open function for the device in Linux: int open(const char *path, int oflag, ... );
+		Type* argsPTCopen[] = { Type::getInt8PtrTy(GlobalContext), Type::getInt16Ty(GlobalContext) };
+		FunctionType* openTy = FunctionType::get(Type::getInt16Ty(GlobalContext), ArrayRef<Type*>(argsPTCopen,2), false);
+		Constant* c_open = GlobalModule->getOrInsertFunction("open",openTy);
+		Function* open_func = cast<Function>(c_open);
+		
+		std::vector<Value*> ArgsVopen;
+		// First arg - a path to the device driver in Linux, should be placed as an array of chars (ends with \0) in memory by program
+		ConstantInt* number_of_chars = ConstantInt::get(Type::getInt16Ty(GlobalContext), 10);
+		Value * llvm_alloca_device_chars = Builder.CreateAlloca(Type::getInt8Ty(GlobalContext), number_of_chars, "device_chars");
+		char* device_name = "/dev/misd";
+		Value * memory_reg;
+		Value * idx;
+		for(int k = 0; k < 10; k++) {
+			char symbol = device_name[k];
+			idx = ConstantInt::get(Type::getInt16Ty(GlobalContext), k);
+			memory_reg = Builder.CreateGEP(Type::getInt8Ty(GlobalContext),llvm_alloca_device_chars, idx);
+			elem_val = ConstantInt::get(Type::getInt8Ty(GlobalContext), symbol);
+			Builder.CreateStore(elem_val, memory_reg);
+		}
+		ArgsVopen.push_back(llvm_alloca_device_chars);
+		// Second arg
+		ConstantInt* open_settings_val = ConstantInt::get(Type::getInt16Ty(GlobalContext), O_RDWR);
+		ArgsVopen.push_back(open_settings_val);
+		
+		// Opening MISD device from the program itself
+		Value * open_device_call = Builder.CreateCall(open_func, ArgsVopen, "callopendevice");
+
 		std::vector<Value*> ArgsV;
 		// First arg
-		ConstantInt* fd_val = ConstantInt::get(Type::getInt16Ty(GlobalContext), dfd);
-		ArgsV.push_back(fd_val);
+		ArgsV.push_back(open_device_call);
 		// Second arg
 		ConstantInt* request_val = ConstantInt::get(Type::getInt64Ty(GlobalContext), request);
 		ArgsV.push_back(request_val);
