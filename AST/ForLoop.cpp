@@ -103,48 +103,54 @@ void ForLoop::print(std::ostream * print_stream) {
 Value * ForLoop::generateCode() {
 	Value * ret = NULL;
 	
+	AllocaInst * llvm_alloca_inst = Builder.CreateAlloca(Type::getInt32Ty(GlobalContext), nullptr, al_tag_name.c_str());
+	NamedValues[al_tag_name] = llvm_alloca_inst;
+	ret = (Value *)NamedValues[al_tag_name];
+	
 	if(Start != NULL) {
 		StoreInst * start_val_raw = NULL;
 		start_val_raw = (StoreInst *)Start->generateCode(); // Initializing the loop variable.
 		Value * start_val = start_val_raw->getValueOperand();
 		if(start_val != NULL) {
 			Function * func = Builder.GetInsertBlock()->getParent();
-			BasicBlock * headerBB = Builder.GetInsertBlock();
-			BasicBlock * loopBB = BasicBlock::Create(GlobalContext, "loop", func);
+			BasicBlock * headerBB = BasicBlock::Create(GlobalContext, "condition", func);
+			Builder.CreateBr(headerBB);
+			Builder.SetInsertPoint(headerBB);
 			
-			Builder.CreateBr(loopBB);
-			Builder.SetInsertPoint(loopBB);
-			
-			PHINode * counter = Builder.CreatePHI(start_val->getType(), 2, counter_name.c_str());
-			counter->addIncoming(start_val, headerBB);
-			
-			if (Body != NULL) {
-				Body->generateCode();
-				Value * next_var = NULL;
-				Value * step_val = NULL;
-				if(Step != NULL) {
-					StoreInst * step_val_raw = NULL;
-					step_val_raw = (StoreInst *)Step->generateCode();
-					next_var = step_val_raw->getValueOperand();
-				} else {
-					step_val = ConstantFP::get(GlobalContext, APFloat(1.0));
-					next_var = Builder.CreateFAdd(counter, step_val, "nextvar");
-				}
-				
-				if(next_var != NULL) {
-					Value * endCond = NULL;
-					if(End != NULL) {
-						endCond = End->generateCode();
-						Value* ret_val = (Value *)NamedValues[al_tag_name];
-						Builder.CreateStore(endCond, ret_val);
-						if(endCond != NULL) {
-							BasicBlock * loopEndBB = Builder.GetInsertBlock();
-							BasicBlock * afterBB = BasicBlock::Create(GlobalContext, "afterloop", func);
-							Builder.CreateCondBr(endCond, loopBB, afterBB);
-							Builder.SetInsertPoint(afterBB);
-							counter->addIncoming(next_var, loopEndBB);
+			BasicBlock * loopBB = BasicBlock::Create(GlobalContext, "loop");
+			BasicBlock * afterBB = BasicBlock::Create(GlobalContext, "afterloop");
+			//BasicBlock * loopBB = BasicBlock::Create(GlobalContext, "loop", func);
+			if(End != NULL) {
+				Value * endCond = End->generateCode();
+				StoreInst * llvm_store_inst = Builder.CreateStore(endCond, ret);
+				if(endCond != NULL) {
+					Builder.CreateCondBr(endCond, loopBB, afterBB);
+					func->getBasicBlockList().push_back(loopBB);
+					Builder.SetInsertPoint(loopBB);
+					
+					if (Body != NULL) {
+						Body->generateCode();
+					}
+					
+					Value * next_var = NULL;
+					Value * step_val = NULL;
+					if(Step != NULL) {
+						StoreInst * step_val_raw = NULL;
+						step_val_raw = (StoreInst *)Step->generateCode();
+						next_var = step_val_raw->getValueOperand();
+					} else {
+						if(start_val_raw->getType()->isFPOrFPVectorTy() || start_val_raw->getType()->isDoubleTy()) {
+							step_val = ConstantFP::get(GlobalContext, APFloat(1.0));
+							next_var = Builder.CreateFAdd(start_val_raw, step_val, "nextvar");
+						} else {
+							step_val = ConstantInt::get(Type::getInt16Ty(GlobalContext), 1);
+							next_var = Builder.CreateAdd(start_val_raw, step_val, "nextvar");
 						}
 					}
+					
+					Builder.CreateBr(headerBB);
+					func->getBasicBlockList().push_back(afterBB); // Inserting basic block for instructions after merging of branches after basic block for ELSE-branch
+					Builder.SetInsertPoint(afterBB);
 				}
 			}
 		}

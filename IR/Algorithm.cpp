@@ -188,19 +188,20 @@ int Graph_ArithmeticLogicProcessing( IR_Graph* src_graph, IR_Graph* alp_graph) {
 				alp_graph->addConnection(op_id,tag_node_id);
 				
 				// Adding definition for tag node with connections
-				std::vector< std::string > * def_vars = new std::vector< std::string >;
-				def_vars->push_back(tag_name);
-				IR_OperationNode* def_tag = buildDefineNode(def_vars, VAR_BOOL, std::string(""));
-				alp_graph->addOperationNode(def_tag);
-				int def_tag_node_id = alp_graph->getLastOperationID();
-				
-				if(inc_op_ids != NULL)
-					for(int j = 0; j < inc_op_ids->size(); j++) {
-						alp_graph->addConnection((*inc_op_ids)[j],def_tag_node_id);
-						alp_graph->removeConnection((*inc_op_ids)[j],op_id);
-					}
-				alp_graph->addConnection(def_tag_node_id,op_id);
-				alp_graph->addConnection(def_tag_node_id,tag_node_id);
+//				std::vector< std::string > * def_vars = new std::vector< std::string >;
+//				def_vars->push_back(tag_name);
+//				IR_OperationNode* def_tag = buildDefineNode(def_vars, VAR_BOOL, std::string(""));
+//				alp_graph->addOperationNode(def_tag);
+//				int def_tag_node_id = alp_graph->getLastOperationID();
+//				
+//				if(inc_op_ids != NULL)
+//					for(int j = 0; j < inc_op_ids->size(); j++) {
+//						alp_graph->addConnection((*inc_op_ids)[j],def_tag_node_id);
+//						alp_graph->removeConnection((*inc_op_ids)[j],op_id);
+//					}
+//				alp_graph->addConnection(def_tag_node_id,op_id);
+//				alp_graph->addConnection(def_tag_node_id,tag_node_id);
+//				std::cout << "Defining!" << std::endl;
 
 				// Adding send to SPU operations in each branch after the branch
 				// condition nodes and connections from newly added tag data node to

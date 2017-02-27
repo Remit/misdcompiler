@@ -112,19 +112,20 @@ Value * LogicalExpression::generateCode() {
 		if((LHS_code->getType()->isIntOrIntVectorTy()) && (RHS_code->getType()->isIntOrIntVectorTy())) {
 			switch(op) {
 				case OP_LT:
-					ret = Builder.CreateICmpULT(LHS_code, RHS_code, "cmplttmp");
-					//ret = Builder.CreateUIToFP(ret, Type::getDoubleTy(GlobalContext), "boollttmp");
+					ret = Builder.CreateICmpSLT(LHS_code, RHS_code, "cmplttmp");
+					//ret = Builder.CreateIntCast(ret, Type::getInt32Ty(GlobalContext), false);
+					//ret = Builder.CreateICmpNE(ret, ConstantInt::get(Type::getInt32Ty(GlobalContext), 0), "cmpp");
 					break;
 				case OP_GT:
-					ret = Builder.CreateICmpUGT(LHS_code, RHS_code, "cmpgttmp");
+					ret = Builder.CreateICmpSGT(LHS_code, RHS_code, "cmpgttmp");
 					//ret = Builder.CreateUIToFP(ret, Type::getDoubleTy(GlobalContext), "boolgttmp");
 					break;
 				case OP_LTE:
-					ret = Builder.CreateICmpULE(LHS_code, RHS_code, "cmpltetmp");
+					ret = Builder.CreateICmpSLE(LHS_code, RHS_code, "cmpltetmp");
 					//ret = Builder.CreateUIToFP(ret, Type::getDoubleTy(GlobalContext), "boolltetmp");
 					break;
 				case OP_GTE:
-					ret = Builder.CreateICmpUGE(LHS_code, RHS_code, "cmpgtetmp");
+					ret = Builder.CreateICmpSGE(LHS_code, RHS_code, "cmpgtetmp");
 					//ret = Builder.CreateUIToFP(ret, Type::getDoubleTy(GlobalContext), "boolgtetmp");
 					break;
 				case OP_EQ:

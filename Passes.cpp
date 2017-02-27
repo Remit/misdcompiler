@@ -30,6 +30,7 @@ int Compile(visualization_option option_vis, ast_IR_option option_ast_IR, std::s
 					// Generation of binary code
 					ts->startTime(in_filename,iteration,std::string("ASM2BIN"));
 					auto TargetTriple = sys::getDefaultTargetTriple();
+					StringRef tt = sys::getHostCPUName();
 					InitializeAllTargetInfos();
 					InitializeAllTargets();
 					InitializeAllTargetMCs();
@@ -41,7 +42,7 @@ int Compile(visualization_option option_vis, ast_IR_option option_ast_IR, std::s
 					
 					if(Target) {
 						auto CPU = "generic";
-						auto Features = "";
+						auto Features = "";//+feature,+feature,...
 						TargetOptions opt;
 						auto RM = Optional<Reloc::Model>();
 						auto TargetMachine = Target->createTargetMachine(TargetTriple, CPU, Features, opt, RM);

@@ -106,21 +106,54 @@ Value * BinaryExpression::generateCode() {
 	if((BinExpr_LHS == NULL) || (BinExpr_RHS == NULL))
 		ret = NULL;
 	else {
+		if(op != OP_ASSIGN) {
+			if((LHS_code->getType()->isFPOrFPVectorTy()) || (RHS_code->getType()->isFPOrFPVectorTy())) {
+				if(LHS_code->getType()->isIntOrIntVectorTy())
+					LHS_code = Builder.CreateIntCast(LHS_code, Type::getFloatTy(GlobalContext), true, "inttofloat");
+				if(RHS_code->getType()->isIntOrIntVectorTy())
+					RHS_code = Builder.CreateIntCast(RHS_code, Type::getFloatTy(GlobalContext), true, "inttofloat");
+			}
+			if((LHS_code->getType()->isDoubleTy()) || (RHS_code->getType()->isDoubleTy())) {
+				if(LHS_code->getType()->isIntOrIntVectorTy())
+					LHS_code = Builder.CreateIntCast(LHS_code, Type::getDoubleTy(GlobalContext), true, "inttodouble");
+				if(RHS_code->getType()->isIntOrIntVectorTy())
+					RHS_code = Builder.CreateIntCast(RHS_code, Type::getDoubleTy(GlobalContext), true, "inttodouble");
+				if(LHS_code->getType()->isFPOrFPVectorTy())
+					LHS_code = Builder.CreateFPCast(LHS_code, Type::getDoubleTy(GlobalContext), "floattodouble");
+				if(RHS_code->getType()->isFPOrFPVectorTy())
+					RHS_code = Builder.CreateFPCast(RHS_code, Type::getDoubleTy(GlobalContext), "floattodouble");
+			}
+		}
 		switch(op) {
 			case OP_PLUS:
-				ret = Builder.CreateFAdd(LHS_code, RHS_code, "addtmp");
+				if(LHS_code->getType()->isIntOrIntVectorTy() && RHS_code->getType()->isIntOrIntVectorTy())
+					ret = Builder.CreateAdd(LHS_code, RHS_code, "addtmp");
+				else
+					ret = Builder.CreateFAdd(LHS_code, RHS_code, "addtmp");
 				break;
 			case OP_MINUS:
-				ret = Builder.CreateFSub(LHS_code, RHS_code, "subtmp");
+				if(LHS_code->getType()->isIntOrIntVectorTy() && RHS_code->getType()->isIntOrIntVectorTy())
+					ret = Builder.CreateSub(LHS_code, RHS_code, "subtmp");
+				else
+					ret = Builder.CreateFSub(LHS_code, RHS_code, "subtmp");
 				break;
 			case OP_DIV:
-				ret = Builder.CreateFDiv(LHS_code, RHS_code, "divtmp");
+				if(LHS_code->getType()->isIntOrIntVectorTy() && RHS_code->getType()->isIntOrIntVectorTy())
+					ret = Builder.CreateSDiv(LHS_code, RHS_code, "divtmp");
+				else
+					ret = Builder.CreateFDiv(LHS_code, RHS_code, "divtmp");
 				break;
 			case OP_MUL:
-				ret = Builder.CreateFMul(LHS_code, RHS_code, "multmp");
+				if(LHS_code->getType()->isIntOrIntVectorTy() && RHS_code->getType()->isIntOrIntVectorTy())
+					ret = Builder.CreateMul(LHS_code, RHS_code, "multmp");
+				else
+					ret = Builder.CreateFMul(LHS_code, RHS_code, "multmp");
 				break;
 			case OP_MOD:
-				ret = Builder.CreateFRem(LHS_code, RHS_code, "remtmp");
+				if(LHS_code->getType()->isIntOrIntVectorTy() && RHS_code->getType()->isIntOrIntVectorTy())
+					ret = Builder.CreateSRem(LHS_code, RHS_code, "remtmp");
+				else
+					ret = Builder.CreateFRem(LHS_code, RHS_code, "remtmp");
 				break;
 			case OP_AND:
 				ret = Builder.CreateAnd(LHS_code, RHS_code, "andtmp");
@@ -133,7 +166,20 @@ Value * BinaryExpression::generateCode() {
 				var_name = ret_var->getName();
 				ret = (Value *)NamedValues[var_name];
 				if(ret != NULL) {
-					RHS_code->mutateType(ret->getType());
+					if(ret->getType()->isIntOrIntVectorTy()) {
+						if(RHS_code->getType()->isFPOrFPVectorTy() || RHS_code->getType()->isDoubleTy())
+							RHS_code = Builder.CreateFPCast(RHS_code, ret->getType(), "floatconversion");
+					} else if(ret->getType()->isFPOrFPVectorTy()) {
+						if(RHS_code->getType()->isIntOrIntVectorTy())
+							RHS_code = Builder.CreateIntCast(RHS_code, ret->getType(), true, "inttofloat");
+						else if(RHS_code->getType()->isDoubleTy())
+							RHS_code = Builder.CreateFPCast(RHS_code, ret->getType(), "floatconversion");
+					} else if(ret->getType()->isDoubleTy()) {
+						if(RHS_code->getType()->isIntOrIntVectorTy())
+							RHS_code = Builder.CreateIntCast(RHS_code, ret->getType(), true, "inttodouble");
+						else if(RHS_code->getType()->isFPOrFPVectorTy())
+							RHS_code = Builder.CreateFPCast(RHS_code, ret->getType(), "floatconversion");
+					}
 					llvm_store_inst = Builder.CreateStore(RHS_code, ret);
 					ret = llvm_store_inst;
 				}

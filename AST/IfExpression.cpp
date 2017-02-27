@@ -79,8 +79,10 @@ Value * IfExpression::generateCode() {
 	
 	if(Condition != NULL) {
 		cond = Condition->generateCode();
-		Value* ret_val = (Value *)NamedValues[al_tag_name];
-		Builder.CreateStore(cond, ret_val);
+		AllocaInst * llvm_alloca_inst = Builder.CreateAlloca(Type::getInt32Ty(GlobalContext), nullptr, al_tag_name.c_str());
+		NamedValues[al_tag_name] = llvm_alloca_inst;
+		ret = (Value *)NamedValues[al_tag_name];
+		StoreInst * llvm_store_inst = Builder.CreateStore(cond, ret);
 	}
 	if(cond != NULL) {
 		Function * func = Builder.GetInsertBlock()->getParent();
@@ -93,9 +95,9 @@ Value * IfExpression::generateCode() {
 		Value * then_val = NULL;
 		if(ThenExpression != NULL) {
 			then_val = ThenExpression->generateCode();
-			Builder.CreateBr(mergeBB); // Creating the unconditional branch to merging point of branches (to "ifcont")
-			thenBB = Builder.GetInsertBlock();
 		}
+		Builder.CreateBr(mergeBB); // Creating the unconditional branch to merging point of branches (to "ifcont")
+		thenBB = Builder.GetInsertBlock();
 		
 		// Else part of branches is generated independently of the existence of ELSE-branch in the code
 		func->getBasicBlockList().push_back(elseBB); // Inserting basic block for ELSE-branch after basic block for THEN-branch
@@ -103,9 +105,9 @@ Value * IfExpression::generateCode() {
 		Value * else_val = NULL;
 		if(ElseExpression != NULL) {
 			else_val = ElseExpression->generateCode();
-			Builder.CreateBr(mergeBB); // Creating the unconditional branch to merging point of branches (to "ifcont")
-			elseBB = Builder.GetInsertBlock();
 		}
+		Builder.CreateBr(mergeBB); // Creating the unconditional branch to merging point of branches (to "ifcont")
+		elseBB = Builder.GetInsertBlock();
 		
 		func->getBasicBlockList().push_back(mergeBB); // Inserting basic block for instructions after merging of branches after basic block for ELSE-branch
 		Builder.SetInsertPoint(mergeBB); // Current insert point is at the end of the basic block with instructions after merging point

@@ -25,8 +25,8 @@ exponent         	[Ee][\+\-]?{digit}+
 floatLiteral     	{digit}+"."{exponent}
 
 %%
-[\+\-]?{digit}+			{ yylval->pch = yytext; return NUMLITERAL; }
-[\+\-]?{floatLiteral}	{ yylval->pch = yytext; return NUMLITERAL; }
+[\+\-]?{digit}+			{ yylval->pch = yytext; return INTLITERAL; }
+[\+\-]?{floatLiteral}	{ yylval->pch = yytext; return FLOATLITERAL; }
 int					return TINT;
 double				return TDOUBLE;
 long 				return TLONG;

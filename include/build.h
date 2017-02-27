@@ -8,6 +8,10 @@
 #ifndef BUILD_H_
 #define BUILD_H_
 
+#ifndef COMMON_TYPES_AND_CONSTANTS
+#include "CommonTypesAndConstants.h"
+#endif
+
 #ifndef IRGRAPH_H_
 #include "IRGraph.h"
 #endif
@@ -80,7 +84,7 @@ data_type getIdentType( std::string variable_name, std::vector <std::string > * 
 Base_AST * buildBinaryExpression(Base_AST * left, Base_AST * right, bin_op_types type_of_op);
 Base_AST * buildUnaryExpression(Base_AST * ast, unary_op_types type_of_op);
 VariableExpr * buildVariableExpr(std::string var_name, std::vector <std::string > * scopes_ids_list);
-NumberExpr * buildNumberExpr( double value );
+NumberExpr * buildNumberExpr( double value, variable_type num_type );
 LogicalExpression * buildLogicalExpr(Base_AST * left, Base_AST * right, cond_op_types type_of_op, std::vector< std::string > * exp_bool_vars_list );
 
 int buildDataNode(std::string identifier_name, data_type dt, int id, std::string scope_name);

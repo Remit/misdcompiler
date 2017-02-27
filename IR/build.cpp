@@ -296,21 +296,18 @@ VariableExpr * buildVariableExpr(std::string var_name, std::vector <std::string 
 	bool * ok = new bool();
 	IR_DataNode * dn = NULL;
 
-	std::string scope_back_id = scopes_ids_list->back();
 	dn = var_table.getDataNodeByVariableName( var_name, ok, scopes_ids_list );
 
 	VariableExpr * var_expr = NULL;
-	if(dn != NULL) {
-		std::string var_name_full = var_name + "-" + scope_back_id;
-		var_expr = new VariableExpr(var_name_full,dn->getSimpleType(),false);
-	}
+	if(dn != NULL)
+		var_expr = new VariableExpr(dn->getDataName(),dn->getSimpleType(),false);
 
 	return var_expr;
 }
 
 //Build number
-NumberExpr * buildNumberExpr( double value ) {
-	NumberExpr * num_expr = new NumberExpr(value);
+NumberExpr * buildNumberExpr( double value, variable_type num_type ) {
+	NumberExpr * num_expr = new NumberExpr(value, num_type);
 	return num_expr;
 }
 

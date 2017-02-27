@@ -1,2 +1,5 @@
-int x, z;
-_misdop_SEARCH_STR x, STRUCT1, z;
+int x;
+float z;
+for(x = 1; x < z; x = x + 1) {
+z = z + 4;
+}

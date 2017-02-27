@@ -61,24 +61,30 @@ void WhileLoop::print(std::ostream * print_stream) {
 Value * WhileLoop::generateCode() {
 	Value * ret = NULL;
 	
+	AllocaInst * llvm_alloca_inst = Builder.CreateAlloca(Type::getInt32Ty(GlobalContext), nullptr, al_tag_name.c_str());
+	NamedValues[al_tag_name] = llvm_alloca_inst;
+	ret = (Value *)NamedValues[al_tag_name];
+	
 	Function * func = Builder.GetInsertBlock()->getParent();
 	BasicBlock * headerBB = BasicBlock::Create(GlobalContext, "condition", func);
+	Builder.CreateBr(headerBB);
 	Builder.SetInsertPoint(headerBB);
-	BasicBlock * loopBB = BasicBlock::Create(GlobalContext, "loop", func);
-	BasicBlock * afterBB = BasicBlock::Create(GlobalContext, "afterloop", func);
+
+	BasicBlock * loopBB = BasicBlock::Create(GlobalContext, "loop");
+	BasicBlock * afterBB = BasicBlock::Create(GlobalContext, "afterloop");
 	Value * cond = NULL;
 	if(Condition != NULL) {
 		cond = Condition->generateCode();
-		Value* ret_val = (Value *)NamedValues[al_tag_name];
-		Builder.CreateStore(cond, ret_val);
+		StoreInst * llvm_store_inst = Builder.CreateStore(cond, ret);
 		if(cond != NULL) {
 			Builder.CreateCondBr(cond, loopBB, afterBB);
+			func->getBasicBlockList().push_back(loopBB); // Inserting basic block for ELSE-branch after basic block for THEN-branch
 			Builder.SetInsertPoint(loopBB);
 			if(Body != NULL) {
 				Body->generateCode();
 			}
 			Builder.CreateBr(headerBB);
-			BasicBlock * loopEndBB = Builder.GetInsertBlock();
+			func->getBasicBlockList().push_back(afterBB); // Inserting basic block for instructions after merging of branches after basic block for ELSE-branch
 			Builder.SetInsertPoint(afterBB);
 		}
 	}

@@ -79,9 +79,10 @@ void VariableExpr::print(std::ostream * print_stream) {
 Value * VariableExpr::generateCode() {
 	Value * ret = NULL;
 	LoadInst * ld_inst;
+	
 	ret = NamedValues[name];
 	if (ret == NULL) {
-		std::cout << "Unknown variable name:\n" << name;
+		std::cout << "Unknown variable name:\n" << name << std::endl;
 	} else {
 		ret = Builder.CreateLoad(ret, name.c_str());
 		//ret = ld_inst->getPointerOperand();

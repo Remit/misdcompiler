@@ -79,7 +79,7 @@ Value * DefineExpr::generateCode() {
 			type_alloc = Type::getInt64Ty(GlobalContext);
 			break;
 		case VAR_FLOAT:
-			type_alloc = Type::getFP128Ty(GlobalContext);
+			type_alloc = Type::getFloatTy(GlobalContext);
 			break;
 		case VAR_DOUBLE:
 			type_alloc = Type::getDoubleTy(GlobalContext);;

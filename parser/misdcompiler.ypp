@@ -37,6 +37,10 @@
  #include "../include/BaseAST.h"
  #endif
  
+ #ifndef COMMON_TYPES_AND_CONSTANTS
+ #include "CommonTypesAndConstants.h"
+ #endif
+ 
  extern int yylineno; 
  
  static
@@ -87,7 +91,8 @@
 
 //Identifiers and literals
 %token <pch> TIDENT
-%token <pch> NUMLITERAL
+%token <pch> INTLITERAL
+%token <pch> FLOATLITERAL
 %token <pch> TSTRUCTIDENT
 %token <pch> STRINGLITERAL
 
@@ -129,8 +134,8 @@
 %type <str> struct ident
 %type <type_int> tlc trc
 %type <tov> id_type
-%type <ast> expr identnum
-%type <numerical> num boolval
+%type <ast> expr identnum num
+%type <numerical> boolval
 %type <logic> bool_expr
 %type <cond> log_op
 %type <struct_op> str_bin_op str_comp_op struct_op_acq_elem
@@ -721,7 +726,7 @@ identnum:
 																		std::vector< std::string > * scopes_ids_list_cp_ptr = &scopes_ids_list_cp;
 																		$$ = buildVariableExpr(* $1, scopes_ids_list_cp_ptr);
 																	}
-|  num																{	$$ = buildNumberExpr( $1 ); }
+|  num																{	$$ = $1; }
 ;
 
 ident:
@@ -732,10 +737,15 @@ ident:
 ;
 
 num:
-   NUMLITERAL														{
+   FLOATLITERAL														{
 																		std::string* num_str = new std::string(yylval.pch, 0, 1024);
 																		double num = std::stod(*num_str);
-																		$$ = num;
+																		$$ = buildNumberExpr( num, VAR_DOUBLE );
+																	}
+|  INTLITERAL														{
+																		std::string* num_str = new std::string(yylval.pch, 0, 1024);
+																		int num = std::stoi(*num_str);
+																		$$ = buildNumberExpr( num, VAR_INT );
 																	}
 ;
 
@@ -756,7 +766,7 @@ expr:
 |  TNOT expr														{	$$ = buildUnaryExpression($2, OP_NOT); }
 |  TMINUS expr														{	$$ = buildUnaryExpression($2, OP_UMINUS); }
 |  identnum															{	$$ = $1; }
-|  boolval															{	$$ = buildNumberExpr( $1 ); }
+|  boolval															{	$$ = buildNumberExpr( $1, VAR_INT ); }
 ;
 
 if_stmt:

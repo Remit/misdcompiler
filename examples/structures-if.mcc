@@ -1,12 +1,3 @@
-﻿int x, y, z;
-x = 0;
-y = 1;
-z = 2;
-if (x < y) then
-{
-_misdop_INSERT_STR STRUCT1, x, z;
-}
-else
-{
-_misdop_SEARCH_STR x, STRUCT1, z;
-}
+﻿int x, y;
+float r;
+r = x + y;
