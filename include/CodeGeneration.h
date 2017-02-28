@@ -28,7 +28,7 @@ extern StructType * burst_struct_type;
 /////////////////////////////////////////
 
 #define WORD_LENGTH  80
-#define MEM_LENGTH  256
+#define MEM_LENGTH  4086
 #define LINE_SIZE 1024
 
 /////////////////////////////////////////

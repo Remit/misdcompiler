@@ -17,6 +17,10 @@ using namespace std;
 #include "include/Passes.h"
 #endif
 
+#ifndef BUILD_H_
+#include "include/build.h"
+#endif
+
 LLVMContext GlobalContext;
 IRBuilder<> Builder(GlobalContext);
 Module * GlobalModule;
@@ -196,9 +200,11 @@ int main(int argc, char *argv[]) {
 		
 		IR_Graph result_graph;
 		
-		global_timer->startTime(std::string(argv[1]),l,std::string("Parsing"));
+		initialize_for_repeat();
+		global_timer->startTime(std::string(argv[1]),l,std::string("1 - Parsing"));
 		int status = yyparse(result_graph);
-		global_timer->endTime(std::string(argv[1]),l,std::string("Parsing"));
+		global_timer->endTime(std::string(argv[1]),l,std::string("1 - Parsing"));
+		finish_for_repeat();
 		
 		fclose(fp);
 		fclose(out_fp);
@@ -206,14 +212,14 @@ int main(int argc, char *argv[]) {
 		if(status == 0) {
 			status = Compile(option_vis, option_ast_IR, ast_filename, option_asm_IR, asm_filename, &result_graph, out_filename, l, std::string(argv[1]), global_timer);
 		}
-		
-		global_timer->printDurations();
-		
-		if(status == 0)
-			cout << endl << "*************************" << endl << "Compilation completed successfully." << endl;
-		else
-			cout << endl << "Some errors occured during compilation. Exiting (" << status << ")" << endl;
+//		
+//		if(status == 0)
+//			cout << endl << "*************************" << endl << "Compilation completed successfully." << endl;
+//		else
+//			cout << endl << "Some errors occured during compilation. Exiting (" << status << ")" << endl;
 	}
+	
+	global_timer->printDurations();
 		
 	return 0;
 }

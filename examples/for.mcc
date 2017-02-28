@@ -1,5 +1,10 @@
-int x;
-float z;
-for(x = 1; x < z; x = x + 1) {
-z = z + 4;
+int i, x, y;
+x = 1;
+y = 10;
+for(i = 1; i < y; i = i + 1)
+{
+_misdop_INSERT_STR STRUCT1, x, y;
+x = x + i;
+y = y - i;
 }
+

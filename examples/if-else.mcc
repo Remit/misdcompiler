@@ -1,7 +1,9 @@
-﻿int x, y;
+int x, y;
 x = 1;
 y = 2;
 if(x < y) then
 {
 _misdop_INSERT_STR STRUCT1, x, y;
+} else {
+_misdop_INSERT_STR STRUCT1, y, x;
 }

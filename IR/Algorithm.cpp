@@ -177,6 +177,7 @@ int Graph_ArithmeticLogicProcessing( IR_Graph* src_graph, IR_Graph* alp_graph) {
 				// Adding tag variable (data node) to store the result of condition calculation
 				IR_DataNode *tag_node = new IR_DataNode();
 				std::string tag_name = "al_tag_" + std::to_string(tag_id);
+				tag_node->setIsTag();
 				tag_node->setProcType(IR_CPU);
 				tag_node->setDataType(IR_DATA_TAG);
 				tag_node->setSimpleType(VAR_INT);

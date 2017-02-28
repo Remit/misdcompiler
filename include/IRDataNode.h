@@ -20,10 +20,13 @@ public:
 	void setDataType(data_type a_dataType);
 	void setSimpleType(variable_type a_simple_type);
 	void setDataName(std::string a_name);
+	void setIsTag();
+	void unsetIsTag();
 
 	data_type getDataType();
 	variable_type getSimpleType();
 	std::string getDataName();
+	bool isTag();
 
 	// Visualisation
 	void print();
@@ -37,6 +40,7 @@ private:
 	data_type dataType;
 	variable_type simple_type;
 	std::string name;
+	bool istag;
 };
 
 #endif /* IRDATANODE_H_ */

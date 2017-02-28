@@ -125,9 +125,11 @@ IfExpression * AST_st_if(int node_id, IR_Graph * graph) {
 		ast_if = (IfExpression *)op_node_cond->getNodeASTSubTree();
 		std::vector< int > * dep_data_ids = graph->getDependentDataNodes(node_id);
 		if(dep_data_ids != NULL) {
-			IR_DataNode* tag_node = ( IR_DataNode* )graph->getNode((*dep_data_ids)[0]);
-			if(tag_node != NULL)
-				ast_if->setALtagName(tag_node->getDataName());
+			for(int i = 0; i < dep_data_ids->size(); i++) {
+				IR_DataNode* tag_node = ( IR_DataNode* )graph->getNode((*dep_data_ids)[i]);
+				if((tag_node != NULL) && (tag_node->isTag()))
+					ast_if->setALtagName(tag_node->getDataName());
+			}
 		}
 		//Then-branch
 		if(first_then_id > 0) {
@@ -352,9 +354,11 @@ WhileLoop * AST_st_whileloop(int node_id, IR_Graph * graph) {
 		ast_while = (WhileLoop *)op_node_cond->getNodeASTSubTree();
 		std::vector< int > * dep_data_ids = graph->getDependentDataNodes(node_id);
 		if(dep_data_ids != NULL) {
-			IR_DataNode* tag_node = ( IR_DataNode* )graph->getNode((*dep_data_ids)[0]);
-			if(tag_node != NULL)
-				ast_while->setALtagName(tag_node->getDataName());
+			for(int i = 0; i < dep_data_ids->size(); i++) {
+				IR_DataNode* tag_node = ( IR_DataNode* )graph->getNode((*dep_data_ids)[i]);
+				if((tag_node != NULL) && (tag_node->isTag()))
+					ast_while->setALtagName(tag_node->getDataName());
+			}
 		}
 		std::vector< int > * dep_op_ids = graph->getDependentOperationNodes(node_id);
 		int cur_op_id;
@@ -494,13 +498,16 @@ ForLoop * AST_st_forloop(int node_id, IR_Graph * graph) {
 			cond_node_id = (*dep_op_ids)[0];
 		}
 		
+		dep_data_ids = graph->getDependentDataNodes(cond_node_id);
 		IR_OperationNode* op_node_cond = ( IR_OperationNode* )graph->getNode(cond_node_id);
 		int end_id = op_node_cond->getConnectedNodeID();
 		ast_for = (ForLoop *)op_node_cond->getNodeASTSubTree();
 		if(dep_data_ids != NULL) {
-			IR_DataNode* tag_node = ( IR_DataNode* )graph->getNode((*dep_data_ids)[0]);
-			if(tag_node != NULL)
-				ast_for->setALtagName(tag_node->getDataName());
+			for(int i = 0; i < dep_data_ids->size(); i++) {
+				IR_DataNode* tag_node = ( IR_DataNode* )graph->getNode((*dep_data_ids)[i]);
+				if((tag_node != NULL) && (tag_node->isTag()))
+					ast_for->setALtagName(tag_node->getDataName());
+			}
 		}
 		// Setting the name of the counter for the purposes of code generation
 		if((dep_data_ids != NULL) && (dep_data_ids->size() > 0)) {

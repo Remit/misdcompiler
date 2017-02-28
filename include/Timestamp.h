@@ -18,8 +18,8 @@ public:
 	
 private:
 	std::string file_to_print;
-	std::map< std::string, time_t > timestamps;
-	std::map< std::string, double > durations; //in seconds
+	std::map< std::string, clock_t > timestamps;
+	std::map< std::string, float > durations; //in seconds
 };
 
 #endif

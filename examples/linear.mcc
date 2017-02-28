@@ -1,0 +1,14 @@
+int x, y, z;
+x = 1;
+y = 2;
+_misdop_INSERT_STR STRUCT1, x, y;
+_misdop_INSERT_STR STRUCT1, x, y;
+_misdop_INSERT_STR STRUCT1, x, y;
+_misdop_INSERT_STR STRUCT1, x, y;
+_misdop_INSERT_STR STRUCT1, x, y;
+_misdop_INSERT_STR STRUCT1, x, y;
+_misdop_INSERT_STR STRUCT1, x, y;
+_misdop_INSERT_STR STRUCT1, x, y;
+_misdop_INSERT_STR STRUCT1, x, y;
+_misdop_INSERT_STR STRUCT1, x, y;
+z = x + y;

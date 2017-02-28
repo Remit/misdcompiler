@@ -1,5 +1,0 @@
-int x, y;
-for (x = y; x < y; x = x + y)
-{
-_misdop_LT_STR STRUCT1, STRUCT2, x;
-}

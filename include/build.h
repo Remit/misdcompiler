@@ -95,5 +95,7 @@ bool isAddedToGraph(std::string identifier_name, bool * ok);
 int identNameToGID(std::string identifier_name);
 void updateAddedToGraph(std::map<int,int> updateBlock);
 void printAddedToGraph();
+void finish_for_repeat();
+void initialize_for_repeat();
 
 #endif /* BUILD_H_ */

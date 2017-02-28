@@ -1,0 +1,22 @@
+int x, y;
+x = 10;
+y = 20;
+if(x < y) then
+{
+int i;
+i = 1;
+while(i < x) do
+{
+_misdop_INSERT_STR STRUCT1, x, y;
+i = i + 1;
+}
+} else {
+int i;
+i = 1;
+while(i < y) do
+{
+_misdop_INSERT_STR STRUCT1, x, y;
+i = i + 1;
+}
+}
+

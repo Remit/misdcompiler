@@ -1,6 +1,0 @@
-int x, y;
-while (x < y) do
-{
-_misdop_LT_STR STRUCT1, STRUCT2, x;
-x = x + y;
-}

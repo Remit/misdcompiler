@@ -52,6 +52,7 @@ Value * TransferExpr::generateCode() {
 	FunctionType* ioctlTy = FunctionType::get(Type::getInt16Ty(GlobalContext), ArrayRef<Type*>(argsPTC,3), false);
 	Constant* c_ioctl = GlobalModule->getOrInsertFunction("ioctl",ioctlTy);
 	Function* ioctl_func = cast<Function>(c_ioctl);
+	Value * memory_reg;
 	
 	if(direction == TR_SEND) {
 		ret = Builder.CreateLoad(ret, name_of_var.c_str());
@@ -61,15 +62,29 @@ Value * TransferExpr::generateCode() {
 		ConstantInt* words_count_val = ConstantInt::get(Type::getInt16Ty(GlobalContext), 1);
 		Value * llvm_alloca_data_array_inst = Builder.CreateAlloca(Type::getInt32Ty(GlobalContext), words_count_val, "data");
 		Value * llvm_alloca_adr_array_inst = Builder.CreateAlloca(Type::getInt32Ty(GlobalContext), words_count_val, "adr");
-		Builder.CreateInsertValue(llvm_alloca_data_array_inst, ret, std::vector<unsigned>(1, 0));
+		Value * idx = ConstantInt::get(Type::getInt16Ty(GlobalContext), 0);
+		memory_reg = Builder.CreateGEP(Type::getInt32Ty(GlobalContext),llvm_alloca_data_array_inst, idx);
+		Builder.CreateStore(ret, memory_reg);
+		//Builder.CreateInsertValue(llvm_alloca_data_array_inst, ret, std::vector<unsigned>(1, 0));
 		//TODO: Placeholder for adr
 		Value * elem_val = ConstantInt::get(Type::getInt32Ty(GlobalContext), 0);
-		Builder.CreateInsertValue(llvm_alloca_adr_array_inst, elem_val, std::vector<unsigned>(1, 0));
+		memory_reg = Builder.CreateGEP(Type::getInt32Ty(GlobalContext),llvm_alloca_adr_array_inst, idx);
+		Builder.CreateStore(ret, memory_reg);
+//		Builder.CreateInsertValue(llvm_alloca_adr_array_inst, elem_val, std::vector<unsigned>(1, 0));
 		
 		Value * llvm_alloca_misdburst_struct_inst = Builder.CreateAlloca(burst_struct_type, nullptr, "misdburst");
-		Value* insert_field1 = Builder.CreateInsertValue(llvm_alloca_misdburst_struct_inst, words_count_val, std::vector<unsigned>(1, 0), "setcount");
-		Value* insert_field2 = Builder.CreateInsertValue(llvm_alloca_misdburst_struct_inst, llvm_alloca_adr_array_inst, std::vector<unsigned>(1, 1), "setdataptr");
-		Value* insert_field3 = Builder.CreateInsertValue(llvm_alloca_misdburst_struct_inst, llvm_alloca_data_array_inst, std::vector<unsigned>(1, 2), "setadrptr");
+		idx = ConstantInt::get(Type::getInt16Ty(GlobalContext), 0);
+		Value * first_field = Builder.CreateGEP(burst_struct_type,llvm_alloca_misdburst_struct_inst, idx, "get1elemptr");
+		Builder.CreateStore(words_count_val, first_field);
+		idx = ConstantInt::get(Type::getInt16Ty(GlobalContext), 1);
+		Value * second_field = Builder.CreateGEP(burst_struct_type,llvm_alloca_misdburst_struct_inst, idx, "get2elemptr");
+		Builder.CreateStore(llvm_alloca_adr_array_inst, second_field);
+		idx = ConstantInt::get(Type::getInt16Ty(GlobalContext), 2);
+		Value * third_field = Builder.CreateGEP(burst_struct_type,llvm_alloca_misdburst_struct_inst, idx, "get3elemptr");
+		Builder.CreateStore(llvm_alloca_data_array_inst, third_field);
+//		Value* insert_field1 = Builder.CreateInsertValue(llvm_alloca_misdburst_struct_inst, words_count_val, std::vector<unsigned>(1, 0), "setcount");
+//		Value* insert_field2 = Builder.CreateInsertValue(llvm_alloca_misdburst_struct_inst, llvm_alloca_adr_array_inst, std::vector<unsigned>(1, 1), "setdataptr");
+//		Value* insert_field3 = Builder.CreateInsertValue(llvm_alloca_misdburst_struct_inst, llvm_alloca_data_array_inst, std::vector<unsigned>(1, 2), "setadrptr");
 
 		// Creating open function for the device in Linux: int open(const char *path, int oflag, ... );
 		Type* argsPTCopen[] = { Type::getInt8PtrTy(GlobalContext), Type::getInt16Ty(GlobalContext) };
@@ -83,7 +98,6 @@ Value * TransferExpr::generateCode() {
 		Value * llvm_alloca_device_chars = Builder.CreateAlloca(Type::getInt8Ty(GlobalContext), number_of_chars, "device_chars");
 		char* device_name = "/dev/misd";
 		Value * memory_reg;
-		Value * idx;
 		for(int k = 0; k < 10; k++) {
 			char symbol = device_name[k];
 			idx = ConstantInt::get(Type::getInt16Ty(GlobalContext), k);
@@ -118,12 +132,23 @@ Value * TransferExpr::generateCode() {
 		Value * llvm_alloca_adr_array_inst = Builder.CreateAlloca(Type::getInt32Ty(GlobalContext), words_count_val, "adr");
 		//TODO: Placeholder for adr
 		Value * elem_val = ConstantInt::get(Type::getInt32Ty(GlobalContext), 0);
-		Builder.CreateInsertValue(llvm_alloca_adr_array_inst, elem_val, std::vector<unsigned>(1, 0));
+		memory_reg = Builder.CreateGEP(Type::getInt32Ty(GlobalContext),llvm_alloca_adr_array_inst, elem_val);
+		Builder.CreateStore(ret, memory_reg);
+//		Builder.CreateInsertValue(llvm_alloca_adr_array_inst, elem_val, std::vector<unsigned>(1, 0));
 		
 		Value * llvm_alloca_misdburst_struct_inst = Builder.CreateAlloca(burst_struct_type, nullptr, "misdburst");
-		Value* insert_field1 = Builder.CreateInsertValue(llvm_alloca_misdburst_struct_inst, words_count_val, std::vector<unsigned>(1, 0), "setcount");
-		Value* insert_field2 = Builder.CreateInsertValue(llvm_alloca_misdburst_struct_inst, llvm_alloca_adr_array_inst, std::vector<unsigned>(1, 1), "setdataptr");
-		Value* insert_field3 = Builder.CreateInsertValue(llvm_alloca_misdburst_struct_inst, llvm_alloca_data_array_inst, std::vector<unsigned>(1, 2), "setadrptr");
+		Value * idx = ConstantInt::get(Type::getInt16Ty(GlobalContext), 0);
+		Value * first_field = Builder.CreateGEP(burst_struct_type,llvm_alloca_misdburst_struct_inst, idx, "get1elemptr");
+		Builder.CreateStore(words_count_val, first_field);
+		idx = ConstantInt::get(Type::getInt16Ty(GlobalContext), 1);
+		Value * second_field = Builder.CreateGEP(burst_struct_type,llvm_alloca_misdburst_struct_inst, idx, "get2elemptr");
+		Builder.CreateStore(llvm_alloca_adr_array_inst, second_field);
+		idx = ConstantInt::get(Type::getInt16Ty(GlobalContext), 2);
+		Value * third_field = Builder.CreateGEP(burst_struct_type,llvm_alloca_misdburst_struct_inst, idx, "get3elemptr");
+		Builder.CreateStore(llvm_alloca_data_array_inst, third_field);
+//		Value* insert_field1 = Builder.CreateInsertValue(llvm_alloca_misdburst_struct_inst, words_count_val, std::vector<unsigned>(1, 0), "setcount");
+//		Value* insert_field2 = Builder.CreateInsertValue(llvm_alloca_misdburst_struct_inst, llvm_alloca_adr_array_inst, std::vector<unsigned>(1, 1), "setdataptr");
+//		Value* insert_field3 = Builder.CreateInsertValue(llvm_alloca_misdburst_struct_inst, llvm_alloca_data_array_inst, std::vector<unsigned>(1, 2), "setadrptr");
 
 		// Creating open function for the device in Linux: int open(const char *path, int oflag, ... );
 		Type* argsPTCopen[] = { Type::getInt8PtrTy(GlobalContext), Type::getInt16Ty(GlobalContext) };
@@ -136,8 +161,6 @@ Value * TransferExpr::generateCode() {
 		ConstantInt* number_of_chars = ConstantInt::get(Type::getInt16Ty(GlobalContext), 10);
 		Value * llvm_alloca_device_chars = Builder.CreateAlloca(Type::getInt8Ty(GlobalContext), number_of_chars, "device_chars");
 		char* device_name = "/dev/misd";
-		Value * memory_reg;
-		Value * idx;
 		for(int k = 0; k < 10; k++) {
 			char symbol = device_name[k];
 			idx = ConstantInt::get(Type::getInt16Ty(GlobalContext), k);

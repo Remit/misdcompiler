@@ -9,26 +9,26 @@ int Compile(visualization_option option_vis, ast_IR_option option_ast_IR, std::s
 		IR_Graph* al_graph = new IR_Graph();
 		IR_Graph* sp_graph = new IR_Graph();
 		
-		ts->startTime(in_filename,iteration,std::string("Decomposing"));
+		ts->startTime(in_filename,iteration,std::string("2 - Decomposing"));
 		status = IRDecompositionPass(al_graph, sp_graph, src_result_graph, option_vis);
-		ts->endTime(in_filename,iteration,std::string("Decomposing"));
+		ts->endTime(in_filename,iteration,std::string("2 - Decomposing"));
 		
 		if(status == 0) {
 			// Construction of ASTs
 			SequenceAST* al_AST = new SequenceAST();
 			SequenceAST* sp_AST = new SequenceAST();
-			ts->startTime(in_filename,iteration,std::string("IR2AST"));
+			ts->startTime(in_filename,iteration,std::string("3 - IR2AST"));
 			status = IR2ASTConversionPass(al_AST, sp_AST, al_graph, sp_graph, option_ast_IR, ast_filename);
-			ts->endTime(in_filename,iteration,std::string("IR2AST"));
+			ts->endTime(in_filename,iteration,std::string("3 - IR2AST"));
 			if(status == 0) {
 				// Generation of asm IRs
-				ts->startTime(in_filename,iteration,std::string("AST2ASM"));
+				ts->startTime(in_filename,iteration,std::string("4 - AST2ASM"));
 				status = AST2ASMConversionPass(al_AST, sp_AST, option_asm_IR, asm_filename);
-				ts->endTime(in_filename,iteration,std::string("AST2ASM"));
+				ts->endTime(in_filename,iteration,std::string("4 - AST2ASM"));
 				
 				if(status == 0) {
 					// Generation of binary code
-					ts->startTime(in_filename,iteration,std::string("ASM2BIN"));
+					ts->startTime(in_filename,iteration,std::string("5 - ASM2BIN"));
 					auto TargetTriple = sys::getDefaultTargetTriple();
 					StringRef tt = sys::getHostCPUName();
 					InitializeAllTargetInfos();
@@ -63,10 +63,11 @@ int Compile(visualization_option option_vis, ast_IR_option option_ast_IR, std::s
 							}
 						}
 					}
-					ts->endTime(in_filename,iteration,std::string("ASM2BIN"));
+					ts->endTime(in_filename,iteration,std::string("5 - ASM2BIN"));
 				}
 			}
 		}
+		
 	}
 	
 	return status;

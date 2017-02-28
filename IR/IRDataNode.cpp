@@ -9,7 +9,7 @@
 
 IR_DataNode::IR_DataNode() {
 	// TODO Auto-generated constructor stub
-
+	istag = false;
 }
 
 IR_DataNode::~IR_DataNode() {
@@ -89,4 +89,16 @@ void IR_DataNode::setDataName(std::string a_name) {
 
 std::string IR_DataNode::getDataName() {
 	return name;
+}
+
+void IR_DataNode::setIsTag() {
+	istag = true;
+}
+
+void IR_DataNode::unsetIsTag() {
+	istag = false;
+}
+
+bool IR_DataNode::isTag() {
+	return istag;
 }

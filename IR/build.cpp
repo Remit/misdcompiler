@@ -7,8 +7,14 @@
 
 #include "../include/build.h"
 
-VariablesTable var_table;
-StructuresTable struct_table;
+VariablesTable * var_table;
+StructuresTable * struct_table;
+
+// Initializing necessary structures for repeated estimation of time
+void initialize_for_repeat() {
+	var_table = new VariablesTable();
+	struct_table = new StructuresTable();
+}
 
 //Building assignment node
 IR_OperationNode* buildAssignNode( data_type dt, std::vector< std::string > * idents_ptr, Base_AST * expr, std::vector <std::string > * scopes_ids_list, structures_proc_op_types struct_op ) {
@@ -23,7 +29,7 @@ IR_OperationNode* buildAssignNode( data_type dt, std::vector< std::string > * id
 		if(idents_ptr->size() == 1) {
 			bool * ok = new bool();
 
-			IR_DataNode * dn = var_table.getDataNodeByVariableName((*idents_ptr)[0],ok,scopes_ids_list);
+			IR_DataNode * dn = var_table->getDataNodeByVariableName((*idents_ptr)[0],ok,scopes_ids_list);
 			if(dn != NULL) {
 				std::string var_name = (*idents_ptr)[0] + "-" + scope_back_id;
 				VariableExpr * var_assigned = new VariableExpr(var_name,dn->getSimpleType(),false);
@@ -38,11 +44,11 @@ IR_OperationNode* buildAssignNode( data_type dt, std::vector< std::string > * id
 		
 		if(idents_ptr->size() > 0) {
 			bool * ok = new bool();
-			IR_DataNode * dn = var_table.getDataNodeByVariableName((*idents_ptr)[0],ok,scopes_ids_list);
+			IR_DataNode * dn = var_table->getDataNodeByVariableName((*idents_ptr)[0],ok,scopes_ids_list);
 			
 			if(dn == NULL) {
 				
-				dn = struct_table.getDataNodeByVariableName((*idents_ptr)[0],ok);
+				dn = struct_table->getDataNodeByVariableName((*idents_ptr)[0],ok);
 				if(dn != NULL) {
 					StructureExpr * ident = NULL;
 					ident = new StructureExpr((*idents_ptr)[0]);
@@ -57,10 +63,10 @@ IR_OperationNode* buildAssignNode( data_type dt, std::vector< std::string > * id
 		}
 		if(idents_ptr->size() > 1) {
 			bool * ok = new bool();
-			IR_DataNode * dn = var_table.getDataNodeByVariableName((*idents_ptr)[1],ok,scopes_ids_list);
+			IR_DataNode * dn = var_table->getDataNodeByVariableName((*idents_ptr)[1],ok,scopes_ids_list);
 			
 			if(dn == NULL) {
-				dn = struct_table.getDataNodeByVariableName((*idents_ptr)[1],ok);
+				dn = struct_table->getDataNodeByVariableName((*idents_ptr)[1],ok);
 				if(dn != NULL) {
 					StructureExpr * ident = NULL;
 					ident = new StructureExpr((*idents_ptr)[1]);
@@ -75,10 +81,10 @@ IR_OperationNode* buildAssignNode( data_type dt, std::vector< std::string > * id
 		}
 		if(idents_ptr->size() > 2) {
 			bool * ok = new bool();
-			IR_DataNode * dn = var_table.getDataNodeByVariableName((*idents_ptr)[2],ok,scopes_ids_list);
+			IR_DataNode * dn = var_table->getDataNodeByVariableName((*idents_ptr)[2],ok,scopes_ids_list);
 			
 			if(dn == NULL) {
-				dn = struct_table.getDataNodeByVariableName((*idents_ptr)[2],ok);
+				dn = struct_table->getDataNodeByVariableName((*idents_ptr)[2],ok);
 				if(dn != NULL) {
 					StructureExpr * ident = NULL;
 					ident = new StructureExpr((*idents_ptr)[2]);
@@ -180,14 +186,14 @@ int buildDataNode(std::string identifier_name, data_type dt, int id, std::string
 	int ret;
 	std::string var_name_in_table = identifier_name + "-" + scope_name;
 	bool * ok = new bool();
-	int gid = var_table.getGIDbyName( var_name_in_table, ok);
+	int gid = var_table->getGIDbyName( var_name_in_table, ok);
 	if( (* ok) != true) {
 		IR_DataNode* data_node = new IR_DataNode();
 		data_node->setID(id);
 		data_node->setDataType(dt);
 		data_node->setProcType(IR_CPU);
 		data_node->setDataName(var_name_in_table);
-		var_table.addVariableToTable(var_name_in_table,data_node);
+		var_table->addVariableToTable(var_name_in_table,data_node);
 		ret = 0;
 	} else {
 		ret = 1;
@@ -199,23 +205,23 @@ int buildDataNode(std::string identifier_name, data_type dt, int id, std::string
 // Updating data type of data node in variables table
 void updateDataNode_SimpleDataType(std::string identifier_name, variable_type dt, std::vector <std::string > * scopes_ids_list) {
 	bool* ok = new bool();
-	var_table.setSimpleDataType(identifier_name,dt,ok,scopes_ids_list);
+	var_table->setSimpleDataType(identifier_name,dt,ok,scopes_ids_list);
 }
 
 // Building data node for structures table
 void addStructDataNodeToGraph(std::string identifier_name) {
 	bool* ok  = new bool();
-	struct_table.setAddedToGraph(identifier_name, ok);
+	struct_table->setAddedToGraph(identifier_name, ok);
 }
 
 void addVariableDataNodeToGraph(std::string identifier_name, int gid) {
 	bool* ok  = new bool();
-	var_table.setAddedToGraph(identifier_name, gid, ok);
+	var_table->setAddedToGraph(identifier_name, gid, ok);
 }
 
 IR_DataNode* getStructureNodeByName( std::string structure_name ) {
 	bool* ok  = new bool();
-	IR_DataNode* data_node = struct_table.getDataNodeByVariableName( structure_name, ok );
+	IR_DataNode* data_node = struct_table->getDataNodeByVariableName( structure_name, ok );
 	return data_node;
 }
 
@@ -223,7 +229,7 @@ IR_DataNode* getVariableNodeByName( std::string variable_name, std::vector <std:
 	bool* ok = new bool();
 	IR_DataNode* data_node = NULL;
 	
-	data_node = var_table.getDataNodeByVariableName( variable_name, ok, scopes_ids_list );
+	data_node = var_table->getDataNodeByVariableName( variable_name, ok, scopes_ids_list );
 		
 	return data_node;
 }
@@ -233,7 +239,7 @@ data_type getIdentType( std::string variable_name, std::vector <std::string > * 
 	bool* ok = new bool();
 	data_type type_of_variable = IR_UNDEFINED;
 
-	type_of_variable = var_table.getVarDataType( variable_name, ok, scopes_ids_list );
+	type_of_variable = var_table->getVarDataType( variable_name, ok, scopes_ids_list );
 
 	return type_of_variable;
 }
@@ -244,11 +250,11 @@ bool isAddedToGraph(std::string identifier_name, bool * ok) {
 
 	bool added_as_var;
 	bool * ok_var = new bool();
-	added_as_var = var_table.getStatusAddedToGraph(identifier_name, ok_var);
+	added_as_var = var_table->getStatusAddedToGraph(identifier_name, ok_var);
 
 	bool added_as_struct;
 	bool * ok_struct = new bool();
-	added_as_struct = struct_table.getStatusAddedToGraph(identifier_name, ok_struct);
+	added_as_struct = struct_table->getStatusAddedToGraph(identifier_name, ok_struct);
 
 	if( ((* ok_var) == false) && ((* ok_struct) == false) )
 		(* ok) = false;
@@ -266,17 +272,17 @@ bool isAddedToGraph(std::string identifier_name, bool * ok) {
 int identNameToGID(std::string identifier_name) {
 	int ret;
 	bool* ok = new bool();
-	ret = var_table.getGIDbyName(identifier_name, ok);
+	ret = var_table->getGIDbyName(identifier_name, ok);
 	return ret; // must add for structs too
 }
 
 // Updating added to graph table after renumeration of nodes
 void updateAddedToGraph(std::map<int,int> updateBlock) {
-	var_table.updateAddedToGraph(updateBlock);
+	var_table->updateAddedToGraph(updateBlock);
 }
 
 void printAddedToGraph() {
-	var_table.printAddedToGraph();
+	var_table->printAddedToGraph();
 }
 
 //Build binary expression AST subtree
@@ -296,7 +302,7 @@ VariableExpr * buildVariableExpr(std::string var_name, std::vector <std::string 
 	bool * ok = new bool();
 	IR_DataNode * dn = NULL;
 
-	dn = var_table.getDataNodeByVariableName( var_name, ok, scopes_ids_list );
+	dn = var_table->getDataNodeByVariableName( var_name, ok, scopes_ids_list );
 
 	VariableExpr * var_expr = NULL;
 	if(dn != NULL)
@@ -315,4 +321,10 @@ NumberExpr * buildNumberExpr( double value, variable_type num_type ) {
 LogicalExpression * buildLogicalExpr(Base_AST * left, Base_AST * right, cond_op_types type_of_op, std::vector< std::string > * exp_bool_vars_list) {
 	LogicalExpression * logical_ast = new LogicalExpression(type_of_op,left,right,exp_bool_vars_list);
 	return logical_ast;
+}
+
+// Clearing and preparing for the next iteration to estimate the time
+void finish_for_repeat() {
+	delete var_table;
+	delete struct_table;
 }

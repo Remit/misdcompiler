@@ -1,0 +1,22 @@
+int x, y;
+x = 1;
+y = 10;
+while(x < y) do
+{
+int j;
+j = 1;
+while(j < x) do
+{
+int k;
+k = 100;
+while(k > j) do
+{
+_misdop_INSERT_STR STRUCT1, k, y;
+k = k - 2;
+}
+j = j + 2;
+}
+x = x + 1;
+y = y - 1;
+}
+
