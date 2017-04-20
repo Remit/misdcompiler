@@ -256,7 +256,12 @@ std::string StructuresExpression::generateStructCode() {
 	strcpy(SP_IR[mem_point].label,"");
 	SP_IR[mem_point].jmp_adr = -1;
 	
-	mem_point++;
+	if(mem_point != (MEM_LENGTH - 2)) {
+		mem_point++;
+	} else {
+		printf("Error: not enough memory for SPU code (MEM_LENGTH too small).");
+		return ret;
+	}
 	
 	return ret;
 }

@@ -28,7 +28,7 @@ extern StructType * burst_struct_type;
 /////////////////////////////////////////
 
 #define WORD_LENGTH  80
-#define MEM_LENGTH  4086
+#define MEM_LENGTH  256
 #define LINE_SIZE 1024
 
 /////////////////////////////////////////
@@ -74,7 +74,7 @@ extern StructType * burst_struct_type;
 #define GR_C 3
 #define DELS_C 1
 #define POWER_C 1
-#define JT_C 1
+#define JT_C 0
 //#define JWT_C 1
 //#define JNW_C 0
 #define NEXT_C 2
@@ -90,10 +90,13 @@ typedef struct { 		//Structure type for inner command representation, a structur
 } spu_cmd;
 
 extern spu_cmd SP_IR[MEM_LENGTH];
+extern std::map<int, int> true_address;
+extern std::map<int, int> false_address;
 extern unsigned int SP_BIN[MEM_LENGTH][5];
 extern int mem_point;
 extern int label_i;
 extern void SPU_IR2BIN(); //Function to convert the IR of SPU command to its binary representation
 extern void print_SPU_asm_IR(std::ostream * print_stream);
+extern void initialize_SPU();
 
 #endif

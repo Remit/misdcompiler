@@ -201,6 +201,7 @@ int IR2ASTConversionPass(SequenceAST* al_AST, SequenceAST* sp_AST, IR_Graph* al_
 int AST2ASMConversionPass(SequenceAST* al_AST, SequenceAST* sp_AST, asm_IR_option option_asm_IR, std::string asm_filename) {
 	std::streambuf * buf;
 	std::ofstream of;
+	initialize_SPU();
 
 	if(asm_filename.compare("") == 0) {
 		buf = std::cout.rdbuf();
@@ -234,15 +235,15 @@ int AST2ASMConversionPass(SequenceAST* al_AST, SequenceAST* sp_AST, asm_IR_optio
 		// Generating SPU asm IR for SP-instructions stream
 		sp_AST->generateStructCode();
 		// TODO: Inserting the last command to halt the SPU program
-		SP_IR[mem_point].tag[0] = true; // Not in use
-		SP_IR[mem_point].tag[1] = false; // waiting for address
+		SP_IR[mem_point].tag[0] = false; // waiting for address
+		SP_IR[mem_point].tag[1] = true; // Not in use
 		SP_IR[mem_point].tag[2] = true; // Not in use
-		SP_IR[mem_point].op[0] = 1; // Unconditional branch
+		SP_IR[mem_point].op[0] = 0; // Unconditional branch
 		SP_IR[mem_point].op[1] = 0; // Not in use
 		SP_IR[mem_point].op[2] = 0; // Not in use
 		SP_IR[mem_point].opcode = JT; // Jump to condition after the loop body is processed
-		SP_IR[mem_point].q = true;
-		SP_IR[mem_point].jmp_adr = 0;
+		SP_IR[mem_point].q = false;
+		SP_IR[mem_point].jmp_adr = -1;
 		mem_point++;
 		
 		SPU_IR2BIN(); // Generating binary of SP-instructions stream
@@ -284,7 +285,7 @@ int AST2ASMConversionPass(SequenceAST* al_AST, SequenceAST* sp_AST, asm_IR_optio
 		unsigned long tmp, elem;
 		ConstantInt* elem_val;
 		Value * memory_reg;
-		for(int i = 0; i < mem_point; i++) {
+		for(int i = 0; i < MEM_LENGTH; i++) {
 			if(i % 2 != 0) {//uneven lines
 				tmp = SP_BIN[i][0];
 				elem = (tmp << 16) & 0xFFFF0000;

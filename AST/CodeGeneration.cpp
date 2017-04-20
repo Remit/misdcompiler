@@ -3,11 +3,18 @@
 #endif
 
 spu_cmd SP_IR[MEM_LENGTH];
+std::map<int, int> true_address;
+std::map<int, int> false_address;
 unsigned int SP_BIN[MEM_LENGTH][5];
 int mem_point = 0;
 int label_i = 0;
 
 
+// Initializing for repeat
+void initialize_SPU() {
+	mem_point = 0;
+	label_i = 0;
+}
 
 // This procedure prints the asm representation
 // of SPU program either to file or to the
@@ -148,15 +155,16 @@ void print_SPU_asm_IR(std::ostream * print_stream) {
 		}
 
 		// Printing jump labels and addresses for jump instructions
-		if(is_jmp_op) {
-			std::string jmp_lbl(SP_IR[i].jmp_label);
-			if(opcode == JT)
-				out_str += ", "; // JT has operations
-				
-			out_str += jmp_lbl;
-			out_str += "(";
-			out_str += std::to_string(SP_IR[i].jmp_adr);
-			out_str += ") ";
+		if(is_jmp_op) {				
+			if(!SP_IR[i].tag[0]) {
+				out_str += "?";
+			} else {
+				std::string jmp_lbl(SP_IR[i].jmp_label);
+				out_str += jmp_lbl;
+				out_str += "(";
+				out_str += std::to_string(SP_IR[i].jmp_adr);
+				out_str += ") ";
+			}
 		}
 		
 		* print_stream << out_str << std::endl;
@@ -419,7 +427,7 @@ void SPU_IR2BIN() {
 				break;
 			}
 			// format 6
-			case JT: { //TODO: Synchronize with the description using 1 and 0 tags
+			case JT: {
 				
 				first = 0x0000;
 				second = 0x0000;
@@ -463,11 +471,18 @@ void SPU_IR2BIN() {
 		SP_BIN[point][4] = fifth;
 	}
 	
-	for(int point = mem_point; point < MEM_LENGTH; point++) {
+	for(int point = mem_point; point < MEM_LENGTH - 1; point++) {
 		SP_BIN[point][0] = 0x0000;
 		SP_BIN[point][1] = 0x0000;
 		SP_BIN[point][2] = 0x0000;
 		SP_BIN[point][3] = 0x0000;
 		SP_BIN[point][4] = 0x0000;
 	}
+	
+	//Ending sequence 11011100101110111100010011010101111001101111011111101110010111011110001001101010
+	SP_BIN[MEM_LENGTH - 1][0] = 0xDCBB;
+	SP_BIN[MEM_LENGTH - 1][1] = 0xC4D5;
+	SP_BIN[MEM_LENGTH - 1][2] = 0xE6F7;
+	SP_BIN[MEM_LENGTH - 1][3] = 0xEE5D;
+	SP_BIN[MEM_LENGTH - 1][4] = 0xE26A;
 }

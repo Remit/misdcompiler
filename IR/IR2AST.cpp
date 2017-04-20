@@ -123,6 +123,7 @@ IfExpression * AST_st_if(int node_id, IR_Graph * graph) {
 		int first_then_id = op_node_cond->getThenID();
 		int first_else_id = op_node_cond->getElseID();
 		ast_if = (IfExpression *)op_node_cond->getNodeASTSubTree();
+		ast_if->setParentOpNode(node_id);
 		std::vector< int > * dep_data_ids = graph->getDependentDataNodes(node_id);
 		if(dep_data_ids != NULL) {
 			for(int i = 0; i < dep_data_ids->size(); i++) {
@@ -352,6 +353,7 @@ WhileLoop * AST_st_whileloop(int node_id, IR_Graph * graph) {
 		IR_OperationNode* op_node_cond = ( IR_OperationNode* )graph->getNode(node_id);
 		int end_id = op_node_cond->getConnectedNodeID();
 		ast_while = (WhileLoop *)op_node_cond->getNodeASTSubTree();
+		ast_while->setParentOpNode(node_id);
 		std::vector< int > * dep_data_ids = graph->getDependentDataNodes(node_id);
 		if(dep_data_ids != NULL) {
 			for(int i = 0; i < dep_data_ids->size(); i++) {
@@ -502,6 +504,7 @@ ForLoop * AST_st_forloop(int node_id, IR_Graph * graph) {
 		IR_OperationNode* op_node_cond = ( IR_OperationNode* )graph->getNode(cond_node_id);
 		int end_id = op_node_cond->getConnectedNodeID();
 		ast_for = (ForLoop *)op_node_cond->getNodeASTSubTree();
+		ast_for->setParentOpNode(cond_node_id);
 		if(dep_data_ids != NULL) {
 			for(int i = 0; i < dep_data_ids->size(); i++) {
 				IR_DataNode* tag_node = ( IR_DataNode* )graph->getNode((*dep_data_ids)[i]);

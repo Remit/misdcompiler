@@ -193,6 +193,7 @@ Value * TransferExpr::generateCode() {
 }
 
 std::string TransferExpr::generateStructCode() {
+	// unnecessary because transfer is embedded in SPU instructions
 	std::string ret = "";
 	return ret;
 }

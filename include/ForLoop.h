@@ -17,7 +17,7 @@ class ForLoop : public Base_AST
 {
 public:
 	ForLoop();
-	ForLoop(Base_AST* a_start, Base_AST* a_end, Base_AST* a_step, Base_AST* a_body, std::string a_al_tag_name = "") : Start(a_start), End(a_end), Step(a_step), Body(a_body), al_tag_name(a_al_tag_name) { lbl = AST_FORLOOP; }
+	ForLoop(Base_AST* a_start, Base_AST* a_end, Base_AST* a_step, Base_AST* a_body, std::string a_al_tag_name = "", int a_parent_op_node = -1) : Start(a_start), End(a_end), Step(a_step), Body(a_body), al_tag_name(a_al_tag_name), parent_op_node(a_parent_op_node) { lbl = AST_FORLOOP; }
 	~ForLoop();
 	
 	void setStart(Base_AST* a_start);
@@ -26,6 +26,7 @@ public:
 	void setBody(Base_AST* a_body);
 	void setCounterName(std::string a_counter_name);
 	void setALtagName(std::string a_al_tag_name);
+	void setParentOpNode(int a_parent_op_node);
 	
 	Base_AST* getStart();
 	Base_AST* getEnd();
@@ -33,6 +34,7 @@ public:
 	Base_AST* getBody();
 	std::string getCounterName();
 	std::string getALTagName();
+	int getParentOpNode();
 	
 	Base_AST * copyAST();
 	
@@ -48,6 +50,7 @@ private:
 	Base_AST* Body;
 	std::string counter_name;
 	std::string al_tag_name;
+	int parent_op_node;
 };
 
 #endif // FORLOOP_H

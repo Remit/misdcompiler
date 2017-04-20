@@ -9,6 +9,7 @@ ForLoop::ForLoop()
 	counter_name = "";
 	al_tag_name = "";
 	lbl = AST_FORLOOP;
+	parent_op_node = -1;
 }
 
 ForLoop::~ForLoop()
@@ -39,6 +40,10 @@ void ForLoop::setALtagName(std::string a_al_tag_name) {
 	al_tag_name = a_al_tag_name;
 }
 
+void ForLoop::setParentOpNode(int a_parent_op_node) {
+	parent_op_node = a_parent_op_node;
+}
+
 Base_AST* ForLoop::getStart() {
 	return Start;
 }
@@ -63,6 +68,10 @@ std::string ForLoop::getALTagName() {
 	return al_tag_name;
 }
 
+int ForLoop::getParentOpNode() {
+	return parent_op_node;
+}
+
 Base_AST * ForLoop::copyAST() {
 	ForLoop * cpy = new ForLoop();
 	if(Body != NULL) {
@@ -77,6 +86,7 @@ Base_AST * ForLoop::copyAST() {
 	if(Start != NULL) {
 		cpy->setStart(Start->copyAST());
 	}
+	cpy->setParentOpNode(parent_op_node);
 
 	return cpy;
 }
@@ -102,6 +112,8 @@ void ForLoop::print(std::ostream * print_stream) {
 
 Value * ForLoop::generateCode() {
 	Value * ret = NULL;
+	StoreInst * llvm_store_inst;
+	Value * address_for_spu = NULL;
 	
 	AllocaInst * llvm_alloca_inst = Builder.CreateAlloca(Type::getInt32Ty(GlobalContext), nullptr, al_tag_name.c_str());
 	NamedValues[al_tag_name] = llvm_alloca_inst;
@@ -122,11 +134,16 @@ Value * ForLoop::generateCode() {
 			//BasicBlock * loopBB = BasicBlock::Create(GlobalContext, "loop", func);
 			if(End != NULL) {
 				Value * endCond = End->generateCode();
-				StoreInst * llvm_store_inst = Builder.CreateStore(endCond, ret);
+				// TODO: Additional LLVM if-branch to store the necessary jump address for SPU after receiving the result of condition evaluation
+				StoreInst * llvm_store_inst = Builder.CreateStore(endCond, ret);//TODO: Result of condition which will be transmitted -- we need address -- replace cond
 				if(endCond != NULL) {
 					Builder.CreateCondBr(endCond, loopBB, afterBB);
 					func->getBasicBlockList().push_back(loopBB);
 					Builder.SetInsertPoint(loopBB);
+					// Storing address to send to SPU in case condition is true
+					ret = (Value *)NamedValues[al_tag_name];
+					address_for_spu = ConstantInt::get(Type::getInt32Ty(GlobalContext), true_address[parent_op_node]);
+					llvm_store_inst = Builder.CreateStore(address_for_spu, ret); 
 					
 					if (Body != NULL) {
 						Body->generateCode();
@@ -151,6 +168,10 @@ Value * ForLoop::generateCode() {
 					Builder.CreateBr(headerBB);
 					func->getBasicBlockList().push_back(afterBB); // Inserting basic block for instructions after merging of branches after basic block for ELSE-branch
 					Builder.SetInsertPoint(afterBB);
+					
+					// Storing address to send to SPU in case condition is false
+					address_for_spu = ConstantInt::get(Type::getInt32Ty(GlobalContext), false_address[parent_op_node]);
+					llvm_store_inst = Builder.CreateStore(address_for_spu, ret);
 				}
 			}
 		}
@@ -178,8 +199,14 @@ std::string ForLoop::generateStructCode() { // The same as for the While-loop, c
 		SP_IR[mem_point].q = false;
 
 		int jwt_pos = mem_point;
-		mem_point++;
+		if(mem_point != (MEM_LENGTH - 2)) {
+			mem_point++;
+		} else {
+			printf("Error: not enough memory for SPU code (MEM_LENGTH too small).");
+			return ret;
+		}
 		int loop_body_beg = mem_point; // Positions of instructions in SPU program representation
+		true_address[parent_op_node] = loop_body_beg;
 		
 		if(Body != NULL) {
 			Body->generateStructCode();
@@ -190,7 +217,7 @@ std::string ForLoop::generateStructCode() { // The same as for the While-loop, c
 			// Jump to loop begin
 			strcpy(SP_IR[mem_point].label, std::to_string(label_i).c_str()); // Assigning a unique label for jump to condition;
 			label_i++;
-			SP_IR[mem_point].tag[0] = true; 
+			SP_IR[mem_point].tag[0] = true; // Tag is true - unconditional jump to the beginning
 			SP_IR[mem_point].tag[1] = true; // Not in use
 			SP_IR[mem_point].tag[2] = true; // Not in use
 			SP_IR[mem_point].op[0] = 1; // Unconditional branch
@@ -201,11 +228,17 @@ std::string ForLoop::generateStructCode() { // The same as for the While-loop, c
 			SP_IR[mem_point].jmp_adr = jwt_pos;
 			strcpy(SP_IR[mem_point].jmp_label,lbl_cond.c_str());
 		
+			if(mem_point != (MEM_LENGTH - 2)) {
 			mem_point++;
+			} else {
+				printf("Error: not enough memory for SPU code (MEM_LENGTH too small).");
+				return ret;
+			}
+			false_address[parent_op_node] = mem_point;
 			
 			// End of the loop
-			strcpy(SP_IR[jwt_pos].jmp_label, std::to_string(label_i).c_str()); // Assigning a unique label for condition to jump to else-branch
-			SP_IR[jwt_pos].jmp_adr = mem_point;
+			//strcpy(SP_IR[jwt_pos].jmp_label, std::to_string(label_i).c_str()); // Assigning a unique label for condition to jump to else-branch
+			SP_IR[jwt_pos].jmp_adr = -1;//mem_point;
 			strcpy(SP_IR[mem_point].label, std::to_string(label_i).c_str());
 				
 			label_i++;
